@@ -18,8 +18,8 @@ import java.util.List;
 public class FilmController {
     private final HashMap<Integer, Film> films = new HashMap<>();
     private Integer nextId = 1;
-    private final static int MAX_DESCRIPTION_LENGTH = 200;
-    private final static LocalDate RELEASE_DATE_OLD_LIMIT = LocalDate.of(1895, 12, 28);
+    private static final int MAX_DESCRIPTION_LENGTH = 200;
+    private static final LocalDate RELEASE_DATE_OLD_LIMIT = LocalDate.of(1895, 12, 28);
 
     @GetMapping()
     public List<Film> listFilms() {
