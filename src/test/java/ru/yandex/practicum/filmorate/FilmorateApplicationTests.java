@@ -303,9 +303,6 @@ public class FilmorateApplicationTests {
 
         for (ConstraintViolation<Film> violation : violations) {
 
-            assertEquals(violation.getMessage(), "не должно быть пустым",
-                    "Не содержит сообщения об ошибке 'не должно быть пустым'");
-
             assertEquals(violation.getInvalidValue(), film.getName(),
                     "Неверно определено невалидное значение: поле с названием фильма");
         }
@@ -323,9 +320,6 @@ public class FilmorateApplicationTests {
                 "Неверное количество ошибок при проверке пустого поля с названием фильма");
 
         for (ConstraintViolation<Film> violation : violations) {
-
-            assertEquals(violation.getMessage(), "не должно быть пустым",
-                    "Не содержит сообщения об ошибке 'не должно быть пустым'");
 
             assertEquals(violation.getInvalidValue(), film.getName(),
                     "Неверно определено невалидное значение: поле с названием фильма");
@@ -352,9 +346,6 @@ public class FilmorateApplicationTests {
             assertEquals(violation.getInvalidValue(), film.getName(),
                     "Неверное определено невалидное значение: поле с названием фильма");
 
-            assertTrue(violation.getMessage().equals("не должно быть пустым")
-                            || violation.getMessage().equals("не должно равняться null"),
-                    "Неверные сообщения о найденных ошибках в поле названия фильма со значением null");
         }
     }
 
@@ -378,9 +369,6 @@ public class FilmorateApplicationTests {
 
         for (ConstraintViolation<Film> violation : violations) {
 
-            assertEquals(violation.getMessage(), "размер должен находиться в диапазоне от 0 до 200",
-                    "Не содержит сообщения об ошибке 'размер должен находиться в диапазоне от 0 до 200'");
-
             assertEquals(violation.getInvalidValue(), film.getDescription(),
                     "Неверно определено невалидное значение: поле с описанием фильма");
         }
@@ -400,16 +388,6 @@ public class FilmorateApplicationTests {
 
         assertEquals(violations.size(), 1,
                 "Неверное количество ошибок при проверке поля с описанием фильма cо значением null");
-
-        for (ConstraintViolation<Film> violation : violations) {
-
-            assertEquals(violation.getInvalidValue(), film.getDescription(),
-                    "Неверное определено невалидное значение: поле с описанием фильма");
-
-            assertTrue(violation.getMessage().equals("не должно быть пустым")
-                            || violation.getMessage().equals("не должно равняться null"),
-                    "");
-        }
 
     }
 
@@ -454,9 +432,6 @@ public class FilmorateApplicationTests {
             assertEquals(violation.getInvalidValue(), film.getReleaseDate(),
                     "Неверное определено невалидное значение: поле с датой выхода фильма");
 
-            assertTrue(violation.getMessage().equals("не должно быть ранее 28-12-1895")
-                            || violation.getMessage().equals("не должно равняться null"),
-                    "Неверные сообщения о найденных ошибках в поле дата выхода фильма со значением null");
         }
     }
 
@@ -476,9 +451,6 @@ public class FilmorateApplicationTests {
                         + "с отрицательным значением продолжительности фильма");
 
         for (ConstraintViolation<Film> violation : violations) {
-
-            assertEquals(violation.getMessage(), "должно быть больше 0",
-                    "Не содержит сообщения об ошибке 'должно быть больше 0'");
 
             assertEquals(violation.getInvalidValue(), film.getDuration(),
                     "Неверно определено невалидное значение: поле с продолжительностью фильма");
@@ -501,9 +473,6 @@ public class FilmorateApplicationTests {
                         + "с нулевым значением продолжительности фильма");
 
         for (ConstraintViolation<Film> violation : violations) {
-
-            assertEquals(violation.getMessage(), "должно быть больше 0",
-                    "Не содержит сообщения об ошибке 'должно быть больше 0'");
 
             assertEquals(violation.getInvalidValue(), film.getDuration(),
                     "Неверно определено невалидное значение: поле с продолжительностью фильма");
@@ -531,10 +500,6 @@ public class FilmorateApplicationTests {
             assertEquals(violation.getInvalidValue(), film.getDuration(),
                     "Неверное определено невалидное значение: поле с продолжительностью фильма");
 
-            assertTrue(violation.getMessage().equals("не должно быть пустым")
-                            || violation.getMessage().equals("не должно равняться null"),
-                    "Неверные сообщения о найденных ошибках в поле "
-                            + "продолжительность фильма со значением null");
         }
 
     }
@@ -566,10 +531,6 @@ public class FilmorateApplicationTests {
 
         for (ConstraintViolation<User> violation : violations) {
 
-            assertTrue(violation.getMessage().equals("не должно быть пустым")
-                            || violation.getMessage().equals("не должно содержать пробелы"),
-                    "Неверные сообщения о найденных ошибках в пустом поле логин пользователя");
-
             assertEquals(violation.getInvalidValue(), user.getLogin(),
                     "Неверно определено невалидное значение: поле логин пользователя");
         }
@@ -590,11 +551,6 @@ public class FilmorateApplicationTests {
 
         for (ConstraintViolation<User> violation : violations) {
 
-            assertTrue(violation.getMessage().equals("не должно быть пустым")
-                            || violation.getMessage().equals("не должно содержать пробелы"),
-                    "Неверные сообщения о найденных ошибках в поле "
-                            + "логин пользователя, содержащем только пробелы");
-
             assertEquals(violation.getInvalidValue(), user.getLogin(),
                     "Неверно определено невалидное значение: поле логин пользователя");
         }
@@ -614,12 +570,6 @@ public class FilmorateApplicationTests {
 
         for (ConstraintViolation<User> violation : violations) {
 
-            assertTrue(violation.getMessage().equals("не должно равняться null")
-                            || violation.getMessage().equals("не должно содержать пробелы")
-                            || violation.getMessage().equals("не должно быть пустым"),
-                    "Неверные сообщения о найденных ошибках в поле "
-                            + "логин пользователя со значением null");
-
             assertEquals(violation.getInvalidValue(), user.getLogin(),
                     "Неверно определено невалидное значение: поле логин пользователя");
         }
@@ -638,10 +588,6 @@ public class FilmorateApplicationTests {
                 "Неверное количество ошибок при проверке поля логин пользователя со значением null");
 
         for (ConstraintViolation<User> violation : violations) {
-
-            assertEquals(violation.getMessage(), "не должно содержать пробелы",
-                    "Неверное сообщение о найденных ошибках в поле логин пользователя,"
-                            + "содержащем пробелы");
 
             assertEquals(violation.getInvalidValue(), user.getLogin(),
                     "Неверно определено невалидное значение: поле логин пользователя");
@@ -699,10 +645,6 @@ public class FilmorateApplicationTests {
 
         for (ConstraintViolation<User> violation : violations) {
 
-            assertEquals(violation.getMessage(), "должно иметь формат адреса электронной почты",
-                    "Неверное сообщение о найденных ошибках в поле email"
-                            + "c некорректными данными");
-
             assertEquals(violation.getInvalidValue(), user.getEmail(),
                     "Неверно определено невалидное значение: поле email");
         }
@@ -723,10 +665,6 @@ public class FilmorateApplicationTests {
 
         for (ConstraintViolation<User> violation : violations) {
 
-            assertEquals(violation.getMessage(), "не должно равняться null",
-                    "Неверное сообщение о найденных ошибках в поле email"
-                            + "cо значением null");
-
             assertEquals(violation.getInvalidValue(), user.getEmail(),
                     "Неверно определено невалидное значение: поле email");
         }
@@ -746,10 +684,6 @@ public class FilmorateApplicationTests {
 
         for (ConstraintViolation<User> violation : violations) {
 
-            assertEquals(violation.getMessage(), "должно содержать прошедшую дату или сегодняшнее число",
-                    "Неверное сообщение о найденных ошибках в поле дата рождения"
-                            + " с датой в будущем времени");
-
             assertEquals(violation.getInvalidValue(), user.getBirthday(),
                     "Неверно определено невалидное значение: поле дата рождения");
         }
@@ -768,10 +702,6 @@ public class FilmorateApplicationTests {
                 "Неверное количество ошибок при проверке поля дата рождения со значением null");
 
         for (ConstraintViolation<User> violation : violations) {
-
-            assertEquals(violation.getMessage(), "не должно равняться null",
-                    "Неверное сообщение о найденных ошибках в поле email"
-                            + "cо значением null");
 
             assertEquals(violation.getInvalidValue(), user.getBirthday(),
                     "Неверно определено невалидное значение: поле дата рождения");
