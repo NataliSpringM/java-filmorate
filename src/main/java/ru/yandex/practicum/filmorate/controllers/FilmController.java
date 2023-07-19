@@ -1,41 +1,31 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
 
-
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.validation.Valid;
 
 @RestController
 @Slf4j
 @RequestMapping("/films")
-
+@Validated
 public class FilmController {
+
+    /* обработка запросов HTTP-клиентов на добавление, обновление, получение информации о фильмах по адресу
+    http://localhost:8080/films */
+
     private final HashMap<Integer, Film> films = new HashMap<>();
     private Integer nextId = 1;
-    private static final int MAX_DESCRIPTION_LENGTH = 200;
-    private static final LocalDate RELEASE_DATE_OLD_LIMIT = LocalDate.of(1895, 12, 28);
-
-    @GetMapping()
-    public List<Film> listFilms() {
-
-        List<Film> listFilms = new ArrayList<>(films.values());
-
-        log.info("Количество фильмов в списке: {}", listFilms.size());
-
-        return listFilms;
-
-    }
 
     @PostMapping()
-    public Film addFilm(@RequestBody Film film) {
-
-        validateInfo(film); // проверка данных на соответствие требуемому формату
+    public Film addFilm(@Valid @RequestBody Film film) { //добавление информации о фильме
 
         film.setId(nextId);
         nextId++;
@@ -47,63 +37,35 @@ public class FilmController {
     }
 
     @PutMapping()
-    public Film updateFilm(@RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) { //обновление информации о фильме
 
         if (!films.containsKey(film.getId())) {
             throw new FilmDoesNotExistException("Такого фильма нет в списке.");
         }
 
-        validateInfo(film);
-
-        updateInfo(film);
-
+        updateInfo(film); // обновление информации
         log.info("Обновлена информация о фильме: {}", film);
-
         return film;
     }
 
+    @GetMapping()
+    public List<Film> listFilms() { // получение списка фильмов
 
-    private void validateInfo(Film film) {
+        List<Film> listFilms = new ArrayList<>(films.values());
 
-        if (isNameEmpty(film)) {
-            log.error("Не прошло проверку название фильма: {}", film.getName());
-            throw new NameValidationException("Название фильма не может быть пустым.");
-        }
-        if (isDescriptionTooLong(film)) {
-            log.error("Не прошло проверку описание фильма: {},", film.getDescription());
-            throw new DescriptionLengthValidationException("Описание фильма не должно превышать 200 симоволов.");
-        }
-        if (isReleaseDateTooOld(film)) {
-            log.error("Не прошла проверку дата выхода фильма: {},", film.getReleaseDate());
-            throw new ReleaseDateException("Дата выхода фильма не может быть раньше 28.12.1895 года.");
-        }
-        if (isDurationNotPositiveNumber(film)) {
-            log.error("Не прошла проверку продолжительность фильма: {},", film.getDuration());
-            throw new DurationNotPositiveValueException("Продолжительность фильма должна быть положительным числом.");
-        }
-        log.info("Введенные данные фильма прошли проверку.");
+        log.info("Количество фильмов в списке: {}", listFilms.size());
+
+        return listFilms;
+
+    }
+
+    public Map<Integer, Film> getFilmsData() { // получение данных о фильмах для тестирования
+        return films;
     }
 
     private void updateInfo(Film film) {
         films.put(film.getId(), film);
     }
-
-    private boolean isNameEmpty(Film film) {
-        return film.getName() == null || film.getName().isEmpty() || film.getName().isBlank();
-    }
-
-    private boolean isDescriptionTooLong(Film film) {
-        return film.getDescription().length() > MAX_DESCRIPTION_LENGTH;
-    }
-
-    private boolean isReleaseDateTooOld(Film film) {
-        return film.getReleaseDate().isBefore(RELEASE_DATE_OLD_LIMIT);
-    }
-
-    private boolean isDurationNotPositiveNumber(Film film) {
-        return film.getDuration() <= 0;
-    }
-
 
 }
 

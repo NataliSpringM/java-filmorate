@@ -1,28 +1,62 @@
 package ru.yandex.practicum.filmorate.controllers;
 
+import javax.validation.Valid;
+
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.User;
 
-
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@Validated
 @Slf4j
 @RequestMapping("/users")
-
 public class UserController {
+
+    /* обработка запросов HTTP-клиентов на добавление, обновление, получение информации о пользователях по адресу
+    http://localhost:8080/users */
 
     private final HashMap<Integer, User> users = new HashMap<>();
     private Integer nextId = 1;
 
+    @PostMapping()
+    public User addUser(@Valid @RequestBody User user) { //добавление информации о пользователе
+
+        user.setId(nextId);
+        nextId++;
+
+        if (isFieldEmpty(user.getName())) { // устанавливаем логин в качестве имени в случае незаполненного поля
+            user.setName(user.getLogin());
+        }
+
+        updateInfo(user); // сохранение информации о пользователе
+        log.info("Сохранен пользователь: {}", user);
+        return user;
+    }
+
+    @PutMapping()
+    public User updateUser(@Valid @RequestBody User user) { //обновление информации о пользователе
+
+        if (!users.containsKey(user.getId())) {
+            throw new UserDoesNotExistException("Такого пользователя нет в списке.");
+        }
+        if (isFieldEmpty(user.getName())) {
+            user.setName(user.getLogin()); // устанавливаем логин в качестве имени в случае незаполненного поля
+        }
+
+        updateInfo(user); // обновление информации о пользователе
+        log.info("Обновлены данные пользователя {}", user);
+        return user;
+    }
 
     @GetMapping()
-    public List<User> listUsers() {
+    public List<User> listUsers() { //получение списка пользователей
 
         List<User> listUsers = new ArrayList<>(users.values());
 
@@ -31,83 +65,17 @@ public class UserController {
         return listUsers;
     }
 
-    @PostMapping()
-    public User addUser(@RequestBody User user) {
-
-        validateInfo(user);
-
-        user.setId(nextId);
-        nextId++;
-        updateInfo(user);
-
-        log.info("Сохранен пользователь: {}", user);
-        return user;
+    public Map<Integer, User> getUsersData() { // получение данных о пользователях для тестирования
+        return users;
     }
 
-    @PutMapping()
-    public User updateUser(@RequestBody User user) {
-
-        if (!users.containsKey(user.getId())) {
-            throw new UserDoesNotExistException("Такого пользователя нет в списке.");
-        }
-
-        validateInfo(user); // проверка данных на соответствие требуемому формату
-
-        updateInfo(user);
-        log.info("Обновлены данные пользователя {}", user); // сохранение информации о пользователе
-
-        return user;
-    }
-
-
-    private void updateInfo(User user) {
+    private void updateInfo(User user) { // сохранение данных
         users.put(user.getId(), user);
     }
 
-    private void validateInfo(User user) {
-
-        if (isEmailInvalid(user)) {
-            log.error("Не прошло проверку поле e-mail пользователя: {},", user.getEmail());
-            throw new InvalidEmailException("Поле E-mail не должно быть пустым и должно содержать символ @.");
-        }
-        if (isLoginInvalid(user)) {
-            log.error("Не прошло проверку поле Логин пользователя: {},", user.getLogin());
-            throw new InvalidLoginException("Поле Логин пользователя не должно быть пустым и содержать пробелы.");
-        }
-        if (isUserNameEmpty(user)) {
-            user.setName(user.getLogin());
-        }
-        if (isBirthdayInFuture(user)) {
-            log.error("Не прошло проверку поле Дата рождения пользователя: {},", user.getBirthday());
-            throw new BirthdayInFutureException("Дата рождения не может быть позже текущей даты.");
-        }
-        log.info("Введенные данные пользователя прошли проверку.");
-    }
-
-    private boolean isEmailInvalid(User user) {
-        String email = user.getEmail();
-        return isFieldEmpty(email) || !email.contains("@");
-    }
-
-    private boolean isLoginInvalid(User user) {
-        String login = user.getLogin();
-        return isFieldEmpty(login) || login.contains(" ");
-    }
-
-    private boolean isUserNameEmpty(User user) {
-        String name = user.getName();
-        return isFieldEmpty(name);
-
-    }
-
-    private boolean isBirthdayInFuture(User user) {
-        return user.getBirthday().isAfter(LocalDate.now());
-    }
-
-    private boolean isFieldEmpty(String fieldValue) {
+    private boolean isFieldEmpty(String fieldValue) { //проверка является ли поле пустым
         return fieldValue == null || fieldValue.isBlank() || fieldValue.isEmpty();
     }
-
 
 }
 
