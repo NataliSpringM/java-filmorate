@@ -161,11 +161,11 @@ public class FilmorateApplicationTests {
 
         // получаем списки друзей пользователя и друга, информацию о первом в списке пользователе
 
-        List<User> friendsOfUser = users.get(userId).getFriends().stream().
-                map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
+        List<User> friendsOfUser = users.get(userId).getFriends().stream()
+                .map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
 
-        List<User> friendsOfFriend = users.get(friendId).getFriends().stream().
-                map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
+        List<User> friendsOfFriend = users.get(friendId).getFriends().stream()
+                .map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
 
         User friendFromList = friendsOfUser.get(0);
         User userFromList = friendsOfFriend.get(0);
@@ -341,11 +341,11 @@ public class FilmorateApplicationTests {
         //добавляем друга
         userController.addFriend(userId, friendId);
 
-        List<User> friendsOfUser = users.get(userId).getFriends().stream().
-                map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
+        List<User> friendsOfUser = users.get(userId).getFriends().stream()
+                .map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
 
-        List<User> friendsOfFriend = users.get(friendId).getFriends().stream().
-                map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
+        List<User> friendsOfFriend = users.get(friendId).getFriends().stream()
+                .map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
 
         User friendFromList = friendsOfUser.get(0);
         User userFromList = friendsOfFriend.get(0);
