@@ -127,9 +127,9 @@ public class UserServiceFriends implements UserService {
     // возврат пустой коллекции в случае если обнаружено значение null
     private Set<Long> returnEmptyCollectionIfNull(Set<Long> set) {
 
-        return Optional.ofNullable(set).stream().
-                flatMap(Collection::stream).
-                collect(Collectors.toSet());
+        return Optional.ofNullable(set).stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
     }
 
     // преобразование набора id в список пользователей
