@@ -1,40 +1,40 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.*;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.annotations.CheckReleaseDate;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.*;
 
 import java.time.LocalDate;
 
-@Data
-@AllArgsConstructor
 @Validated
+@Value
+@Builder(toBuilder = true)
+@RequiredArgsConstructor
 public class Film {
 
-    // информация о фильме - id, название, описание, дата выпуска, продолжительность фильма
+    // информация о фильме - id, название, описание, дата выпуска, продолжительность фильма, количество лайков
     private static final int MAX_DESCRIPTION_LENGTH = 200;
 
-    private Integer id;
+    Integer id; // id фильма
 
     @NotNull
     @NotBlank
     @NotEmpty
-    private final String name;
+    String name; // название фильма
 
     @NotNull
     @Size(max = MAX_DESCRIPTION_LENGTH)
-    private final String description;
+    String description; // описание фильма
 
     @CheckReleaseDate(message = "не должно быть ранее 28-12-1895")
-    private final LocalDate releaseDate;
+    LocalDate releaseDate; // дата выхода фильма
 
     @NotNull
     @Positive
-    private final Integer duration;
+    Integer duration; // продолжительность фильма
+    Long likes; // количество лайков
 
 }

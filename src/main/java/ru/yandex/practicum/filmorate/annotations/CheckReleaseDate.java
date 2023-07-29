@@ -18,4 +18,5 @@ public @interface CheckReleaseDate { //аннотация для проверк�
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
 }

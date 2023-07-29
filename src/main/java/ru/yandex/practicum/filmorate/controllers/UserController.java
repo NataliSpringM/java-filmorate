@@ -2,79 +2,86 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import javax.validation.Valid;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+
 import java.util.List;
-import java.util.Map;
+
 
 @RestController
 @Validated
 @Slf4j
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
     /* обработка запросов HTTP-клиентов на добавление, обновление, получение информации о пользователях по адресу
     http://localhost:8080/users */
 
-    private final HashMap<Integer, User> users = new HashMap<>();
-    private Integer nextId = 1;
+    private final UserStorage userStorage;
+    private final UserService userService;
 
+    // обработка POST-запроса на добавление данных пользователя
     @PostMapping()
-    public User addUser(@Valid @RequestBody User user) { //добавление информации о пользователе
+    public User addUser(@Valid @RequestBody User user) {
 
-        user.setId(nextId);
-        nextId++;
-
-        if (isFieldEmpty(user.getName())) { // устанавливаем логин в качестве имени в случае незаполненного поля
-            user.setName(user.getLogin());
-        }
-
-        updateInfo(user); // сохранение информации о пользователе
-        log.info("Сохранен пользователь: {}", user);
-        return user;
+        return userStorage.addUser(user);
     }
 
+    // обработка PUT-запроса на обновление данных пользователя
     @PutMapping()
-    public User updateUser(@Valid @RequestBody User user) { //обновление информации о пользователе
+    public User updateUser(@Valid @RequestBody User user) {
 
-        if (!users.containsKey(user.getId())) {
-            throw new UserDoesNotExistException("Такого пользователя нет в списке.");
-        }
-        if (isFieldEmpty(user.getName())) {
-            user.setName(user.getLogin()); // устанавливаем логин в качестве имени в случае незаполненного поля
-        }
-
-        updateInfo(user); // обновление информации о пользователе
-        log.info("Обновлены данные пользователя {}", user);
-        return user;
+        return userStorage.updateUser(user);
     }
 
+    // обработка GET-запроса на получение списка пользователей
     @GetMapping()
-    public List<User> listUsers() { //получение списка пользователей
+    public List<User> listUsers() {
 
-        List<User> listUsers = new ArrayList<>(users.values());
-
-        log.info("Количество пользователей в списке: {}", listUsers.size());
-
-        return listUsers;
+        return userStorage.listUsers();
     }
 
-    public Map<Integer, User> getUsersData() { // получение данных о пользователях для тестирования
-        return users;
+    // обработка GET-запроса на получение пользователя по id
+    @GetMapping("{id}")
+    public User getUserById(@PathVariable Long id) {
+
+        return userStorage.getUserById(id);
     }
 
-    private void updateInfo(User user) { // сохранение данных
-        users.put(user.getId(), user);
+    // обработка PUT-запроса на добавление друга
+    @PutMapping("{id}/friends/{friendId}")
+    public User addFriend(@RequestBody @PathVariable Long id, @PathVariable Long friendId) {
+
+        return userService.addFriend(id, friendId);
     }
 
-    private boolean isFieldEmpty(String fieldValue) { //проверка является ли поле пустым
-        return fieldValue == null || fieldValue.isBlank() || fieldValue.isEmpty();
+    // обработка DELETE-запроса на добавление друга
+    @DeleteMapping("{id}/friends/{friendId}")
+    public User deleteFriend(@RequestBody @PathVariable Long id, @PathVariable Long friendId) {
+
+        return userService.deleteFriend(id, friendId);
+    }
+
+    // обработка GET-запроса на получение списка друзей
+    @GetMapping("{id}/friends")
+    public List<User> listUserFriends(@RequestBody @PathVariable Long id) {
+
+        return userService.listUserFriends(id);
+    }
+
+    // обработка GET-запроса на получение списка общих друзей
+    @GetMapping("{id}/friends/common/{otherId}")
+    public List<User> listCommonFriends(@RequestBody @PathVariable Long id, @PathVariable Long otherId) {
+
+        return userService.listCommonFriends(id, otherId);
     }
 
 }

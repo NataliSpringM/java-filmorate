@@ -1,72 +1,80 @@
 package ru.yandex.practicum.filmorate.controllers;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
 import javax.validation.Valid;
 
 @RestController
 @Slf4j
 @RequestMapping("/films")
 @Validated
+@RequiredArgsConstructor
 public class FilmController {
 
     /* обработка запросов HTTP-клиентов на добавление, обновление, получение информации о фильмах по адресу
     http://localhost:8080/films */
 
-    private final HashMap<Integer, Film> films = new HashMap<>();
-    private Integer nextId = 1;
+    private final FilmStorage filmStorage;
+    private final FilmService filmService;
 
+
+    // обработка POST-запроса на добавление информации о фильме
     @PostMapping()
-    public Film addFilm(@Valid @RequestBody Film film) { //добавление информации о фильме
+    public Film addFilm(@Valid @RequestBody Film film) {
 
-        film.setId(nextId);
-        nextId++;
-
-        updateInfo(film); // сохранение информации о фильме
-        log.info("Сохранена информация о фильме: {}", film);
-
-        return film;
+        return filmStorage.addFilm(film);
     }
 
+    // обработка PUT-запроса на обновление информации о фильме
     @PutMapping()
-    public Film updateFilm(@Valid @RequestBody Film film) { //обновление информации о фильме
+    public Film updateFilm(@Valid @RequestBody Film film) {
 
-        if (!films.containsKey(film.getId())) {
-            throw new FilmDoesNotExistException("Такого фильма нет в списке.");
-        }
-
-        updateInfo(film); // обновление информации
-        log.info("Обновлена информация о фильме: {}", film);
-        return film;
+        return filmStorage.updateFilm(film);
     }
 
+    // обработка GET-запроса на получение фильма по идентификатору
+    @GetMapping("/{id}")
+
+    public Film getFilmById(@PathVariable Integer id) {
+
+        return filmStorage.getFilmById(id);
+    }
+
+    // обработка GET-запроса на получение списка всех фильмов
     @GetMapping()
-    public List<Film> listFilms() { // получение списка фильмов
+    public List<Film> listFilms() {
 
-        List<Film> listFilms = new ArrayList<>(films.values());
-
-        log.info("Количество фильмов в списке: {}", listFilms.size());
-
-        return listFilms;
-
+        return filmStorage.listFilms();
     }
 
-    public Map<Integer, Film> getFilmsData() { // получение данных о фильмах для тестирования
-        return films;
+    // обработка PUT-запроса на добавление лайка фильму
+    @PutMapping("/{id}/like/{userId}")
+    public Film addLike(@PathVariable Integer id, @PathVariable Long userId) {
+
+        return filmService.addLike(id, userId);
     }
 
-    private void updateInfo(Film film) {
-        films.put(film.getId(), film);
+    // обработка DELETE-запроса на удаление лайка фильму
+    @DeleteMapping("/{id}/like/{userId}")
+    public Film deleteLike(@PathVariable Integer id, @PathVariable Long userId) {
+
+        return filmService.deleteLike(id, userId);
     }
 
+    // обработка GET-запроса на получение списка наиболее популярных фильмов
+    @GetMapping("/popular")
+    public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
+
+        return filmService.listMostPopularFilms(count);
+    }
 }
 
 
