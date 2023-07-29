@@ -94,9 +94,9 @@ public class InMemoryLikeStorage implements LikeStorage {
         }
 
         // возвращаем копию объекта фильм с обновленным количеством лайков
-        return filmStorage.getFilmById(filmId).toBuilder().
-                likes(getFilmLikesTotalCount(filmId)).
-                build();
+        return filmStorage.getFilmById(filmId).toBuilder()
+                .likes(getFilmLikesTotalCount(filmId))
+                .build();
     }
 
     // возвращение информации о лайках определенному фильму от пользователей с проверкой на null
