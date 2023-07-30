@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 
@@ -25,35 +24,34 @@ public class UserController {
     /* обработка запросов HTTP-клиентов на добавление, обновление, получение информации о пользователях по адресу
     http://localhost:8080/users */
 
-    private final UserStorage userStorage;
     private final UserService userService;
 
     // обработка POST-запроса на добавление данных пользователя
     @PostMapping()
     public User addUser(@Valid @RequestBody User user) {
 
-        return userStorage.addUser(user);
+        return userService.addUser(user);
     }
 
     // обработка PUT-запроса на обновление данных пользователя
     @PutMapping()
     public User updateUser(@Valid @RequestBody User user) {
 
-        return userStorage.updateUser(user);
+        return userService.updateUser(user);
     }
 
     // обработка GET-запроса на получение списка пользователей
     @GetMapping()
     public List<User> listUsers() {
 
-        return userStorage.listUsers();
+        return userService.listUsers();
     }
 
     // обработка GET-запроса на получение пользователя по id
     @GetMapping("{id}")
     public User getUserById(@PathVariable Long id) {
 
-        return userStorage.getUserById(id);
+        return userService.getUserById(id);
     }
 
     // обработка PUT-запроса на добавление друга

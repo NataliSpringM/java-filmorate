@@ -18,14 +18,42 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FilmServiceLikes implements FilmService {
+public class FilmServiceRating implements FilmService {
 
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final UserStorage userStorage;
     private static final Integer HIT_LIST_SIZE = 10;
 
-    // возвращение копии объекта фильм с увеличенным значением лайков
+    //добавление информации о фильме в FilmStorage
+    @Override
+    public Film addFilm(Film film) {
+
+        return filmStorage.addFilm(film);
+    }
+
+    // обновление информации о фильме в FilmStorage
+    @Override
+    public Film updateFilm(Film film) {
+
+        return filmStorage.updateFilm(film);
+    }
+
+    // получение списка фильмов из FilmStorage
+    @Override
+    public List<Film> listFilms() {
+
+        return filmStorage.listFilms();
+    }
+
+    // получение фильма по идентификатору из FilmStorage
+    @Override
+    public Film getFilmById(Integer id) {
+
+        return filmStorage.getFilmById(id);
+    }
+
+    // возвращение копии объекта фильм с увеличенным значением лайков из LikeStorage
     @Override
     public Film addLike(Integer filmId, Long userId) {
 
@@ -36,7 +64,7 @@ public class FilmServiceLikes implements FilmService {
         return likeStorage.addLike(filmId, userId);
     }
 
-    // возвращение копии объекта фильм с уменьшенным значением лайков
+    // возвращение копии объекта фильм с уменьшенным значением лайков из LikeStorage
     @Override
     public Film deleteLike(Integer filmId, Long userId) {
 
@@ -61,7 +89,7 @@ public class FilmServiceLikes implements FilmService {
         return mostPopularFilms;
     }
 
-    // сортировка фильмов в порядке убывания популярности с заданным ограничением размера списка
+    // сортировка фильмов из UserStorage в порядке убывания популярности с заданным ограничением размера списка
     private List<Film> sortFilmReversedOrderWithLimit(int limit) {
 
         return filmStorage.listFilms().stream()

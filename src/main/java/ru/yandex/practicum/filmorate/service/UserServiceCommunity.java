@@ -15,11 +15,39 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceFriends implements UserService {
+public class UserServiceCommunity implements UserService {
 
     private final UserStorage userStorage;
 
-    // добавление друзей
+    // добавление информации о пользователе в UserStorage
+    @Override
+    public User addUser(User user) {
+
+        return userStorage.addUser(user);
+    }
+
+    // обновление информации о пользователе в UserStorage
+    @Override
+    public User updateUser(User user) {
+
+        return userStorage.updateUser(user);
+    }
+
+    // получение списка пользователей из UserStorage
+    @Override
+    public List<User> listUsers() {
+
+        return userStorage.listUsers();
+    }
+
+    // получение пользователя по идентификатору из UserStorage
+    @Override
+    public User getUserById(Long id) {
+
+        return userStorage.getUserById(id);
+    }
+
+    // добавление друзей в UserStorage
     @Override
     public User addFriend(Long userId, Long friendId) {
 
@@ -42,7 +70,7 @@ public class UserServiceFriends implements UserService {
         return userStorage.getUserById(userId);
     }
 
-    // удаление из друзей
+    // удаление из друзей в UserStorage
     @Override
     public User deleteFriend(Long userId, Long friendId) {
 
@@ -65,7 +93,7 @@ public class UserServiceFriends implements UserService {
         return userStorage.getUserById(userId);
     }
 
-    // получение списка друзей пользователя
+    // получение списка друзей пользователя из UserStorage
     @Override
     public List<User> listUserFriends(Long userId) {
 
@@ -79,7 +107,7 @@ public class UserServiceFriends implements UserService {
         return convertIdSetToUserList(userFriends);
     }
 
-    // получение списка общих друзей
+    // получение списка общих друзей из UserStorage
     @Override
     public List<User> listCommonFriends(Long userId, Long otherId) {
 
@@ -104,7 +132,7 @@ public class UserServiceFriends implements UserService {
     }
 
 
-    // обновление списка друзей пользователя
+    // обновление списка друзей пользователя в UserStorage
     private User updateFriendList(Long userId, Long friendId, Command command) {
 
         User user = userStorage.getUserById(userId);

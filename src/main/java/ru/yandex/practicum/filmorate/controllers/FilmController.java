@@ -6,8 +6,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-
 
 import java.util.List;
 import javax.validation.Valid;
@@ -22,7 +20,6 @@ public class FilmController {
     /* обработка запросов HTTP-клиентов на добавление, обновление, получение информации о фильмах по адресу
     http://localhost:8080/films */
 
-    private final FilmStorage filmStorage;
     private final FilmService filmService;
 
 
@@ -30,14 +27,14 @@ public class FilmController {
     @PostMapping()
     public Film addFilm(@Valid @RequestBody Film film) {
 
-        return filmStorage.addFilm(film);
+        return filmService.addFilm(film);
     }
 
     // обработка PUT-запроса на обновление информации о фильме
     @PutMapping()
     public Film updateFilm(@Valid @RequestBody Film film) {
 
-        return filmStorage.updateFilm(film);
+        return filmService.updateFilm(film);
     }
 
     // обработка GET-запроса на получение фильма по идентификатору
@@ -45,14 +42,14 @@ public class FilmController {
 
     public Film getFilmById(@PathVariable Integer id) {
 
-        return filmStorage.getFilmById(id);
+        return filmService.getFilmById(id);
     }
 
     // обработка GET-запроса на получение списка всех фильмов
     @GetMapping()
     public List<Film> listFilms() {
 
-        return filmStorage.listFilms();
+        return filmService.listFilms();
     }
 
     // обработка PUT-запроса на добавление лайка фильму
