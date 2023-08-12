@@ -1,38 +1,42 @@
 package ru.yandex.practicum.filmorate.model;
 
-import javax.validation.constraints.*;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.Set;
 
-@Data
-@AllArgsConstructor
 @Validated
+@Value
+@Builder(toBuilder = true)
+@RequiredArgsConstructor
 public class User {
 
-    //информация о пользователе - id, email, имя (необязательное поле), логин, дата рождения
+    //информация о пользователе - id, email, имя (необязательное поле), логин, дата рождения, друзья (список id)
 
-    private Integer id;
+    Long id; // id пользователя
 
     @Email
     @NotNull
-    private final String email;
+    String email; // email пользователя
+
 
     @Nullable
-    private String name;
+    String name; // имя пользователя - необязательное поле
 
     @NotNull
     @NotBlank
     @NotEmpty
     @Pattern(regexp = "^\\S+$", message = "не должно содержать пробелы")
-    private final String login;
+    String login; // login пользователя
+
 
     @PastOrPresent
     @NotNull
-    private final LocalDate birthday;
+    LocalDate birthday; // дата рождения пользователя
+
+    Set<Long> friends; // список id друзей пользователя
 
 }
