@@ -2,12 +2,12 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 import org.springframework.validation.annotation.Validated;
-import ru.yandex.practicum.filmorate.annotations.CheckReleaseDate;
+import ru.yandex.practicum.filmorate.validation.annotations.CheckReleaseDate;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.util.*;
 
 @Validated
 @Value
@@ -36,5 +36,20 @@ public class Film {
     @Positive
     Integer duration; // продолжительность фильма
     Long likes; // количество лайков
+    Mpa mpa; // рейтинг MPA
+    Set<FilmGenre> genres; // информация о жанрах фильма
+
+    public Map<String, Object> toMap() {
+
+        Map<String, Object> filmProperties = new HashMap<>();
+
+        filmProperties.put("film_name", name);
+        filmProperties.put("description", description);
+        filmProperties.put("release_date", releaseDate);
+        filmProperties.put("duration", duration);
+        filmProperties.put("rating_mpa_id", mpa.getId());
+
+        return filmProperties;
+    }
 
 }

@@ -8,6 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 @Value
 @RequiredArgsConstructor
 public class ErrorResponse { // сообщение об ошибке
-    private final String error;
+    String error;
 
 }

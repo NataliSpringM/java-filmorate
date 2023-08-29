@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
-import java.util.Map;
 
 // хранение информации о фильмах
 
@@ -19,7 +18,8 @@ public interface FilmStorage {
 
     void updateFilmData(Film film); // сохранение новой или обновленной информации о фильме
 
-    Map<Integer, Film> getFilmsData(); // получение данных о фильмах
+    List<Film> listMostPopularFilms(Integer count); // получение списка наиболее популярных фильмов
 
+    void checkFilmId(Integer filmId); // проверка существования id фильма
 
 }

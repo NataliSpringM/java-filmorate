@@ -6,7 +6,7 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.*;
 
 @Validated
 @Value
@@ -22,7 +22,6 @@ public class User {
     @NotNull
     String email; // email пользователя
 
-
     @Nullable
     String name; // имя пользователя - необязательное поле
 
@@ -32,11 +31,29 @@ public class User {
     @Pattern(regexp = "^\\S+$", message = "не должно содержать пробелы")
     String login; // login пользователя
 
-
     @PastOrPresent
     @NotNull
     LocalDate birthday; // дата рождения пользователя
 
     Set<Long> friends; // список id друзей пользователя
+
+    public Map<String, Object> toMap() {
+
+        Map<String, Object> userProperties = new HashMap<>();
+
+        userProperties.put("email", email);
+
+        if (name == null || name.isBlank()) {
+            userProperties.put("user_name", login);
+        } else {
+            userProperties.put("user_name", name);
+        }
+
+        userProperties.put("login", login);
+        userProperties.put("birthday", birthday);
+
+        return userProperties;
+    }
+
 
 }

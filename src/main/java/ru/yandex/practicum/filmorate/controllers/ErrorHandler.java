@@ -4,8 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
-import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 import javax.validation.ConstraintViolationException;
@@ -15,8 +14,8 @@ public class ErrorHandler {
 
     // обработка выбрасываемых исключений
 
-    // обработка ошибок при запросах с несуществующим идентификатором пользователя / фильма
-    @ExceptionHandler({UserDoesNotExistException.class, FilmDoesNotExistException.class})
+    // обработка ошибок при запросах с несуществующим идентификатором объета
+    @ExceptionHandler(ObjectNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundId(final RuntimeException e) {
 

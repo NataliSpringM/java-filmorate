@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Map;
 
 //хранение информации о пользователях
 
@@ -17,7 +16,9 @@ public interface UserStorage {
 
     User getUserById(Long id); // получение пользователя по идентификатору
 
-    void updateUserData(User user); // сохранение новой или обновленной информации о пользователе
+    void updateUserProperties(User user); // сохранение новой или обновленной информации о пользователе
 
-    Map<Long, User> getUsersData(); // получение информации о пользователях
+    void checkUserId(Long userId); // проверка существования id пользователя
+
+
 }
