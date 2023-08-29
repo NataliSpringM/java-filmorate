@@ -253,20 +253,20 @@ public class FilmDbStorage implements FilmStorage {
         // запрос к таблице films для получения id рейтинга
         SqlRowSet filmMpaRow = jdbcTemplate
                 .queryForRowSet("select rating_mpa_id from films where film_id = ?", filmId);
-        Integer rating_mpa_id = null;
+        Integer ratingMpaId = null;
         if (filmMpaRow.next()) {
-            rating_mpa_id = filmMpaRow.getInt("rating_mpa_id");
+            ratingMpaId = filmMpaRow.getInt("rating_mpa_id");
         }
 
         // запрос к таблице rating_mpa для получения полной информации о рейтинге
         SqlRowSet mpaRow = jdbcTemplate
                 .queryForRowSet("SELECT rating_mpa_name from rating_mpa where rating_mpa_id = ? ",
-                        rating_mpa_id);
+                        ratingMpaId);
         Mpa mpa = null;
         if (mpaRow.next()) {
             // создание объекта рейтинг
             mpa = new Mpa(
-                    rating_mpa_id,
+                    ratingMpaId,
                     mpaRow.getString("rating_mpa_name"));
 
         }
