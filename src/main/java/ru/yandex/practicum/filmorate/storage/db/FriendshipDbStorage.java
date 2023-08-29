@@ -106,13 +106,13 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 .queryForRowSet("SELECT is_confirmed FROM friendship "
                         + "WHERE initiator_id = ? AND recipient_id = ?", userId, friendId);
 
-        boolean is_confirmed = false;
+        boolean status = false;
 
         if (sqlQueryIsFriendshipConfirmed.next()) {
-            is_confirmed = sqlQueryIsFriendshipConfirmed.getBoolean("is_confirmed");
+            status = sqlQueryIsFriendshipConfirmed.getBoolean("is_confirmed");
         }
 
-        return is_confirmed;
+        return status;
     }
 
     // проверка наличия заявки на дружбу от потенциального друга пользователя
