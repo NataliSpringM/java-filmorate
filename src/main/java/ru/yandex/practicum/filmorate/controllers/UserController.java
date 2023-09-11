@@ -56,16 +56,16 @@ public class UserController {
 
     // обработка PUT-запроса на добавление друга
     @PutMapping("{id}/friends/{friendId}")
-    public User addFriend(@RequestBody @PathVariable Long id, @PathVariable Long friendId) {
+    public void addFriend(@RequestBody @PathVariable Long id, @PathVariable Long friendId) {
 
-        return userService.addFriend(id, friendId);
+        userService.addFriend(id, friendId);
     }
 
     // обработка DELETE-запроса на добавление друга
     @DeleteMapping("{id}/friends/{friendId}")
-    public User deleteFriend(@RequestBody @PathVariable Long id, @PathVariable Long friendId) {
+    public void deleteFriend(@RequestBody @PathVariable Long id, @PathVariable Long friendId) {
 
-        return userService.deleteFriend(id, friendId);
+        userService.deleteFriend(id, friendId);
     }
 
     // обработка GET-запроса на получение списка друзей

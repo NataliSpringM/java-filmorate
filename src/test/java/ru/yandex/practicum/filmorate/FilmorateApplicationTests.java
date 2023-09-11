@@ -13,17 +13,18 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
 import ru.yandex.practicum.filmorate.controllers.FilmController;
 import ru.yandex.practicum.filmorate.controllers.UserController;
-import ru.yandex.practicum.filmorate.exceptions.FilmDoesNotExistException;
-import ru.yandex.practicum.filmorate.exceptions.UserDoesNotExistException;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.*;
 
@@ -33,6 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SpringBootTest
+@AutoConfigureTestDatabase
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class FilmorateApplicationTests {
 
     @Autowired
@@ -40,18 +43,14 @@ public class FilmorateApplicationTests {
     @Autowired
     private FilmController filmController;
     @Autowired
-    private InMemoryFilmStorage inMemoryFilmStorage;
+    private FilmStorage filmStorage;
     @Autowired
-    private InMemoryUserStorage inMemoryUserStorage;
-    private Map<Integer, Film> films;
-    private Map<Long, User> users;
+    private UserStorage userStorage;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
 
-        users = inMemoryUserStorage.getUsersData();
-        films = inMemoryFilmStorage.getFilmsData();
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
@@ -62,7 +61,6 @@ public class FilmorateApplicationTests {
     //************************* Тестирование работы сервиса добавления в друзья *************************
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldGetUserByValidId() { //  получаем информацию о пользователе по существующему id
 
         // создаем пользователя
@@ -73,6 +71,7 @@ public class FilmorateApplicationTests {
                 .login("alex")
                 .name("Alexandr Ivanov")
                 .birthday(LocalDate.of(2000, 10, 10))
+                .friends(new HashSet<>())
                 .build();
 
         final Long userId = user.getId();
@@ -101,23 +100,21 @@ public class FilmorateApplicationTests {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailGetUserByInvalidId() { //  получаем информацию о пользователе по несуществующему id
 
         final Long nonExistentUserId = -1L;
         // проверяем выброшенное исключение при попытке получить информацию о пользователе с несуществующим id
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> userController.getUserById(nonExistentUserId),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id -1 не найден", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
     }
 
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldAddFriendWithValidInfo() { //  добавление в друзья пользователя с существующими id
 
         // создаем пользователя и двух друзей
@@ -161,48 +158,30 @@ public class FilmorateApplicationTests {
 
         // получаем списки друзей пользователя и друга, информацию о первом в списке пользователе
 
-        List<User> friendsOfUser = users.get(userId).getFriends().stream()
-                .map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
+        List<User> friendsOfUser = userStorage.getUserById(userId).getFriends().stream()
+                .map(userStorage::getUserById).collect(Collectors.toList());
 
-        List<User> friendsOfFriend = users.get(friendId).getFriends().stream()
-                .map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
 
         User friendFromList = friendsOfUser.get(0);
-        User userFromList = friendsOfFriend.get(0);
 
         // проверяем корректность сохраненной в списках друзей информации
 
-        assertEquals(users.get(userId).getFriends().size(), 2,
+        assertEquals(userStorage.getUserById(userId).getFriends().size(), 2,
                 "Пользователи с валидными данными не добавлены в друзья");
-        assertEquals(users.get(friendId).getFriends().size(), 1,
-                "Пользователи с валидными данными не добавлены в друзья друг к другу");
-        assertEquals(users.get(friend2Id).getFriends().size(), 1,
-                "Пользователи с валидными данными не добавлены в друзья друг к другу");
         assertEquals(friend.getId(), friendFromList.getId(),
                 "Пользователь не попал в список друзей после добавления, не совпадает id");
-        assertEquals(user.getId(), userFromList.getId(),
-                "Друг не попал в список друзей после добавления, не совпадает id");
         assertEquals(friend.getEmail(), friendFromList.getEmail(),
                 "Пользователь не попал в список друзей после добавления, не совпадает email");
-        assertEquals(user.getEmail(), userFromList.getEmail(),
-                "Друг не попал в список друзей после добавления, не совпадает email");
         assertEquals(friend.getLogin(), friendFromList.getLogin(),
                 "Пользователь не попал в список друзей после добавления, не совпадает логин");
-        assertEquals(user.getLogin(), userFromList.getLogin(),
-                "Друг не попал в список друзей после добавления, не совпадает логин");
         assertEquals(friend.getName(), friendFromList.getName(),
                 "Пользователь не попал в список друзей после добавления, не совпадает имя");
-        assertEquals(user.getName(), userFromList.getName(),
-                "Друг не попал в список друзей после добавления, не совпадает имя");
         assertEquals(friend.getBirthday(), friendFromList.getBirthday(),
                 "Пользователь не попал в список друзей после добавления, не совпадает дата рождения");
-        assertEquals(user.getBirthday(), userFromList.getBirthday(),
-                "Друг не попал в список друзей после добавления, не совпадает дата рождения");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailAddFriendDoubleWithValidInfo() { //
         // добавление в друзья пользователя с существующими id дважды
         // создаем пользователей
@@ -238,16 +217,13 @@ public class FilmorateApplicationTests {
 
         // проверяем наличие одного пользователя в списке друзей и отсутствие дубля
 
-        assertEquals(users.get(userId).getFriends().size(), 1,
-                "Пользователь с валидными данными добавлен в друзья дважды");
-        assertEquals(users.get(friendId).getFriends().size(), 1,
+        assertEquals(userStorage.getUserById(userId).getFriends().size(), 1,
                 "Пользователь с валидными данными добавлен в друзья дважды");
 
     }
 
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailAddFriendWithFriendNonExistentId() {
         //  добавление в друзья пользователя с несуществующим id
 
@@ -269,16 +245,15 @@ public class FilmorateApplicationTests {
 
         // проверяем выброшенное исключение при попытке добавить друга с несуществующим id
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> userController.addFriend(userId, friendNonExistentId),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id: 9999 не найден.", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: 9999 не найден", e.getMessage());
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailAddFriendByUserWithNonExistentId() {
         //  добавление в друзья пользователю с несуществующим id
 
@@ -300,17 +275,16 @@ public class FilmorateApplicationTests {
 
         // проверяем выброшенное исключение при попытке создать друга пользователю с несуществующим id
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> userController.addFriend(userNonExistentId, friendId),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id: 9999 не найден.", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: 9999 не найден", e.getMessage());
 
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldDeleteFriendWithValidId() { //  удаление из друзей пользователя с валидными данными
 
         // создаем пользователей
@@ -341,40 +315,32 @@ public class FilmorateApplicationTests {
         //добавляем друга
         userController.addFriend(userId, friendId);
 
-        List<User> friendsOfUser = users.get(userId).getFriends().stream()
-                .map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
-
-        List<User> friendsOfFriend = users.get(friendId).getFriends().stream()
-                .map(inMemoryUserStorage::getUserById).collect(Collectors.toList());
+        List<User> friendsOfUser = userStorage.getUserById(userId).getFriends().stream()
+                .map(userStorage::getUserById).collect(Collectors.toList());
 
         User friendFromList = friendsOfUser.get(0);
-        User userFromList = friendsOfFriend.get(0);
+
 
         // проверяем наличие пользователя в списке друзей
 
-        assertEquals(users.get(userId).getFriends().size(), 1,
+        assertEquals(userStorage.getUserById(userId).getFriends().size(), 1,
                 "Пользователь с валидными данными не добавлен в друзья");
-        assertEquals(users.get(friendId).getFriends().size(), 1,
-                "Пользователь с валидными данными не добавлен в друзья взаимно");
         assertEquals(friend.getId(), friendFromList.getId(),
                 "Пользователь не попал в список друзей после добавления, не совпадает id");
-        assertEquals(user.getId(), userFromList.getId(),
-                "Друг не попал в список друзей после добавления, не совпадает id");
+
 
         // удаляем друга
 
         userController.deleteFriend(userId, friendId);
-        assertEquals(users.get(userId).getFriends().size(), 0,
+        assertEquals(userStorage.getUserById(userId).getFriends().size(), 0,
                 "Пользователь с валидными данными не удален из друзей");
-        assertEquals(users.get(friendId).getFriends().size(), 0,
-                "Пользователь с валидными данными не удален из друзей");
-        assertTrue(users.get(userId).getFriends().isEmpty(), "Cписок друзей не пуст после удаления");
-        assertTrue(users.get(friendId).getFriends().isEmpty(), "Cписок друзей не пуст после удаления");
+        assertTrue(userStorage.getUserById(userId).getFriends().isEmpty(),
+                "Cписок друзей не пуст после удаления");
+
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailDeleteFriendWithNonExistentId() { //  удаление из друзей пользователя с существующими id
 
         // создаем пользователей
@@ -409,23 +375,20 @@ public class FilmorateApplicationTests {
 
         // удаляем друга с несуществующим id, проверяем выброшенное исключение
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> userController.deleteFriend(userId, nonExistentFriendId),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id: -1 не найден.", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
         // проверяем отсутствие изменений в списке друзей
 
-        assertEquals(users.get(userId).getFriends().size(), 1,
-                "Изменился размер списка друзей после некорректного удаления");
-        assertEquals(users.get(friendId).getFriends().size(), 1,
+        assertEquals(userStorage.getUserById(userId).getFriends().size(), 1,
                 "Изменился размер списка друзей после некорректного удаления");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailDeleteFriendByUserWithNonExistentId() {
         //  удаление из друзей пользователя с существующими id
 
@@ -461,23 +424,15 @@ public class FilmorateApplicationTests {
 
         // удаляем друга с несуществующим айди, проверяем выброшенное исключение
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> userController.deleteFriend(nonExistentUserId, friendId),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id: -1 не найден.", e.getMessage());
-
-        // проверяем отсутствие изменений в списке друзей
-
-        assertEquals(users.get(userId).getFriends().size(), 1,
-                "Изменился размер списка друзей после некорректного удаления");
-        assertEquals(users.get(friendId).getFriends().size(), 1,
-                "Изменился размер списка друзей после некорректного удаления");
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldGetNotEmptyFriendList() { // получение непустого списка друзей у существующего пользователя
 
         // создаем пользователя и двух друзей
@@ -540,29 +495,27 @@ public class FilmorateApplicationTests {
                 "Неверная информация о втором в списке друге, не совпадает имя");
         assertEquals(friend2.getBirthday(), friendFromList.getBirthday(),
                 "Неверная информация о втором в списке друге, не совпадает дата рождения");
-        assertEquals(userController.listUserFriends(friend2Id).size(), 1,
+        assertEquals(userController.listUserFriends(friend2Id).size(), 0,
                 "Неверная информация о втором в списке друге, неверный размер списка друзей");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailGetFriendListByInvalidId() { // получение списка друзей у несуществующего пользователя
 
         // проверяем выброшенное исключение при попытке создать друга пользователю с несуществующим id
 
         final Long userNonExistentId = -1L;
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> userController.listUserFriends(userNonExistentId),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id: -1 не найден.", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldGetEmptyFriendList() { // получение пустого списка друзей у существующего пользователя
 
         // создаем пользователя
@@ -592,7 +545,6 @@ public class FilmorateApplicationTests {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldGetNotEmptyListMutualFriendsWithValidInfo() { //  получение непустого списка общих друзей
 
         // создаем пользователя и трех его друзей
@@ -666,13 +618,12 @@ public class FilmorateApplicationTests {
                 "Неверный размер списка общих друзей у пользователя");
         assertEquals(mutualFriends2.size(), 2,
                 "Неверный размер списка общих друзей у друга пользователя");
-        assertEquals(mutualFriends3.size(), 1,
+        assertEquals(mutualFriends3.size(), 0,
                 "Неверный размер списка общих друзей у друзей пользователя");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldGetEmptyMutualFriendWithValidInfo() { //  получение пустого списка общих друзей
 
         // создаем двух пользователей
@@ -711,7 +662,6 @@ public class FilmorateApplicationTests {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailGetMutualFriendListByInvalidId() {
         // получение списка общих друзей у несуществующего пользователя
 
@@ -728,16 +678,15 @@ public class FilmorateApplicationTests {
         final Long userNonExistentId = -1L;
         final Long user2Id = user2.getId();
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> userController.listCommonFriends(userNonExistentId, user2Id),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id: -1 не найден.", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailGetMutualFriendListByInvalidIdOfOtherUser() {
         // получение списка общих друзей c несуществующим пользователем
 
@@ -756,11 +705,11 @@ public class FilmorateApplicationTests {
         final Long userNonExistentId = -1L;
         final Long userId = user.getId();
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> userController.listCommonFriends(userId, userNonExistentId),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id: -1 не найден.", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
     }
 
@@ -768,7 +717,6 @@ public class FilmorateApplicationTests {
 
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldGetFilmByValidId() { //  получаем информацию о фильме по существующему id
 
         // создаем фильм
@@ -780,6 +728,7 @@ public class FilmorateApplicationTests {
                 .releaseDate(LocalDate.of(2000, 10, 10))
                 .duration(90)
                 .likes(100L)
+                .mpa(new Mpa(4, null))
                 .build();
 
         final Integer filmId = film.getId();
@@ -804,24 +753,21 @@ public class FilmorateApplicationTests {
                 "Получена неверная информация о фильме, не совпадает дата выхода фильма");
         assertEquals(film.getDuration(), filmFromStorage.getDuration(),
                 "Получена неверная информация о фильме, не совпадает продолжительность фильма");
-        assertEquals(film.getLikes(), filmFromStorage.getLikes(),
-                "Получена неверная информация о фильме, не совпадает количество лайков");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailGetFilmByInvalidId() { //  получаем информацию о фильме по несуществующему id
 
         // проверяем выброшенное исключение при попытке получить информацию о фильме с несуществующим id
 
         final Integer nonExistentFilmId = -1;
 
-        FilmDoesNotExistException e = assertThrows(
-                FilmDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> filmController.getFilmById(nonExistentFilmId),
-                "Не выброшено исключение FilmDoesNotExistException.");
-        assertEquals("Фильм с id -1 не найден", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Фильм с id: -1 не найден", e.getMessage());
 
     }
 
@@ -854,6 +800,7 @@ public class FilmorateApplicationTests {
                 .releaseDate(LocalDate.of(2000, 10, 10))
                 .duration(90)
                 .likes(0L)
+                .mpa(new Mpa(3, null))
                 .build();
 
         final Long userId = user.getId();
@@ -871,13 +818,12 @@ public class FilmorateApplicationTests {
 
         // проверяем количество лайков
 
-        assertEquals(films.get(filmId).getLikes(), 2,
+        assertEquals(filmStorage.getFilmById(filmId).getLikes(), 2,
                 "Количество лайков не увеличилось");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailAddLikeWithSameUserId() { //  пользователь повторно ставит лайк фильму
 
         // создаем пользователя и фильм
@@ -896,7 +842,7 @@ public class FilmorateApplicationTests {
                 .description("Good comedy")
                 .releaseDate(LocalDate.of(2000, 10, 10))
                 .duration(90)
-                .likes(0L)
+                .mpa(new Mpa(1, null))
                 .build();
 
         final Long userId = user.getId();
@@ -920,7 +866,6 @@ public class FilmorateApplicationTests {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailAddLikeByUserWithInvalidId() { // ставим лайк фильму от пользователя с несуществующим id
 
         // создаем фильм
@@ -931,7 +876,7 @@ public class FilmorateApplicationTests {
                 .description("Good comedy")
                 .releaseDate(LocalDate.of(2000, 10, 10))
                 .duration(90)
-                .likes(100L)
+                .mpa(new Mpa(1, null))
                 .build();
 
 
@@ -942,16 +887,15 @@ public class FilmorateApplicationTests {
 
         // проверяем выброшенное исключение при попытке поставить лайк от пользователя с несуществующим id
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> filmController.addLike(filmId, nonExistentUserId),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id: -1 не найден.", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailAddLikeFilmWithInvalidId() { // ставим лайк фильму с несуществующим id
 
         // создаем пользователя
@@ -972,16 +916,15 @@ public class FilmorateApplicationTests {
 
         // проверяем выброшенное исключение при попытке поставить лайк фильму с несуществующим id
 
-        FilmDoesNotExistException e = assertThrows(
-                FilmDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> filmController.addLike(nonExistentFilmId, userId),
                 "Не выброшено исключение FilmDoesNotExistException.");
-        assertEquals("Фильм c id: -1 не найден.", e.getMessage());
+        assertEquals("Фильм с id: -1 не найден", e.getMessage());
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldDeleteLikeWithValidId() { //существующие пользователи удаляют лайки у фильма с существующим id
         // создаем двух пользователей и фильм
 
@@ -1008,7 +951,7 @@ public class FilmorateApplicationTests {
                 .description("Good comedy")
                 .releaseDate(LocalDate.of(2000, 10, 10))
                 .duration(90)
-                .likes(0L)
+                .mpa(new Mpa(1, null))
                 .build();
 
         final Long userId = user.getId();
@@ -1026,7 +969,7 @@ public class FilmorateApplicationTests {
 
         // проверяем количество лайков
 
-        assertEquals(films.get(filmId).getLikes(), 2,
+        assertEquals(filmStorage.getFilmById(filmId).getLikes(), 2,
                 "Количество лайков не увеличилось");
 
         // удаляем лайк
@@ -1035,7 +978,7 @@ public class FilmorateApplicationTests {
 
         // проверяем количество лайков
 
-        assertEquals(films.get(filmId).getLikes(), 1,
+        assertEquals(filmStorage.getFilmById(filmId).getLikes(), 1,
                 "Количество лайков не уменьшилось");
 
         // удаляем последний лайк
@@ -1044,13 +987,12 @@ public class FilmorateApplicationTests {
 
         // проверяем количество лайков
 
-        assertEquals(films.get(filmId).getLikes(), 0,
+        assertEquals(filmStorage.getFilmById(filmId).getLikes(), 0,
                 "Удалены не все лайки");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldFailDeleteLikeByUserWithInvalidId() { // удаляем лайк от пользователя с несуществующим id
 
         // создаем фильм
@@ -1062,6 +1004,7 @@ public class FilmorateApplicationTests {
                 .releaseDate(LocalDate.of(2000, 10, 10))
                 .duration(90)
                 .likes(0L)
+                .mpa(new Mpa(2, null))
                 .build();
 
 
@@ -1072,11 +1015,11 @@ public class FilmorateApplicationTests {
 
         // проверяем выброшенное исключение при попытке удалить лайк от пользователя с несуществующим id
 
-        UserDoesNotExistException e = assertThrows(
-                UserDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> filmController.addLike(filmId, nonExistentUserId),
-                "Не выброшено исключение UserDoesNotExistException.");
-        assertEquals("Пользователь с id: -1 не найден.", e.getMessage());
+                "Не выброшено исключение ObjectNotFoundException.");
+        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
     }
 
@@ -1102,17 +1045,15 @@ public class FilmorateApplicationTests {
 
         // проверяем выброшенное исключение при попытке удалить лайк у фильма с несуществующим id
 
-        FilmDoesNotExistException e = assertThrows(
-                FilmDoesNotExistException.class,
+        ObjectNotFoundException e = assertThrows(
+                ObjectNotFoundException.class,
                 () -> filmController.addLike(nonExistentFilmId, userId),
                 "Не выброшено исключение FilmDoesNotExistException.");
-        assertEquals("Фильм c id: -1 не найден.", e.getMessage());
+        assertEquals("Фильм с id: -1 не найден", e.getMessage());
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    // набор пользователей  и фильмовс валидными данными
     public void shouldGetMostPopularFilms() {
         // получение списка наиболее популярных фильмов со значением параметра count по умолчанию
 
@@ -1140,6 +1081,7 @@ public class FilmorateApplicationTests {
                     .releaseDate(LocalDate.of(2000, 10, 10))
                     .duration(90)
                     .likes(0L)
+                    .mpa(new Mpa(1, null))
                     .build();
             filmController.addFilm(film);
         }
@@ -1187,8 +1129,6 @@ public class FilmorateApplicationTests {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    // набор пользователей  и фильмовс валидными данными
     public void shouldGetMostPopularFilmsCountParam10() { // получение списка 10 наиболее популярных фильмов
 
         // создаем 7 пользователей
@@ -1214,7 +1154,7 @@ public class FilmorateApplicationTests {
                     .description("Good comedy")
                     .releaseDate(LocalDate.of(2000, 10, 10))
                     .duration(90)
-                    .likes(0L)
+                    .mpa(new Mpa(4, null))
                     .build();
             filmController.addFilm(film);
         }
@@ -1259,8 +1199,6 @@ public class FilmorateApplicationTests {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    // набор пользователей  и фильмовс валидными данными
     public void shouldGetMostPopularFilmsWithNullLikes() { // получение списка 10 наиболее популярных фильмов
 
         // создаем 7 пользователей
@@ -1286,7 +1224,7 @@ public class FilmorateApplicationTests {
                     .description("Good comedy")
                     .releaseDate(LocalDate.of(2000, 10, 10))
                     .duration(90)
-                    .likes(0L)
+                    .mpa(new Mpa(2, null))
                     .build();
             filmController.addFilm(film);
         }
@@ -1324,15 +1262,13 @@ public class FilmorateApplicationTests {
                 "Неверный id у самого популярного фильма");
         assertEquals(mostPopularFilms.get(0).getLikes(), 8,
                 "Неверное количество лайков у самого популярного фильма");
-        assertEquals(mostPopularFilms.get(9).getLikes(), 0,
-                "Неверное количество лайков у самого непопулярного фильма");
+        assertEquals(mostPopularFilms.get(9).getId(), 10,
+                "Неверный id у самого непопулярного фильма");
 
     }
 
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    // набор пользователей  и фильмовс валидными данными
     public void shouldGetMostPopularFilmsCountParam3() { // получение списка 3 наиболее популярных фильмов
 
         // создаем 7 пользователей
@@ -1359,6 +1295,7 @@ public class FilmorateApplicationTests {
                     .releaseDate(LocalDate.of(2000, 10, 10))
                     .duration(90)
                     .likes(0L)
+                    .mpa(new Mpa(1, null))
                     .build();
             filmController.addFilm(film);
         }
@@ -1406,7 +1343,6 @@ public class FilmorateApplicationTests {
     //************************* Тестирование работы с информацией о пользователях *************************
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldAddUserWithValidInfo() {
 
         //добавляем пользователя с валидными данными
@@ -1418,12 +1354,11 @@ public class FilmorateApplicationTests {
 
         // проверяем наличие пользователя в сохраненных данных
 
-        assertEquals(users.get(id), user, "Валидные данные пользователя не сохранились");
+        assertEquals(userStorage.getUserById(id), user, "Валидные данные пользователя не сохранились");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldAddUserWithEmptyName() {
 
         //добавляем пользователя с пустым именем
@@ -1435,7 +1370,7 @@ public class FilmorateApplicationTests {
 
         // проверяем наличие пользователя в сохраненных данных и обновление имени значением логина
 
-        assertEquals(users.get(id).getName(), users.get(id).getLogin(),
+        assertEquals(userStorage.getUserById(id).getName(), userStorage.getUserById(id).getLogin(),
                 "Имя не обновлено значением логина");
 
     }
@@ -1454,7 +1389,6 @@ public class FilmorateApplicationTests {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldPutUserWithValidInfo() {
 
         //сохраняем пользователя
@@ -1472,12 +1406,11 @@ public class FilmorateApplicationTests {
 
         //проверяем корректность обновления данных
 
-        assertEquals(users.get(id), userUpdated, "Данные пользователя не обновились");
+        assertEquals(userStorage.getUserById(id), userUpdated, "Данные пользователя не обновились");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldPutUserWithEmptyName() {
 
         //сохраняем пользователя с пустым именем
@@ -1495,7 +1428,7 @@ public class FilmorateApplicationTests {
 
         //проверяем корректность обновления данных и присвоения логина в качестве имени
 
-        assertEquals(users.get(id).getName(), users.get(id).getLogin(),
+        assertEquals(userStorage.getUserById(id).getName(), userStorage.getUserById(id).getLogin(),
                 "Имя пользователя не обновлено значением логина");
 
     }
@@ -1509,14 +1442,13 @@ public class FilmorateApplicationTests {
                 LocalDate.of(1990, 10, 10), new HashSet<>());
 
         assertThrows(
-                UserDoesNotExistException.class,
+                ObjectNotFoundException.class,
                 () -> userController.updateUser(user),
                 "Такого пользователя нет в списке.");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldGetUsersList() {
 
         // добавляем пользователей в список
@@ -1538,19 +1470,21 @@ public class FilmorateApplicationTests {
 
     //************************* Тестирование работы с информацией о Фильмах *************************
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldAddFilmWithValidInfo() {
+
+        Mpa mpa = new Mpa(1, "G");
 
         //добавляем фильм с валидными данными
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
         final Integer id = film.getId();
         filmController.addFilm(film);
 
         // проверяем наличие пользователя в сохраненных данных
 
-        assertEquals(films.get(id), film, "Валидные данные фильма не сохранились");
+        assertEquals(filmStorage.getFilmById(id), film, "Валидные данные фильма не сохранились");
 
     }
 
@@ -1569,55 +1503,63 @@ public class FilmorateApplicationTests {
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldPutFilmWithValidInfo() {
+
+        Mpa mpa = new Mpa(1, "G");
 
         //сохраняем данные о фильме
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
         final Integer id = film.getId();
         filmController.addFilm(film);
 
         //обновляем данные фильма
 
         Film filmUpdated = new Film(1, "All like Tests", " Real comedy",
-                LocalDate.of(2023, 7, 19), 12000, 0L);
+                LocalDate.of(2023, 7, 19), 12000, 0L,
+                mpa, new HashSet<>());
         filmController.updateFilm(filmUpdated);
 
         //проверяем корректность обновления данных
 
-        assertEquals(films.get(id), filmUpdated, "Данные фильма не обновились");
+        assertEquals(filmStorage.getFilmById(id), filmUpdated, "Данные фильма не обновились");
 
     }
 
     @Test
     public void shouldFailPutFilmWithInvalidLogin() {
 
+        Mpa mpa = new Mpa(1, "G");
+
         // обновляем данные фильма с несуществующим логином, проверяем выброшенное исключение
 
         Film film = new Film(10000, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
 
         assertThrows(
-                FilmDoesNotExistException.class,
+                ObjectNotFoundException.class,
                 () -> filmController.updateFilm(film),
                 "Такого фильма нет в списке.");
 
     }
 
     @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldGetFilmsList() {
 
         // добавляем фильмы в список
 
+        Mpa mpa = new Mpa(1, "G");
         Film film1 = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
         filmController.addFilm(film1);
 
         Film film2 = new Film(1, "All like Tests", " Real comedy",
-                LocalDate.of(2023, 7, 19), 12000, 0L);
+                LocalDate.of(2023, 7, 19), 12000, 0L,
+                mpa, new HashSet<>());
         filmController.addFilm(film2);
 
         //получаем фильмы из списка
@@ -1630,9 +1572,11 @@ public class FilmorateApplicationTests {
     //************************* Тесты на валидацию данных для фильмов *************************
     @Test
     public void shouldPassValidationFilmWithValidData() { //filmData is valid = should pass
+        Mpa mpa = new Mpa(1, "G");
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1643,8 +1587,11 @@ public class FilmorateApplicationTests {
     @Test
     public void shouldFailValidationFilmWithEmptyName() { // filmName is empty
 
+        Mpa mpa = new Mpa(1, "G");
+
         Film film = new Film(1, "", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty(),
@@ -1662,8 +1609,11 @@ public class FilmorateApplicationTests {
     @Test
     public void shouldFailValidationFilmWithBlankName() { // fillName is blank
 
+        Mpa mpa = new Mpa(1, "G");
+
         Film film = new Film(1, " ", "Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty(), "Пустое поле с названием фильма прошло валидацию");
@@ -1681,8 +1631,11 @@ public class FilmorateApplicationTests {
     @Test
     public void shouldFailValidationFilmWithNullName() { // filmName is null
 
+        Mpa mpa = new Mpa(1, "G");
+
         Film film = new Film(1, null, " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1703,12 +1656,15 @@ public class FilmorateApplicationTests {
     @Test
     public void shouldFailValidationFilmWithTooLongDescription() { // description is too long
 
+        Mpa mpa = new Mpa(1, "G");
+
         Film film = new Film(1, "All hate Cris",
                 " Good comedy, but it's too long description. it's too long description"
                         + "it's too long description. it's too long description. it's too long description. "
                         + "it's too long description. it's too long description. it's too long description. "
                         + "it's too long description. it's too long description.",
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1727,9 +1683,10 @@ public class FilmorateApplicationTests {
 
     @Test
     public void shouldFailValidationFilmWithNullDescription() { // description is null
-
+        Mpa mpa = new Mpa(1, "G");
         Film film = new Film(1, "All hate Cris", null,
-                LocalDate.of(2002, 2, 10), 40, 0L);
+                LocalDate.of(2002, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
 
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
@@ -1744,9 +1701,11 @@ public class FilmorateApplicationTests {
 
     @Test
     public void shouldFailValidationFilmWithInvalidReleaseDate() { //releaseDate is not valid
+        Mpa mpa = new Mpa(1, "G");
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(1700, 2, 10), 40, 0L);
+                LocalDate.of(1700, 2, 10), 40, 0L,
+                mpa, new HashSet<>());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1767,8 +1726,11 @@ public class FilmorateApplicationTests {
     @Test
     public void shouldFailValidationFilmWithNullReleaseDate() { //releaseDate is null
 
+        Mpa mpa = new Mpa(1, "G");
+
         Film film = new Film(1, "All hate Cris", "Good comedy",
-                null, 40, 0L);
+                null, 40, 0L,
+                mpa, new HashSet<>());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1789,8 +1751,11 @@ public class FilmorateApplicationTests {
     @Test
     public void shouldFailValidationFilmWithNegativeDurationValue() { // duration is negative
 
+        Mpa mpa = new Mpa(1, "G");
+
         Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), (-900), 0L);
+                LocalDate.of(2002, 2, 10), (-900), 0L,
+                mpa, new HashSet<>());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1810,9 +1775,11 @@ public class FilmorateApplicationTests {
 
     @Test
     public void shouldFailValidationFilmWithNotPositiveDuration() { // duration is not positive
+        Mpa mpa = new Mpa(1, "G");
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 0, 0L);
+                LocalDate.of(2002, 2, 10), 0, 0L,
+                mpa, new HashSet<>());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1834,8 +1801,11 @@ public class FilmorateApplicationTests {
     @Test
     public void shouldFailValidationFilmWithNullDuration() { // duration is null
 
+        Mpa mpa = new Mpa(1, "G");
+
         Film film = new Film(1, "All hate Cris", null,
-                LocalDate.of(2002, 2, 10), null, 0L);
+                LocalDate.of(2002, 2, 10), null, 0L,
+                mpa, new HashSet<>());
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -2099,16 +2069,20 @@ public class FilmorateApplicationTests {
     static class FilmsArgumentsProvider implements ArgumentsProvider {
         @Override
         public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+            Mpa mpa = new Mpa(1, "G");
             return Stream.of(
 
                     // пустое название фильма
 
                     Arguments.of(new Film(1, "", " Good comedy",
-                            LocalDate.of(2002, 2, 10), 40, 0L)),
+                            LocalDate.of(2002, 2, 10), 40, 0L,
+                            mpa, new HashSet<>())),
                     Arguments.of(new Film(1, " ", "Good comedy",
-                            LocalDate.of(2002, 2, 10), 40, 0L)),
+                            LocalDate.of(2002, 2, 10), 40, 0L,
+                            mpa, new HashSet<>())),
                     Arguments.of(new Film(1, null, " Good comedy",
-                            LocalDate.of(2002, 2, 10), 40, 0L)),
+                            LocalDate.of(2002, 2, 10), 40, 0L,
+                            mpa, new HashSet<>())),
 
                     // пустое или слишком длинное описание фильма
 
@@ -2118,23 +2092,29 @@ public class FilmorateApplicationTests {
                                     + " it's too long description. it's too long description. "
                                     + "it's too long description. it's too long description. "
                                     + "it's too long description. it's too long description.",
-                            LocalDate.of(2002, 2, 10), 40, 0L)),
+                            LocalDate.of(2002, 2, 10), 40, 0L,
+                            mpa, new HashSet<>())),
                     Arguments.of(new Film(1, "All hate Cris", null,
-                            LocalDate.of(2002, 2, 10), 40, 0L)),
+                            LocalDate.of(2002, 2, 10), 40, 0L,
+                            mpa, new HashSet<>())),
 
                     // пустая или невалидная дата выхода фильма
 
                     Arguments.of(new Film(1, "All hate Cris", " Good comedy",
-                            LocalDate.of(1700, 2, 10), 40, 0L)),
+                            LocalDate.of(1700, 2, 10), 40, 0L,
+                            mpa, new HashSet<>())),
                     Arguments.of(new Film(1, "All hate Cris", " Good comedy",
-                            null, 40, 0L)),
+                            null, 40, 0L,
+                            mpa, new HashSet<>())),
 
                     // негативное или нулевое значение продолжительности фильма
 
                     Arguments.of(new Film(1, "All hate Cris", " Good comedy",
-                            LocalDate.of(2002, 2, 10), 0, 0L)),
+                            LocalDate.of(2002, 2, 10), 0, 0L,
+                            mpa, new HashSet<>())),
                     Arguments.of(new Film(1, "All hate Cris", " Good comedy",
-                            LocalDate.of(2002, 2, 10), -900, 0L)));
+                            LocalDate.of(2002, 2, 10), -900, 0L,
+                            mpa, new HashSet<>())));
         }
     }
 

@@ -54,16 +54,16 @@ public class FilmController {
 
     // обработка PUT-запроса на добавление лайка фильму
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable Integer id, @PathVariable Long userId) {
+    public void addLike(@PathVariable Integer id, @PathVariable Long userId) {
 
-        return filmService.addLike(id, userId);
+        filmService.addLike(id, userId);
     }
 
     // обработка DELETE-запроса на удаление лайка фильму
     @DeleteMapping("/{id}/like/{userId}")
-    public Film deleteLike(@PathVariable Integer id, @PathVariable Long userId) {
+    public void deleteLike(@PathVariable Integer id, @PathVariable Long userId) {
 
-        return filmService.deleteLike(id, userId);
+        filmService.deleteLike(id, userId);
     }
 
     // обработка GET-запроса на получение списка наиболее популярных фильмов
@@ -72,6 +72,7 @@ public class FilmController {
 
         return filmService.listMostPopularFilms(count);
     }
+
 }
 
 
