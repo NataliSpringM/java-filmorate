@@ -6,7 +6,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
+
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,8 +35,8 @@ public class LikeDbStorage implements LikeStorage {
         } else {
 
             // ставим лайк фильму
-            String sqlQueryAddFriend = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
-            jdbcTemplate.update(sqlQueryAddFriend, filmId, userId);
+            String sqlQueryAddLike = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+            jdbcTemplate.update(sqlQueryAddLike, filmId, userId);
 
             log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
 
@@ -55,9 +58,9 @@ public class LikeDbStorage implements LikeStorage {
 
         } else {
             // удаляем лайк у фильма
-            String sqlQueryAddFriend = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+            String sqlQueryDeleteLike = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
 
-            jdbcTemplate.update(sqlQueryAddFriend, filmId, userId);
+            jdbcTemplate.update(sqlQueryDeleteLike, filmId, userId);
 
             log.info("Пользователь {} удалил лайк у фильма {}", userId, filmId);
 
@@ -80,6 +83,6 @@ public class LikeDbStorage implements LikeStorage {
         return likes;
 
     }
-
-
 }
+
+
