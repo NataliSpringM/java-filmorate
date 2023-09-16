@@ -16,6 +16,6 @@ public interface ReviewStorage {
 
     Review getReviewById(Integer id); // получение отзыва по идентификатору
 
-    void checkReviewId(Integer ReviewId); // проверка существования id отзыва
+    void checkReviewId(Integer reviewId); // проверка существования id отзыва
 
 }
