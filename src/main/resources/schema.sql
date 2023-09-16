@@ -1,11 +1,3 @@
-drop table rating_mpa cascade;
-drop table users cascade;
-drop table films cascade;
-drop table film_genres;
-drop table genres;
-drop table friendship;
-drop table reviews cascade;
-drop table reviews_likes;
 
 --создание таблицы users
 
