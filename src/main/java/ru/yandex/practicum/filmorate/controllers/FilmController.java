@@ -2,8 +2,12 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -73,7 +77,26 @@ public class FilmController {
         return filmService.listMostPopularFilms(count);
     }
 
+    // обработка DELETE-запроса на удаление фильма по id
+    @DeleteMapping (value = "/{id}")
+	public boolean delete(@PathVariable Integer id) {
+		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS_ID', id:{}", id);
+		boolean deleted = filmService.delete(id);
+		if (deleted) {
+			log.debug("Возвращены данные фильма id = {}.", id);
+			return deleted;
+		} else {
+			log.warn("Фильм id = {} в списке не найден.", id);
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+	}
+
+    // обработка DELETE-запроса на удаление всех фильмов
+    @DeleteMapping
+	public List<Film> deleteAll() {
+		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS'. "
+				+ "Список фильмов пуст.");
+		filmService.clearFilms();
+		return filmService.listFilms();
+	}
 }
-
-
-

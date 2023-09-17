@@ -86,5 +86,15 @@ public class FilmServiceImpl implements FilmService {
         return mostPopularFilms;
     }
 
+	@Override
+	public boolean delete(Integer id) {
+		return filmStorage.delete(id);
+	}
+
+	@Override
+	public void clearFilms() {
+		filmStorage.clearAll();
+	}
+
 
 }

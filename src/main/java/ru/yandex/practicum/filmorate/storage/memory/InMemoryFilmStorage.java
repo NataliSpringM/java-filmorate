@@ -118,5 +118,19 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .collect(Collectors.toList());
     }
 
+    @Override
+	public void clearAll() {
+		this.films.clear();
+	}
+
+	@Override
+	public boolean delete(Integer id) {
+		boolean isPresent = false;
+		if (films.containsKey(id)) {
+			isPresent = true;
+			films.remove(id);
+		}
+		return isPresent;
+	}
 
 }

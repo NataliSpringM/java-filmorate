@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.*;
 
 import java.util.List;
 
+
 // сервис для определения рейтинга фильмов
 public interface FilmService {
 
@@ -20,6 +21,10 @@ public interface FilmService {
     void deleteLike(Integer id, Long userId); // удаление лайка у фильма
 
     List<Film> listMostPopularFilms(Integer count); // получение списка наиболее популярных фильмов
+
+	boolean delete(Integer id); // удаление фильма
+
+	void clearFilms(); // удаление всех фильмов
 
 
 }
