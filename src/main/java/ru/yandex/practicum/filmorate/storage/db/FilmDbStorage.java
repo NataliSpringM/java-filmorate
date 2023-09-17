@@ -31,7 +31,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
 
-        // вставляем данные пользователя в базу данных и получаем сгенерированный id
+        // вставляем данные фильма в базу данных и получаем сгенерированный id
         SimpleJdbcInsert filmInsertion = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
@@ -53,7 +53,7 @@ public class FilmDbStorage implements FilmStorage {
     public void checkFilmId(Integer filmId) {
 
 
-        SqlRowSet sqlId = jdbcTemplate.queryForRowSet("select film_id from films where film_id = ?", filmId);
+        SqlRowSet sqlId = jdbcTemplate.queryForRowSet("SELECT film_id FROM films WHERE film_id = ?", filmId);
 
         if (!sqlId.next()) {
 
@@ -100,7 +100,7 @@ public class FilmDbStorage implements FilmStorage {
         checkFilmId(filmId);
 
         // получение информации из таблицы films
-        SqlRowSet sqlFilm = jdbcTemplate.queryForRowSet("select * from films where film_id = ?", filmId);
+        SqlRowSet sqlFilm = jdbcTemplate.queryForRowSet("SELECT * FROM films WHERE film_id = ?", filmId);
 
         // получение информацию о жанрах фильма из таблицы genres
         Set<FilmGenre> genres = getFilmGenres(filmId);
@@ -171,7 +171,7 @@ public class FilmDbStorage implements FilmStorage {
 
         String sqlQueryFilm = "UPDATE films SET "
                 + "film_name =  ?, description = ?, release_date = ?,  duration = ?, rating_mpa_id = ?"
-                + "where film_id = ?";
+                + "WHERE film_id = ?";
 
         jdbcTemplate.update(sqlQueryFilm,
                 film.getName(),
@@ -205,11 +205,11 @@ public class FilmDbStorage implements FilmStorage {
             oldGenresId.removeAll(newGenresId);
 
             // удаляем необходимые данные
-            String sqlQueryDel = "delete from film_genres where genre_id = ? and film_id = ?";
+            String sqlQueryDel = "DELETE FROM film_genres WHERE genre_id = ? AND film_id = ?";
             oldGenresId.forEach(genreId -> jdbcTemplate.update(sqlQueryDel, genreId, film.getId()));
 
             // дополняем данные
-            String sqlQueryMerge = "merge into film_genres (film_id, genre_id) values (?, ?)";
+            String sqlQueryMerge = "MERGE INTO film_genres (film_id, genre_id) VALUES (?, ?)";
             genres.stream().map(FilmGenre::getId)
                     .forEach(genreId -> jdbcTemplate.update(sqlQueryMerge, film.getId(), genreId));
 
@@ -252,7 +252,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // запрос к таблице films для получения id рейтинга
         SqlRowSet filmMpaRow = jdbcTemplate
-                .queryForRowSet("select rating_mpa_id from films where film_id = ?", filmId);
+                .queryForRowSet("SELECT rating_mpa_id FROM films WHERE film_id = ?", filmId);
         Integer ratingMpaId = null;
         if (filmMpaRow.next()) {
             ratingMpaId = filmMpaRow.getInt("rating_mpa_id");
@@ -260,7 +260,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // запрос к таблице rating_mpa для получения полной информации о рейтинге
         SqlRowSet mpaRow = jdbcTemplate
-                .queryForRowSet("SELECT rating_mpa_name from rating_mpa where rating_mpa_id = ? ",
+                .queryForRowSet("SELECT rating_mpa_name FROM rating_mpa WHERE rating_mpa_id = ? ",
                         ratingMpaId);
         Mpa mpa = null;
         if (mpaRow.next()) {
