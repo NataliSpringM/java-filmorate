@@ -54,7 +54,7 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getFilmById(id);
     }
 
-    // возвращение копии объекта фильм с увеличенным значением лайков из LikeStorage
+    // добавляем лайк фильму
     @Override
     public void addLike(Integer filmId, Long userId) {
 
@@ -64,7 +64,7 @@ public class FilmServiceImpl implements FilmService {
         likeStorage.addLike(filmId, userId);
     }
 
-    // возвращение копии объекта фильм с уменьшенным значением лайков из LikeStorage
+    // удаляем лайк у фильма
     @Override
     public void deleteLike(Integer filmId, Long userId) {
 

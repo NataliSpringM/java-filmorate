@@ -39,7 +39,7 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
     @Override
     public FilmGenre getGenreById(Integer genreId) {
 
-        SqlRowSet sqlGenre = jdbcTemplate.queryForRowSet("SELECT * FROM genres where genre_id = ?", genreId);
+        SqlRowSet sqlGenre = jdbcTemplate.queryForRowSet("SELECT * FROM genres WHERE genre_id = ?", genreId);
 
         if (sqlGenre.next()) {
 
