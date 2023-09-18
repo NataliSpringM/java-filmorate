@@ -20,9 +20,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.controllers.FilmController;
 import ru.yandex.practicum.filmorate.controllers.UserController;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -46,7 +48,12 @@ public class FilmorateApplicationTests {
     private FilmStorage filmStorage;
     @Autowired
     private UserStorage userStorage;
+    @Autowired
+    private DirectorStorage directorStorage;
+
     private Validator validator;
+
+    private Set<Director> directors;
 
     @BeforeEach
     void setUp() {
@@ -54,7 +61,16 @@ public class FilmorateApplicationTests {
 
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
+        directors = new HashSet<>();
+        Director first = new Director();
+        first.setId(1);
+        first.setName("Andrew Konchalovsky");
+        directors.add(first);
 
+        Director second = new Director();
+        second.setId(2);
+        second.setName("Nikita Mihalkov");
+        directors.add(second);
     }
 
 
@@ -688,7 +704,7 @@ public class FilmorateApplicationTests {
 
     @Test
     public void shouldFailGetMutualFriendListByInvalidIdOfOtherUser() {
-        // получение списка общих друзей c несуществующим пользователем
+        // получение списка общих друзей с несуществующим пользователем
 
         User user = User.builder()
                 .id(1L)
@@ -852,16 +868,14 @@ public class FilmorateApplicationTests {
         filmController.addFilm(film);
 
         // ставим лайк
-
+        filmController.addLike(filmId, userId);
+        // повторно ставим лайк
         filmController.addLike(filmId, userId);
 
-        // проверяем выброшенное исключение при попытке повторно поставить лайк
+        final Long likes = 1L;
 
-        RuntimeException e = assertThrows(
-                RuntimeException.class,
-                () -> filmController.addLike(filmId, userId),
-                "Не выброшено исключение при попытке повторно поставить лайк с одного id.");
-        assertEquals("Вы уже ставили лайк этому фильму", e.getMessage());
+        assertEquals(filmStorage.getFilmById(filmId).getLikes(), likes,
+                "Количество лайков увеличилось");
 
     }
 
@@ -1376,7 +1390,7 @@ public class FilmorateApplicationTests {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(UsersArgumentsProvider.class) // набор пользователей с навалидными данными
+    @ArgumentsSource(UsersArgumentsProvider.class) // набор пользователей с невалидными данными
     public void shouldNotAddUser(User user) {
 
         //проверка выброшенного исключения при попытке сохранить пользователя с невалидными данными
@@ -1436,7 +1450,7 @@ public class FilmorateApplicationTests {
     @Test
     public void shouldFailPutUserWithInvalidLogin() {
 
-        // обновляем данные пользователя  с несуществующим логином, проверяем выброшенное исключение
+        // обновляем данные пользователя с несуществующим логином, проверяем выброшенное исключение
 
         User user = new User(10000L, "Egor@yandex.ru", "Egor Egorov", "egor",
                 LocalDate.of(1990, 10, 10), new HashSet<>());
@@ -1478,19 +1492,19 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
-        final Integer id = film.getId();
-        filmController.addFilm(film);
+                mpa, new HashSet<>(),
+                new HashSet<>());
+        Film returnedFilm = filmController.addFilm(film);
 
         // проверяем наличие пользователя в сохраненных данных
 
-        assertEquals(filmStorage.getFilmById(id), film, "Валидные данные фильма не сохранились");
+        assertEquals(returnedFilm, film, "Валидные данные фильма не сохранились");
 
     }
 
 
     @ParameterizedTest
-    @ArgumentsSource(FilmsArgumentsProvider.class) // набор фильмов с навалидными данными
+    @ArgumentsSource(FilmsArgumentsProvider.class) // набор фильмов с невалидными данными
     public void shouldNotAddFilmWithInvalidData(Film film) {
 
         //проверка выброшенного исключения при попытке сохранить пользователя с невалидными данными
@@ -1511,7 +1525,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                null);
         final Integer id = film.getId();
         filmController.addFilm(film);
 
@@ -1519,7 +1534,8 @@ public class FilmorateApplicationTests {
 
         Film filmUpdated = new Film(1, "All like Tests", " Real comedy",
                 LocalDate.of(2023, 7, 19), 12000, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                new HashSet<>());
         filmController.updateFilm(filmUpdated);
 
         //проверяем корректность обновления данных
@@ -1537,7 +1553,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(10000, "All hate Cris", " Good comedy",
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
         assertThrows(
                 ObjectNotFoundException.class,
@@ -1554,12 +1571,14 @@ public class FilmorateApplicationTests {
         Mpa mpa = new Mpa(1, "G");
         Film film1 = new Film(1, "All hate Cris", " Good comedy",
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                null);
         filmController.addFilm(film1);
 
         Film film2 = new Film(1, "All like Tests", " Real comedy",
                 LocalDate.of(2023, 7, 19), 12000, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                null);
         filmController.addFilm(film2);
 
         //получаем фильмы из списка
@@ -1576,7 +1595,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1591,7 +1611,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, "", " Good comedy",
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty(),
@@ -1613,7 +1634,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, " ", "Good comedy",
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
         assertFalse(violations.isEmpty(), "Пустое поле с названием фильма прошло валидацию");
@@ -1635,7 +1657,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, null, " Good comedy",
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1664,7 +1687,8 @@ public class FilmorateApplicationTests {
                         + "it's too long description. it's too long description. it's too long description. "
                         + "it's too long description. it's too long description.",
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1686,7 +1710,8 @@ public class FilmorateApplicationTests {
         Mpa mpa = new Mpa(1, "G");
         Film film = new Film(1, "All hate Cris", null,
                 LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
@@ -1705,7 +1730,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
                 LocalDate.of(1700, 2, 10), 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1730,7 +1756,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, "All hate Cris", "Good comedy",
                 null, 40, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1755,7 +1782,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
                 LocalDate.of(2002, 2, 10), (-900), 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1779,7 +1807,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, "All hate Cris", " Good comedy",
                 LocalDate.of(2002, 2, 10), 0, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -1805,7 +1834,8 @@ public class FilmorateApplicationTests {
 
         Film film = new Film(1, "All hate Cris", null,
                 LocalDate.of(2002, 2, 10), null, 0L,
-                mpa, new HashSet<>());
+                mpa, new HashSet<>(),
+                directors);
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
@@ -2076,13 +2106,13 @@ public class FilmorateApplicationTests {
 
                     Arguments.of(new Film(1, "", " Good comedy",
                             LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>())),
+                            mpa, new HashSet<>(), null)),
                     Arguments.of(new Film(1, " ", "Good comedy",
                             LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>())),
+                            mpa, new HashSet<>(), null)),
                     Arguments.of(new Film(1, null, " Good comedy",
                             LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>())),
+                            mpa, new HashSet<>(), null)),
 
                     // пустое или слишком длинное описание фильма
 
@@ -2093,28 +2123,28 @@ public class FilmorateApplicationTests {
                                     + "it's too long description. it's too long description. "
                                     + "it's too long description. it's too long description.",
                             LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>())),
+                            mpa, new HashSet<>(), null), null),
                     Arguments.of(new Film(1, "All hate Cris", null,
                             LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>())),
+                            mpa, new HashSet<>(), null)),
 
                     // пустая или невалидная дата выхода фильма
 
                     Arguments.of(new Film(1, "All hate Cris", " Good comedy",
                             LocalDate.of(1700, 2, 10), 40, 0L,
-                            mpa, new HashSet<>())),
+                            mpa, new HashSet<>(), null)),
                     Arguments.of(new Film(1, "All hate Cris", " Good comedy",
                             null, 40, 0L,
-                            mpa, new HashSet<>())),
+                            mpa, new HashSet<>(), null)),
 
                     // негативное или нулевое значение продолжительности фильма
 
                     Arguments.of(new Film(1, "All hate Cris", " Good comedy",
                             LocalDate.of(2002, 2, 10), 0, 0L,
-                            mpa, new HashSet<>())),
+                            mpa, new HashSet<>(), null)),
                     Arguments.of(new Film(1, "All hate Cris", " Good comedy",
                             LocalDate.of(2002, 2, 10), -900, 0L,
-                            mpa, new HashSet<>())));
+                            mpa, new HashSet<>(), null)));
         }
     }
 

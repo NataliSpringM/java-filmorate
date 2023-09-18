@@ -20,10 +20,16 @@ public interface FilmStorage {
 
     List<Film> listMostPopularFilms(Integer count); // получение списка наиболее популярных фильмов
 
+    default List<Film> listFilmsOfDirector(Integer directorId) { // получение списка фильмов по режиссеру
+        return null;
+    }
+
     void checkFilmId(Integer filmId); // проверка существования id фильма
 
 	boolean delete(Integer id); // удаление фильма по id
 
 	void clearAll(); // удаление всех фильмов
+
+    List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId);
 
 }

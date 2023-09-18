@@ -10,6 +10,9 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Comparator.comparing;
 
 //реализация сервиса для определения рейтинга фильмов
 @Slf4j
@@ -96,5 +99,23 @@ public class FilmServiceImpl implements FilmService {
 		filmStorage.clearAll();
 	}
 
+    @Override
+    public List<Film> listSortedFilmsOfDirector(Integer directorId, String sortBy) {
+        List<Film> films = filmStorage.listFilmsOfDirector(directorId);
+        if (sortBy.equals("year")) {
+            return films.stream()
+                    .sorted(comparing(Film::getReleaseDate))
+                    .collect(Collectors.toList());
+        } else {
+            return films.stream()
+                    .sorted(comparing(Film::getLikes))
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
+        return filmStorage.getCommonFilmsBetweenUsers(userId, friendId);
+    }
 
 }

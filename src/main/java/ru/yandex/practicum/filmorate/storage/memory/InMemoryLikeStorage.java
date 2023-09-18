@@ -41,7 +41,6 @@ public class InMemoryLikeStorage implements LikeStorage {
             likes.put(filmId, filmLikesByUsers);
 
         } else {
-
             throw new RuntimeException("Вы уже ставили лайк этому фильму");
         }
 

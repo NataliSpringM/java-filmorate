@@ -4,7 +4,6 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 
-import javax.validation.Valid;
 
 // сервис для добавления, удаления, получения списков друзей пользователя
 
@@ -27,7 +26,7 @@ public interface UserService {
 
     Boolean isFriendShipConfirmed(Long userId, Long friendId); // подтверждение взаимности дружбы пользователей
 
-	boolean delete(Integer id); // Удаление id 
+	boolean delete(Integer id); // Удаление id
 
 	void clearAll();
 
