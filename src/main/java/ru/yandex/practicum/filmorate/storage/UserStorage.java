@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -21,4 +22,7 @@ public interface UserStorage {
     void checkUserId(Long userId); // проверка существования id пользователя
 
 
+    boolean checkIsObjectInStorage(Long userId);
+
+    List<Film> getRecommendation(Long userId);
 }

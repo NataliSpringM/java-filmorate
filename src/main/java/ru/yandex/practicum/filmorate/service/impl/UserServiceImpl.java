@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
@@ -57,9 +60,7 @@ public class UserServiceImpl implements UserService {
         userStorage.checkUserId(friendId);
 
         friendshipStorage.addFriend(userId, friendId);
-
     }
-
 
     // удаление из друзей
     @Override
@@ -70,7 +71,6 @@ public class UserServiceImpl implements UserService {
         userStorage.checkUserId(friendId);
 
         friendshipStorage.deleteFriend(userId, friendId);
-
     }
 
     // получение списка друзей пользователя
@@ -81,7 +81,6 @@ public class UserServiceImpl implements UserService {
         Set<Long> friendsId = friendshipStorage.listUserFriends(userId);
 
         return convertIdSetToUserList(friendsId);
-
     }
 
     // получение списка общих друзей пользователей
@@ -94,7 +93,6 @@ public class UserServiceImpl implements UserService {
         Set<Long> commonFriendsId = friendshipStorage.listCommonFriends(userId, otherId);
 
         return convertIdSetToUserList(commonFriendsId);
-
     }
 
     // получение информации о взаимности дружбы пользователей
@@ -110,9 +108,20 @@ public class UserServiceImpl implements UserService {
         return set.stream()
                 .map(userStorage::getUserById)
                 .collect(Collectors.toList());
+    }
 
+    public List<Film> getRecommendation(Long userId) {
+        try {
+            if (!userStorage.checkIsObjectInStorage(userId)) {
+                String message = "Пользователь user_id=" + userId + " отсутствует в базе данных.";
+                log.error(message);
+                throw new ObjectNotFoundException(message);
+            }
+            List<Film> recommendations = userStorage.getRecommendation(userId);
+            log.info("Получен список рекоммендаций для пользователя user_id=" + userId + ".");
+            return recommendations;
+        } catch (IncorrectResultSizeDataAccessException e) {
+            return Collections.emptyList();
+        }
     }
 }
-
-
-
