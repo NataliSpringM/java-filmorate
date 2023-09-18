@@ -84,7 +84,7 @@ public class UserController {
 
         return userService.listCommonFriends(id, otherId);
     }
-    
+
     //обработка GET-запроса на получение ленты событий для пользователя
     @GetMapping("{id}/feed")
     public List<Event> listUserEvents(@RequestBody @PathVariable Long id) {

@@ -10,9 +10,9 @@ import ru.yandex.practicum.filmorate.model.Event;
 public interface EventStorage {
 	List<Event> listEvents(Long id);
 
-	Event addEvent(Long userId, 
-			Long entityId, 
-			String eventType, 
+	Event addEvent(Long userId,
+			Long entityId,
+			String eventType,
 			String operationType);
 
 	Event getEvent(Long id);

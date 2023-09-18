@@ -38,8 +38,9 @@ public class ReviewController {
     @PutMapping()
     public Review updateReview(@Valid @RequestBody Review review) {
 
-    	eventService.addEvent(review.getUserId(), Long.valueOf(review.getReviewId()), "REVIEW", "UPDATE");
-        return reviewService.updateReview(review);
+    	Review newReview = reviewService.updateReview(review);
+    	eventService.addEvent(newReview.getUserId(), Long.valueOf(newReview.getReviewId()), "REVIEW", "UPDATE");
+        return newReview;
     }
 
     // обработка GET-запроса на получение отзыва по идентификатору

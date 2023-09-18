@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 

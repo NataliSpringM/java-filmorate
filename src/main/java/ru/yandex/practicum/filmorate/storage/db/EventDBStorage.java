@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -40,7 +39,7 @@ public class EventDBStorage implements EventStorage {
 	@Override
 	public Event addEvent(Long userId, Long entityId, String eventType, String operationType) {
 		// вставляем данные события в базу данных и получаем сгенерированный id
-		
+
 		SimpleJdbcInsert eventInsertion = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("events")
                 .usingGeneratedKeyColumns("event_id");
@@ -62,8 +61,8 @@ public class EventDBStorage implements EventStorage {
 
         return newEvent;
 	}
-	
-	@Override 
+
+	@Override
 	public Event getEvent(Long id) {
 		// выполняем запрос к базе данных
         SqlRowSet rs = jdbcTemplate.queryForRowSet("SELECT * FROM events WHERE event_id = ?", id);
