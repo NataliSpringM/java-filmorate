@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.*;
 
@@ -31,6 +32,10 @@ public class FilmorateDbApplicationTest {
     private final LikeStorage likeStorage;
     private final RatingMpaStorage mpaStorage;
     private final FilmGenreStorage genreStorage;
+    private final ReviewStorage reviewStorage;
+
+    private final ReviewService reviewService;
+    private final ReviewLikeStorage reviewLikeStorage;
     User userAlex1;
     User userEgor2;
     User userAnna3;
@@ -40,6 +45,10 @@ public class FilmorateDbApplicationTest {
     Film filmDiamondHand;
     Mpa mpa;
     Set<FilmGenre> genres;
+    Review review1;
+    Review review2;
+    Review review3;
+    Review review4;
 
 
     @BeforeEach
@@ -92,6 +101,28 @@ public class FilmorateDbApplicationTest {
                 .duration(10)
                 .releaseDate(LocalDate.of(1998, 1, 1))
                 .mpa(Mpa.builder().id(3).build())
+                .build();
+        review1 = Review.builder()
+                .content("Content")
+                .isPositive(true)
+                .build();
+        review2 = Review.builder()
+                .content("Content2")
+                .isPositive(false)
+                .userId(1L)
+                .filmId(1)
+                .build();
+        review3 = Review.builder()
+                .content("Content3")
+                .isPositive(true)
+                .userId(1L)
+                .filmId(2)
+                .build();
+        review4 = Review.builder()
+                .content("Content3")
+                .isPositive(true)
+                .userId(2L)
+                .filmId(2)
                 .build();
 
 
@@ -363,6 +394,269 @@ public class FilmorateDbApplicationTest {
         assertThat(confirmationReverse).isFalse();
 
     }
+
+    //************************* Тестирование работы сервиса работы с отзывами *************************
+    @Test
+    public void shouldAddReviewAndFindReviewById() { // добавление отзыва и его получение по id
+
+        User user = userStorage.addUser(userAlex1);
+        Film film = filmStorage.addFilm(filmAllHatesCris);
+
+        final Long userId = user.getId();
+        final Integer filmId = film.getId();
+
+        Review review = review1.toBuilder().userId(userId).filmId(filmId).build();
+        Review newReview = reviewStorage.addReview(review);
+
+        final Integer reviewId = newReview.getReviewId();
+
+        Optional<Review> reviewOptional = Optional.ofNullable(reviewStorage.getReviewById(reviewId));
+        assertThat(reviewOptional)
+                .hasValueSatisfying(r ->
+                        assertThat(r)
+                                .hasFieldOrPropertyWithValue("reviewId", reviewId)
+                                .hasFieldOrPropertyWithValue("content", "Content")
+                                .hasFieldOrPropertyWithValue("isPositive", true)
+                                .hasFieldOrPropertyWithValue("userId", userId)
+                                .hasFieldOrPropertyWithValue("filmId", filmId));
+
+    }
+
+    @Test
+    public void shouldUpdateReview() { // обновление информации о фильме
+
+        User user = userStorage.addUser(userAlex1);
+        Film film = filmStorage.addFilm(filmAllHatesCris);
+
+        final Long userId = user.getId();
+        final Integer filmId = film.getId();
+
+        Review review = review1.toBuilder().userId(userId).filmId(filmId).build();
+        Review newReview = reviewStorage.addReview(review);
+
+        final Integer reviewId = newReview.getReviewId();
+
+        Review updatedReview = newReview.toBuilder().content("UPDATED").build();
+
+        reviewStorage.updateReview(updatedReview);
+
+        Optional<Review> reviewOptional = Optional.ofNullable(reviewStorage.getReviewById(reviewId));
+        assertThat(reviewOptional)
+                .hasValueSatisfying(r ->
+                        assertThat(r)
+                                .hasFieldOrPropertyWithValue("reviewId", reviewId)
+                                .hasFieldOrPropertyWithValue("content", "UPDATED")
+                                .hasFieldOrPropertyWithValue("isPositive", true)
+                                .hasFieldOrPropertyWithValue("userId", userId)
+                                .hasFieldOrPropertyWithValue("filmId", filmId));
+
+    }
+
+
+    @Test
+    public void shouldListReviews() { // получение списка отзывов
+
+        User user1 = userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        Film film1 = filmStorage.addFilm(filmAllHatesCris);
+        filmStorage.addFilm(filmDiamondHand);
+
+        final Long user1Id = user1.getId();
+        final Long user2Id = user2.getId();
+        final Integer film1Id = film1.getId();
+        final Integer film2Id = film1.getId();
+
+        Review review1WithData = review1.toBuilder().userId(user1Id).filmId(film1Id).build();
+        Review review2WithData = review2.toBuilder().userId(user2Id).filmId(film2Id).build();
+        Review review3WithData = review3.toBuilder().userId(user1Id).filmId(film2Id).build();
+
+        Review newReview1 = reviewStorage.addReview(review1WithData);
+        Review newReview2 = reviewStorage.addReview(review2WithData);
+        Review newReview3 = reviewStorage.addReview(review3WithData);
+
+        final Integer review1Id = newReview1.getReviewId();
+        final Integer review2Id = newReview2.getReviewId();
+        final Integer review3Id = newReview3.getReviewId();
+
+        List<Review> listReviews = reviewService.listReviews(null, null);
+
+        assertThat(listReviews).asList().hasSize(3);
+
+        assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review1Id));
+        assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review2Id));
+        assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review3Id));
+
+        assertThat(Optional.of(listReviews.get(0)))
+                .hasValueSatisfying(r ->
+                        AssertionsForClassTypes.assertThat(r)
+                                .hasFieldOrPropertyWithValue("content", "Content"));
+
+        assertThat(Optional.of(listReviews.get(1)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film)
+                                .hasFieldOrPropertyWithValue("content", "Content2"));
+
+        assertThat(Optional.of(listReviews.get(2)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film)
+                                .hasFieldOrPropertyWithValue("content", "Content3"));
+
+    }
+
+    @Test
+    public void shouldListReviewsWithLimit() { // получение списка отзывов c ограничением размера по id 1
+
+        User user1 = userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        Film film1 = filmStorage.addFilm(filmAllHatesCris);
+        Film film2 = filmStorage.addFilm(filmDiamondHand);
+
+        final Long user1Id = user1.getId();
+        final Long user2Id = user2.getId();
+        final Integer film1Id = film1.getId();
+        final Integer film2Id = film2.getId();
+
+        Review review1WithData = review1.toBuilder().userId(user1Id).filmId(film1Id).build();
+        Review review2WithData = review2.toBuilder().userId(user2Id).filmId(film2Id).build();
+        Review review3WithData = review3.toBuilder().userId(user1Id).filmId(film2Id).build();
+
+        Review newReview1 = reviewStorage.addReview(review3WithData);
+        Review newReview2 = reviewStorage.addReview(review2WithData);
+        Review newReview3 = reviewStorage.addReview(review1WithData);
+
+        final Integer review1Id = newReview1.getReviewId();
+        final Integer review2Id = newReview2.getReviewId();
+        final Integer review3Id = newReview3.getReviewId();
+
+        reviewLikeStorage.addLikeToReview(review3Id, user2Id);
+
+        List<Review> listReviews = reviewStorage.listReviews(2, 1);
+
+        assertThat(listReviews).asList().hasSize(1);
+
+        assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review1Id));
+        assertThat(listReviews).asList().doesNotContain(reviewStorage.getReviewById(review2Id));
+        assertThat(listReviews).asList().doesNotContain(reviewStorage.getReviewById(review3Id));
+
+        assertThat(Optional.of(listReviews.get(0)))
+                .hasValueSatisfying(r ->
+                        AssertionsForClassTypes.assertThat(r)
+                                .hasFieldOrPropertyWithValue("content", "Content3"));
+
+    }
+
+
+    @Test
+    public void shouldListReviewsEmpty() { // получение пустого списка отзывов
+
+        List<Review> listReviews = reviewService.listReviews(null, null);
+
+        assertThat(listReviews).asList().hasSize(0);
+        assertThat(listReviews).asList().isEmpty();
+
+    }
+
+    @Test
+    public void shouldDeleteReview() { //удаление ревью
+
+        User user = userStorage.addUser(userAlex1);
+        Film film = filmStorage.addFilm(filmAllHatesCris);
+
+        final Long userId = user.getId();
+        final Integer filmId = film.getId();
+
+        Review review = review1.toBuilder().userId(userId).filmId(filmId).build();
+
+        Review newReview = reviewStorage.addReview(review);
+        final Integer reviewId = newReview.getReviewId();
+
+        reviewStorage.deleteReview(reviewId);
+
+        List<Review> listReviews = reviewService.listReviews(null, null);
+
+        assertThat(listReviews).asList().hasSize(0);
+        assertThat(listReviews).asList().isEmpty();
+
+    }
+
+
+    @Test
+    public void shouldAddLikeToReview() { // добавление лайка ревью
+
+        userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        filmStorage.addFilm(filmAllHatesCris);
+        Review review = reviewStorage.addReview(review2);
+
+
+        final Integer reviewId = review.getReviewId();
+        final Long userId = user2.getId();
+
+        reviewLikeStorage.addLikeToReview(reviewId, userId);
+        final Integer useful = reviewService.getReviewById(reviewId).getUseful();
+
+        assertThat(useful).isEqualTo(1);
+
+    }
+
+    @Test
+    public void shouldAddDislikeToReview() { // добавление дизлайка ревью
+
+        userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        filmStorage.addFilm(filmAllHatesCris);
+        Review review = reviewStorage.addReview(review2);
+
+        final Integer reviewId = review.getReviewId();
+        final Long userId = user2.getId();
+
+        reviewLikeStorage.addDislikeToReview(reviewId, userId);
+
+        final Integer useful = reviewService.getReviewById(reviewId).getUseful();
+        assertThat(useful).isEqualTo(-1);
+
+    }
+
+    @Test
+    public void shouldDeleteLikeFromReview() { // удаление лайков у ревью
+
+        userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        filmStorage.addFilm(filmAllHatesCris);
+        Review review = reviewStorage.addReview(review2);
+
+        final Integer reviewId = review.getReviewId();
+        final Long userId = user2.getId();
+
+        reviewLikeStorage.addLikeToReview(reviewId, userId);
+        reviewLikeStorage.deleteLikeFromReview(reviewId, userId);
+
+        final Integer useful = reviewService.getReviewById(reviewId).getUseful();
+
+        assertThat(useful).isEqualTo(0);
+
+    }
+
+    @Test
+    public void shouldDeleteDislikeFromReview() { // удаление дизлайков у ревью
+
+        userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        filmStorage.addFilm(filmAllHatesCris);
+        Review review = reviewStorage.addReview(review2);
+
+        final Integer reviewId = review.getReviewId();
+        final Long userId = user2.getId();
+
+        reviewLikeStorage.addDislikeToReview(reviewId, userId);
+        reviewLikeStorage.deleteDislikeFromReview(reviewId, userId);
+
+        final Integer useful = reviewService.getReviewById(reviewId).getUseful();
+
+        assertThat(useful).isEqualTo(0);
+
+    }
+
 
     //************************* Тестирование работы сервиса работы с фильмами *************************
     @Test

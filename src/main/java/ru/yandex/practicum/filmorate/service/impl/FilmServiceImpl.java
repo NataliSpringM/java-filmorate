@@ -10,6 +10,9 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Comparator.comparing;
 
 //реализация сервиса для определения рейтинга фильмов
 @Slf4j
@@ -51,7 +54,7 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getFilmById(id);
     }
 
-    // возвращение копии объекта фильм с увеличенным значением лайков из LikeStorage
+    // добавляем лайк фильму
     @Override
     public void addLike(Integer filmId, Long userId) {
 
@@ -61,7 +64,7 @@ public class FilmServiceImpl implements FilmService {
         likeStorage.addLike(filmId, userId);
     }
 
-    // возвращение копии объекта фильм с уменьшенным значением лайков из LikeStorage
+    // удаляем лайк у фильма
     @Override
     public void deleteLike(Integer filmId, Long userId) {
 
@@ -84,6 +87,20 @@ public class FilmServiceImpl implements FilmService {
         log.info("Количество популярных фильмов по запросу: {}", mostPopularFilms.size());
 
         return mostPopularFilms;
+    }
+
+    @Override
+    public List<Film> listSortedFilmsOfDirector(Integer directorId, String sortBy) {
+        List<Film> films = filmStorage.listFilmsOfDirector(directorId);
+        if (sortBy.equals("year")) {
+            return films.stream()
+                    .sorted(comparing(Film::getReleaseDate))
+                    .collect(Collectors.toList());
+        } else {
+            return films.stream()
+                    .sorted(comparing(Film::getLikes))
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override

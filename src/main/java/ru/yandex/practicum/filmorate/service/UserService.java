@@ -25,6 +25,5 @@ public interface UserService {
 
     Boolean isFriendShipConfirmed(Long userId, Long friendId); // подтверждение взаимности дружбы пользователей
 
-
 }
 

@@ -104,6 +104,7 @@ public class UserServiceImpl implements UserService {
         return friendshipStorage.isFriendshipConfirmed(userId, friendId);
     }
 
+
     // преобразование набора id в список пользователей
     private List<User> convertIdSetToUserList(Set<Long> set) {
 
