@@ -73,6 +73,14 @@ public class FilmController {
         return filmService.listMostPopularFilms(count);
     }
 
+    // обработка GET-запроса на получение общих фильмов между пользователями
+    @GetMapping("/common")
+    public List<Film> listCommonFilms(
+            @RequestParam(name = "userId") Long userId,
+            @RequestParam(name = "friendId") Long friendId) {
+        return filmService.getCommonFilmsBetweenUsers(userId, friendId);
+    }
+
 }
 
 

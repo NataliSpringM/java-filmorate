@@ -21,5 +21,6 @@ public interface FilmService {
 
     List<Film> listMostPopularFilms(Integer count); // получение списка наиболее популярных фильмов
 
+    List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId);
 
 }

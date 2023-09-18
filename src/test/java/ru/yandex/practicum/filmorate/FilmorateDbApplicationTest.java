@@ -662,6 +662,18 @@ public class FilmorateDbApplicationTest {
                 .hasFieldOrPropertyWithValue("name", name5);
     }
 
+    @Test
+    public void testCommonFilmsBetweenUsersWithLikes() {
+
+        User user1 = userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        Film film = filmStorage.addFilm(filmTomAndJerry);
+        userService.addFriend(user1.getId(), user2.getId());
+        likeStorage.addLike(film.getId(), user1.getId());
+        likeStorage.addLike(film.getId(), user2.getId());
+        filmStorage.getCommonFilmsBetweenUsers(user1.getId(), user2.getId());
+
+    }
 
 }
 

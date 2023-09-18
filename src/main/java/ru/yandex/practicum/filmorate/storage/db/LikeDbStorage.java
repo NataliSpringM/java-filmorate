@@ -25,10 +25,10 @@ public class LikeDbStorage implements LikeStorage {
                 "SELECT * FROM likes WHERE film_id = ? AND user_id = ?", filmId, userId);
 
         if (sqlLikesQuantity.next()) {
-
+/*
             // выбрасываем исключение при попытке поставить повторный лайк
             throw new RuntimeException("Вы уже ставили лайк этому фильму");
-
+*/
         } else {
 
             // ставим лайк фильму

@@ -852,16 +852,14 @@ public class FilmorateApplicationTests {
         filmController.addFilm(film);
 
         // ставим лайк
-
+        filmController.addLike(filmId, userId);
+        // повторно ставим лайк
         filmController.addLike(filmId, userId);
 
-        // проверяем выброшенное исключение при попытке повторно поставить лайк
+        final Long likes = 1L;
 
-        RuntimeException e = assertThrows(
-                RuntimeException.class,
-                () -> filmController.addLike(filmId, userId),
-                "Не выброшено исключение при попытке повторно поставить лайк с одного id.");
-        assertEquals("Вы уже ставили лайк этому фильму", e.getMessage());
+        assertEquals(filmStorage.getFilmById(filmId).getLikes(), likes,
+                "Количество лайков увеличилось");
 
     }
 

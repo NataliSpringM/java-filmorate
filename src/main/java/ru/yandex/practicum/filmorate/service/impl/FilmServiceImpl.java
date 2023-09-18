@@ -86,5 +86,8 @@ public class FilmServiceImpl implements FilmService {
         return mostPopularFilms;
     }
 
-
+    @Override
+    public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
+        return filmStorage.getCommonFilmsBetweenUsers(userId, friendId);
+    }
 }
