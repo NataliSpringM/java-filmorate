@@ -1,3 +1,13 @@
+/*
+drop table rating_mpa cascade;
+drop table users cascade;
+drop table films cascade;
+drop table film_genres;
+drop table genres;
+drop table friendship;
+drop table likes cascade;
+*/
+
 --создание таблицы users
 
 CREATE TABLE IF NOT EXISTS users (
