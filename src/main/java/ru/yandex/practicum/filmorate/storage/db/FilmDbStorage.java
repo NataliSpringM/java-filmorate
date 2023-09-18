@@ -275,7 +275,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     // получает общие фильмы между двумя пользователями на основе их идентификаторов.
-    // Он выполняет SQL-запрос к базе данных, возвращая список фильмов, сгруппированных и отсортированных по количеству лайков.
+    // Он выполняет SQL-запрос к базе данных, возвращая список фильмов, сгруппированных и отсортированных по количеству лайков
     public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
         String sqlFilm = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, r.rating_mpa_id, "
                 + "r.rating_mpa_name, COUNT(likes.user_id) AS total_likes "
