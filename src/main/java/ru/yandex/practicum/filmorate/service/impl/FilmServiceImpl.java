@@ -107,4 +107,5 @@ public class FilmServiceImpl implements FilmService {
     public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
         return filmStorage.getCommonFilmsBetweenUsers(userId, friendId);
     }
+
 }
