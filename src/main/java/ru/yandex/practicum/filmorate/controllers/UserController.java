@@ -8,7 +8,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -26,6 +28,7 @@ public class UserController {
     http://localhost:8080/users */
 
     private final UserService userService;
+    private final EventService eventService;
 
     // обработка POST-запроса на добавление данных пользователя
     @PostMapping()
@@ -60,6 +63,7 @@ public class UserController {
     public void addFriend(@RequestBody @PathVariable Long id, @PathVariable Long friendId) {
 
         userService.addFriend(id, friendId);
+        eventService.addEvent(id, friendId, "FRIEND", "ADD");
     }
 
     // обработка DELETE-запроса на добавление друга
@@ -67,6 +71,7 @@ public class UserController {
     public void deleteFriend(@RequestBody @PathVariable Long id, @PathVariable Long friendId) {
 
         userService.deleteFriend(id, friendId);
+        eventService.addEvent(id, friendId, "FRIEND", "REMOVE");
     }
 
     // обработка GET-запроса на получение списка друзей
@@ -105,6 +110,13 @@ public class UserController {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		}
 	}
+
+    //обработка GET-запроса на получение ленты событий для пользователя
+    @GetMapping("{id}/feed")
+    public List<Event> listUserEvents(@RequestBody @PathVariable Long id) {
+    	return eventService.listUserEvents(id);
+    }
+
 }
 
 

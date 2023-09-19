@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class FilmController {
     http://localhost:8080/films */
 
     private final FilmService filmService;
+    private final EventService eventService;
 
 
     // обработка POST-запроса на добавление информации о фильме
@@ -62,6 +64,7 @@ public class FilmController {
     public void addLike(@PathVariable Integer id, @PathVariable Long userId) {
 
         filmService.addLike(id, userId);
+        eventService.addEvent(userId, Long.valueOf(id), "LIKE", "ADD");
     }
 
     // обработка DELETE-запроса на удаление лайка фильму
@@ -69,6 +72,7 @@ public class FilmController {
     public void deleteLike(@PathVariable Integer id, @PathVariable Long userId) {
 
         filmService.deleteLike(id, userId);
+        eventService.addEvent(userId, Long.valueOf(id), "LIKE", "REMOVE");
     }
 
     // обработка GET-запроса на получение списка наиболее популярных фильмов
