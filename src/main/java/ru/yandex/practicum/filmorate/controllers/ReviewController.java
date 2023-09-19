@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
@@ -22,19 +23,24 @@ public class ReviewController {
     http://localhost:8080/reviews */
 
     private final ReviewService reviewService;
+    private final EventService eventService;
 
     // обработка POST-запроса на добавление отзыва
     @PostMapping()
     public Review addReview(@Valid @RequestBody Review review) {
 
-        return reviewService.addReview(review);
+    	Review newReview = reviewService.addReview(review);
+    	eventService.addEvent(newReview.getUserId(), Long.valueOf(newReview.getReviewId()), "REVIEW", "ADD");
+        return newReview;
     }
 
     // обработка PUT-запроса на обновление отзыва
     @PutMapping()
     public Review updateReview(@Valid @RequestBody Review review) {
 
-        return reviewService.updateReview(review);
+    	Review newReview = reviewService.updateReview(review);
+    	eventService.addEvent(newReview.getUserId(), Long.valueOf(newReview.getReviewId()), "REVIEW", "UPDATE");
+        return newReview;
     }
 
     // обработка GET-запроса на получение отзыва по идентификатору
@@ -49,6 +55,7 @@ public class ReviewController {
     @DeleteMapping("/{id}")
     public void deleteReview(@PathVariable Integer id) {
 
+        eventService.addEvent(this.getReviewById(id).getUserId(), Long.valueOf(id), "REVIEW", "REMOVE");
         reviewService.deleteReview(id);
     }
 
