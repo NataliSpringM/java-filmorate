@@ -889,6 +889,79 @@ public class FilmorateDbApplicationTest {
 
     }
 
+    @Test
+    public void shouldListMostPopularFilmsByGenreId() { // получение списка наиболее популярных фильмов по id жанра
+
+        // создаем трех пользователей и три фильма
+        User user1 = userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        User user3 = userStorage.addUser(userAnna3);
+
+        Film film1 = filmStorage.addFilm(filmAllHatesCris);
+        Film film2 = filmStorage.addFilm(filmDiamondHand);
+        Film film3 = filmStorage.addFilm(filmTomAndJerry);
+
+        // ставим лайки фильмам 1 (3 штуки) и 2 (1 штука)
+        likeStorage.addLike(film1.getId(), user1.getId());
+        likeStorage.addLike(film1.getId(), user2.getId());
+        likeStorage.addLike(film1.getId(), user3.getId());
+        likeStorage.addLike(film2.getId(), user1.getId());
+
+        // получаем список фильмов отсортированных по количеству лайков (ограничение размера - 1 фильм)
+        List<Film> listFilms = filmStorage.listMostPopularFilms(1, 2, null);
+
+        // проверяем корректность полученных данных - 1 фильм,
+
+        assertThat(listFilms).asList().hasSize(1);
+
+        // проверяем фильм в списке - с жанром 2 фильм с id 1
+
+        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
+        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film1.getId()));
+
+        assertThat(Optional.of(listFilms.get(0)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film)
+                                .hasFieldOrPropertyWithValue("name", "All hates Cris"));
+
+    }
+
+    @Test
+    public void shouldListMostPopularFilmsByYear() { // получение списка наиболее популярных фильмов по году
+
+        // создаем трех пользователей и три фильма
+        User user1 = userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        User user3 = userStorage.addUser(userAnna3);
+
+        Film film1 = filmStorage.addFilm(filmAllHatesCris);
+        Film film2 = filmStorage.addFilm(filmDiamondHand);
+        Film film3 = filmStorage.addFilm(filmTomAndJerry);
+
+        // ставим лайки фильмам 1 (3 штуки) и 2 (1 штука)
+        likeStorage.addLike(film1.getId(), user1.getId());
+        likeStorage.addLike(film1.getId(), user2.getId());
+        likeStorage.addLike(film1.getId(), user3.getId());
+        likeStorage.addLike(film2.getId(), user1.getId());
+
+        // получаем список фильмов c запросом по году
+        List<Film> listFilms = filmStorage.listMostPopularFilms(1, null, 1978);
+
+        // проверяем корректность полученных данных - 3 фильма,
+
+        assertThat(listFilms).asList().hasSize(1);
+
+        // проверяем фильм в списке - год выпуска совпадает у фильма с id 2
+
+        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film2.getId()));
+
+
+        assertThat(Optional.of(listFilms.get(0)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film)
+                                .hasFieldOrPropertyWithValue("name", "Diamond hand"));
+
+    }
 
     //************************* Тестирование работы сервиса работы с рейтингами MPA *************************
 

@@ -67,13 +67,6 @@ public class FilmController {
         filmService.deleteLike(id, userId);
     }
 
-    // обработка запросов GET /films/popular?count={limit}
-    //@GetMapping("/popular")
-    //public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
-
-        //return filmService.listMostPopularFilms(count);
-    //}
-
     // обработка запросов GET /films/popular?count={limit}&genreId={genreId}&year={year}
     @GetMapping("/popular")
     public List<Film> listMostPopularFilms
