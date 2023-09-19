@@ -8,6 +8,8 @@ drop table friendship;
 drop table likes cascade;
 */
 
+
+
 --создание таблицы users
 
 CREATE TABLE IF NOT EXISTS users (

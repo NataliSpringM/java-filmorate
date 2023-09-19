@@ -115,6 +115,15 @@ public class FilmController {
         return filmService.listSortedFilmsOfDirector(directorId, sortBy);
     }
 
+    // поиск по подстроке названия фильма или режиссера
+    @GetMapping("/search")
+    public List<Film> listSearchResult(@RequestParam(name = "query") String query,
+                                       @RequestParam(name = "by") List<String> by) {
+
+        return filmService.listSearchResult(query, by);
+    }
+
+
     // обработка GET-запроса на получение общих фильмов между пользователями
     @GetMapping("/common")
     public List<Film> listCommonFilms(
