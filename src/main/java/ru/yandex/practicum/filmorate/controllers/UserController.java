@@ -2,8 +2,11 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
@@ -84,6 +87,29 @@ public class UserController {
 
         return userService.listCommonFriends(id, otherId);
     }
+
+    // обработка DELETE-запроса на добавление друга
+    @DeleteMapping
+	public List<User> deleteAll() {
+		log.info("Получен запрос к эндпоинту: 'DELETE_USERS'. "
+				+ "Список пользователей пуст.");
+		userService.clearAll();
+		return userService.listUsers();
+	}
+
+    // обработка DELETE-запроса на добавление друга
+	@DeleteMapping (value = "/{id}")
+	public boolean delete(@Valid @PathVariable Integer id) {
+		log.info("Получен запрос к эндпоинту: 'DELETE_USERS_ID'.");
+		boolean deleted = userService.delete(id);
+		if (deleted) {
+			log.debug("Возвращены данные пользователя id = {}.", id);
+			return deleted;
+		} else {
+			log.warn("Пользователь id = {} в списке не найден.", id);
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+	}
 
     //обработка GET-запроса на получение ленты событий для пользователя
     @GetMapping("{id}/feed")

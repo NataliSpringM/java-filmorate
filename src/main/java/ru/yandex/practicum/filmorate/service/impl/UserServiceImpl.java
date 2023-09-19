@@ -105,6 +105,15 @@ public class UserServiceImpl implements UserService {
         return friendshipStorage.isFriendshipConfirmed(userId, friendId);
     }
 
+    @Override
+	public boolean delete(Integer id) {
+    	return userStorage.delete(id);
+	}
+
+	@Override
+	public void clearAll() {
+		userStorage.clearAll();
+	}
 
     // преобразование набора id в список пользователей
     private List<User> convertIdSetToUserList(Set<Long> set) {
@@ -114,7 +123,6 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
 
     }
-
 }
 
 

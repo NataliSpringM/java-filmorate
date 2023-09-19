@@ -200,6 +200,22 @@ public class FilmDbStorage implements FilmStorage {
                 directorStorage.getDirectorsByFilmId(rs.getInt("film_id"))), directorId);
     }
 
+    //Удаление фильма по id и возвращение boolean успешности операции
+	@Override
+	public boolean delete(Integer id) {
+		boolean status = false;
+		this.checkFilmId(id);
+		jdbcTemplate.execute("delete from films where film_id = " + id);
+		status = true;
+		return status;
+	}
+
+	//Удаление всех фильмов
+	@Override
+	public void clearAll() {
+		jdbcTemplate.execute("delete from films");
+	}
+
     // обновление информации в таблице films
     private void updateFilmTable(Film film) {
 
@@ -379,6 +395,7 @@ public class FilmDbStorage implements FilmStorage {
 
         return films;
     }
+
 
 }
 

@@ -26,6 +26,10 @@ public interface FilmStorage {
 
     void checkFilmId(Integer filmId); // проверка существования id фильма
 
+	boolean delete(Integer id); // удаление фильма по id
+
+	void clearAll(); // удаление всех фильмов
+
     List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId);
 
 }

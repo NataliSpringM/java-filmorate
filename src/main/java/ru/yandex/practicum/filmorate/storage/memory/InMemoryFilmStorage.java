@@ -119,8 +119,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+	public void clearAll() {
+		this.films.clear();
+	}
+
+	@Override
+	public boolean delete(Integer id) {
+		boolean isPresent = false;
+		if (films.containsKey(id)) {
+			isPresent = true;
+			films.remove(id);
+		}
+		return isPresent;
+	}
+
     public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
         return null;
     }
-
 }
