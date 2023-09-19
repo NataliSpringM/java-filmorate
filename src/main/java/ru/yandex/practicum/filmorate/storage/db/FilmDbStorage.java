@@ -173,6 +173,108 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    // получение списка наиболее популярных фильмов с возможным ограничением размера списка
+    @Override
+    public List<Film> listMostPopularFilms(Integer limit, Integer genreId, Integer year) {
+        /*
+        if (genreId != null) {
+            filmGenresStorage.getGenreById(genreId); //TODO
+        }
+
+        String genreIdField = "genres.genre_id";
+        String yearField = "EXTRACT(YEAR FROM CAST(films.release_date AS date))";
+
+        String searchByGenreId = genreIdField + " = " + genreId;
+        String searchByYear = yearField + " = " + year;
+
+        /*String searchTarget1 = null;
+        String searchTarget2 = null;
+        String undoubted = "1 = 1";
+        String unreal = "1 = 0";
+
+        if (genreId == null && year == null) {
+
+            searchTarget1 = undoubted;
+            searchTarget2 = undoubted;
+        } else {
+            if (genreId != null && year != null) {
+
+                searchTarget1 = searchByGenreId;
+                searchTarget2 = searchByYear;
+            } else if (genreId == null) {
+
+                searchTarget1 = searchByYear;
+                searchTarget2 = unreal;
+            } else if (year == null) {
+
+                searchTarget1 = searchByGenreId;
+                searchTarget2 = unreal;
+            }
+        }
+*/
+        /*
+
+SELECT films.film_id, films.film_name, films.description, films.release_date, films.duration,
+                rating_mpa.rating_mpa_id, rating_mpa.rating_mpa_name,
+                COUNT(DISTINCT likes.user_id) AS total_likes
+FROM films
+INNER JOIN rating_mpa ON films.rating_mpa_id = rating_mpa.rating_mpa_id
+LEFT JOIN film_genres ON films.film_id = film_genres.film_id
+LEFT JOIN genres ON film_genres.genre_id = genres.genre_id
+LEFT JOIN likes ON films.film_id = likes.film_id
+WHERE  --searchTarget1-- OR --searchTarget2--
+GROUP BY films.film_id, films.film_name, films.description, films.release_date, films.duration,
+    rating_mpa.rating_mpa_id, rating_mpa.rating_mpa_name
+ORDER BY total_likes DESC
+LIMIT " + limit
+
+FROM (SELECT films.film_id, films.film_name, films.description, films.release_date, films.duration
+      FROM films WHERE EXTRACT(YEAR FROM CAST(films.release_date) = ?)) AS f
+
+(SELECT film_id, COUNT(likes.user_id) AS likes FROM likes GROUP BY film_id) l
+         */
+
+
+/*
+
+        String sqlFilm = new StringBuilder()
+                .append("SELECT ")
+                .append("films.film_id, films.film_name, films.description, films.release_date, films.duration, ")
+                .append("rating_mpa.rating_mpa_id, rating_mpa.rating_mpa_name, ")
+                .append("COUNT(DISTINCT likes.user_id) AS total_likes ")
+                .append("FROM films ").append("INNER JOIN rating_mpa ")
+                .append("ON films.rating_mpa_id = rating_mpa.rating_mpa_id ")
+                .append("LEFT JOIN film_genres ON films.film_id = film_genres.film_id ")
+                .append("LEFT JOIN genres ON film_genres.genre_id = genres.genre_id ")
+                .append("LEFT JOIN likes ON films.film_id = likes.film_id ")
+                .append("WHERE ")
+                .append(searchTarget1)
+                .append(" OR ")
+                .append(searchTarget2)
+                .append(" GROUP BY films.film_id, films.film_name, ")
+                .append("films.description, films.release_date, films.duration, ")
+                .append("rating_mpa.rating_mpa_id, rating_mpa.rating_mpa_name ")
+                .append("ORDER BY total_likes DESC ")
+                .append("LIMIT " + limit)
+                .toString();
+
+
+        List films = jdbcTemplate.query(sqlFilm, (rs, rowNum) -> new Film(
+                rs.getInt("film_id"),
+                rs.getString("film_name"),
+                rs.getString("description"),
+                rs.getDate("release_date").toLocalDate(),
+                rs.getInt("duration"),
+                rs.getLong("total_likes"),
+                new Mpa(rs.getInt("rating_mpa_id"), rs.getString("rating_mpa_name")),
+                getFilmGenres(rs.getInt("film_id"))));
+
+        return films;
+
+ */
+        return null;
+    }
+
     // получение списка фильмов по режиссеру
     @Override
     public List<Film> listFilmsOfDirector(Integer directorId) {

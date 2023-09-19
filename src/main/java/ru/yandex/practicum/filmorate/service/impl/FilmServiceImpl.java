@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.*;
 
@@ -75,7 +76,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     // получение списка наиболее популярных фильмов
-    @Override
+    /*@Override
     public List<Film> listMostPopularFilms(Integer count) {
 
         // получение ограничения размера списка или его установка
@@ -83,6 +84,44 @@ public class FilmServiceImpl implements FilmService {
 
         // возвращение отсортированного по популярности фильмов списка определенного размера
         List<Film> mostPopularFilms = filmStorage.listMostPopularFilms(limit);
+
+        log.info("Количество популярных фильмов по запросу: {}", mostPopularFilms.size());
+
+        return mostPopularFilms;
+    }*/
+
+    // получение списка наиболее популярных фильмов с фильтрацией по жанру и году
+    @Override
+    public List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        List<Film> mostPopularFilms;
+
+        // получение ограничения размера списка или его установка
+        int limit = Optional.ofNullable(count).orElse(HIT_LIST_SIZE);
+
+        // возвращение отсортированного по популярности фильмов списка определенного размера
+        if (genreId == null && year == null) {
+            mostPopularFilms = filmStorage.listMostPopularFilms(limit);
+        } else {
+            mostPopularFilms = filmStorage.listFilms();
+            if (year != null) {
+                mostPopularFilms = mostPopularFilms.stream()
+                        .filter(film -> film.getReleaseDate().getYear() == year)
+                        .collect(Collectors.toList());
+            }
+            if (genreId != null) {
+                mostPopularFilms = mostPopularFilms.stream()
+                        .filter(film -> {
+                            return film.getGenres().stream()
+                                    .map(FilmGenre::getId)
+                                    .anyMatch(id -> Objects.equals(id, genreId));
+                        })
+                        .collect(Collectors.toList());
+            }
+            mostPopularFilms = mostPopularFilms.stream()
+                    .sorted(comparing(Film::getLikes))
+                    .limit(limit)
+                    .collect(Collectors.toList());
+        }
 
         log.info("Количество популярных фильмов по запросу: {}", mostPopularFilms.size());
 
