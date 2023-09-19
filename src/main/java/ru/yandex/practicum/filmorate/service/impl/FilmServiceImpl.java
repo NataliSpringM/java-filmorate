@@ -118,4 +118,13 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getCommonFilmsBetweenUsers(userId, friendId);
     }
 
+    // поиск по названию или режиссеру
+    @Override
+    public List<Film> listSearchResult(String substringQuery, List<String> searchBaseBy) {
+
+        return filmStorage.listSearchResults(substringQuery, searchBaseBy);
+
+    }
+
+
 }

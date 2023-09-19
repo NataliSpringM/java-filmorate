@@ -31,4 +31,6 @@ public interface FilmService {
     // формирование отсортированного списка фильмов режиссера с id = directorId
     // сортировка выполняется по году выпуска фильма (sortBy="year") или по количеству лайков (sortBy="likes")
     List<Film> listSortedFilmsOfDirector(Integer directorId, String sortBy);
+
+    List<Film> listSearchResult(String substringQuery, List<String> searchBaseBy); // поиск по названию или режиссеру
 }
