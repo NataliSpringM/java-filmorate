@@ -20,9 +20,4 @@ public interface UserStorage {
     void updateUserProperties(User user); // сохранение новой или обновленной информации о пользователе
 
     void checkUserId(Long userId); // проверка существования id пользователя
-
-
-    boolean checkIsObjectInStorage(Long userId);
-
-    List<Film> getRecommendation(Long userId);
 }

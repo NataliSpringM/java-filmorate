@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
     private final FriendshipStorage friendshipStorage;
 
     // добавление информации о пользователе
@@ -112,12 +114,8 @@ public class UserServiceImpl implements UserService {
 
     public List<Film> getRecommendation(Long userId) {
         try {
-            if (!userStorage.checkIsObjectInStorage(userId)) {
-                String message = "Пользователь user_id=" + userId + " отсутствует в базе данных.";
-                log.error(message);
-                throw new ObjectNotFoundException(message);
-            }
-            List<Film> recommendations = userStorage.getRecommendation(userId);
+            userStorage.checkUserId(userId);
+            List<Film> recommendations = filmStorage.getRecommendation(userId);
             log.info("Получен список рекоммендаций для пользователя user_id=" + userId + ".");
             return recommendations;
         } catch (IncorrectResultSizeDataAccessException e) {

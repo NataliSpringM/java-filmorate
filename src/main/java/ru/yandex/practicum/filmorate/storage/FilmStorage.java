@@ -22,4 +22,5 @@ public interface FilmStorage {
 
     void checkFilmId(Integer filmId); // проверка существования id фильма
 
+    List<Film> getRecommendation(Long userId);
 }

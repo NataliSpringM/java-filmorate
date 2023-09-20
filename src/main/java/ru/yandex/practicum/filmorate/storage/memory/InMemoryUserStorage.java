@@ -48,16 +48,6 @@ public class InMemoryUserStorage implements UserStorage {
         }
     }
 
-    @Override
-    public boolean checkIsObjectInStorage(Long userId) {
-        return false;
-    }
-
-    @Override
-    public List<Film> getRecommendation(Long userId) {
-        return null;
-    }
-
     // обновление информации о пользователе
     @Override
     public User updateUser(User user) {

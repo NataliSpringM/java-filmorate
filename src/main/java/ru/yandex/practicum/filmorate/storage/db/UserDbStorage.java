@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.db;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -18,6 +19,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -26,7 +28,6 @@ import java.util.*;
 public class UserDbStorage implements UserStorage {
 
     // реализация сохранения и получения информации о пользователях в базе данных
-    private final RowMapper<Film> filmMapper;
     private final FriendshipDbStorage friendDbStorage;
     private final JdbcTemplate jdbcTemplate;
 
@@ -141,35 +142,6 @@ public class UserDbStorage implements UserStorage {
                 user.getLogin(),
                 user.getBirthday(),
                 user.getId());
-    }
-
-    public boolean checkIsObjectInStorage(Long user) {
-        String sqlQuery = "SELECT EXISTS (SELECT 1 FROM users WHERE user_id = ?)";
-        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sqlQuery, Boolean.class, user));
-    }
-
-    @Override
-    public List<Film> getRecommendation(Long userId) {
-        String sqlQuery = "SELECT fl1.user_id " +
-                "FROM films_likes AS fl1 " +
-                "LEFT JOIN films_likes AS fl2 " +
-                "ON fl1.user_id = fl2.user_id " +
-                "WHERE fl1.film_id IN (SELECT film_id FROM films_likes WHERE user_id = ?) " +
-                "AND fl1.user_id <> ? " +
-                "GROUP BY fl1.user_id  " +
-                "ORDER BY COUNT (fl1.film_id) DESC, COUNT (fl2.film_id)  DESC LIMIT 1 ";
-        Integer optimalUser = jdbcTemplate.queryForObject(sqlQuery,
-                (ResultSet resultSet, int rowNum) -> resultSet.getInt("user_id"), userId, userId);
-        if (!(optimalUser == null)) {
-            String sqlQuery2 = "SELECT * " +
-                    "FROM films_likes AS fl LEFT JOIN films AS f " +
-                    "ON fl.film_id = f.film_id " +
-                    "WHERE fl.user_id = ? " +
-                    "AND fl.film_id NOT IN (SELECT film_id FROM films_likes WHERE user_id = ?)";
-            return jdbcTemplate.query(sqlQuery2, filmMapper, optimalUser, userId);
-        } else {
-            return Collections.emptyList();
-        }
     }
 }
 

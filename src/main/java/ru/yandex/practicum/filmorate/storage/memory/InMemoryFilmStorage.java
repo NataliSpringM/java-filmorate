@@ -52,6 +52,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
+    @Override
+    public List<Film> getRecommendation(Long userId) {
+        return null;
+    }
+
     // обновление информации о фильме
     @Override
     public Film updateFilm(Film film) {
