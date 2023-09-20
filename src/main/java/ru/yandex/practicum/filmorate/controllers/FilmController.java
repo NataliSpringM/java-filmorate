@@ -77,8 +77,7 @@ public class FilmController {
 
     // обработка запросов GET /films/popular?count={limit}&genreId={genreId}&year={year}
     @GetMapping("/popular")
-    public List<Film> listMostPopularFilms
-                        (@RequestParam(required = false, defaultValue = "10") Integer count,
+    public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
                          @RequestParam(required = false) Integer genreId,
                          @RequestParam(required = false) Integer year) {
 

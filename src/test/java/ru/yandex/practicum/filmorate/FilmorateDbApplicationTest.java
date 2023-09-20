@@ -911,12 +911,11 @@ public class FilmorateDbApplicationTest {
         User user1 = userStorage.addUser(userAlex1);
         User user2 = userStorage.addUser(userEgor2);
         User user3 = userStorage.addUser(userAnna3);
-  
+
         Film film1 = filmStorage.addFilm(filmAllHatesCris);
         Film film2 = filmStorage.addFilm(filmDiamondHand);
         Film film3 = filmStorage.addFilm(filmTomAndJerry);
-  
-  
+
         // ставим лайки фильмам 1 (3 штуки) и 2 (1 штука)
         likeStorage.addLike(film1.getId(), user1.getId());
         likeStorage.addLike(film1.getId(), user2.getId());
@@ -949,7 +948,6 @@ public class FilmorateDbApplicationTest {
         User user1 = userStorage.addUser(userAlex1);
         User user2 = userStorage.addUser(userEgor2);
         User user3 = userStorage.addUser(userAnna3);
-      
         Film film1 = filmStorage.addFilm(filmAllHatesCris);
         Film film2 = filmStorage.addFilm(filmDiamondHand);
         Film film3 = filmStorage.addFilm(filmTomAndJerry);
@@ -973,11 +971,9 @@ public class FilmorateDbApplicationTest {
 
         assertThat(Optional.of(listFilms.get(0)))
                 .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)  
-                                  .hasFieldOrPropertyWithValue("name", "Diamond hand"));
-
+                        AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "Diamond hand"));
     }
-  
+
     @Test
     public void shouldSearchFilmsByTitle() { // поиск фильма по названию
 

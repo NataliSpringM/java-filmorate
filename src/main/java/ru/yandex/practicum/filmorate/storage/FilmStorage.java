@@ -24,7 +24,7 @@ public interface FilmStorage {
     // получение списка наиболее популярных фильмов с фильтрацией по жанру и году
     default List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
         return null;
-    };
+    }
 
     // получение списка фильмов по режиссеру
     default List<Film> listFilmsOfDirector(Integer directorId) {
