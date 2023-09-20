@@ -18,9 +18,16 @@ public interface FilmStorage {
 
     void updateFilmData(Film film); // сохранение новой или обновленной информации о фильме
 
-    List<Film> listMostPopularFilms(Integer count); // получение списка наиболее популярных фильмов
+    // получение списка наиболее популярных фильмов
+    List<Film> listMostPopularFilms(Integer count);
 
-    default List<Film> listFilmsOfDirector(Integer directorId) { // получение списка фильмов по режиссеру
+    // получение списка наиболее популярных фильмов с фильтрацией по жанру и году
+    default List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return null;
+    }
+
+    // получение списка фильмов по режиссеру
+    default List<Film> listFilmsOfDirector(Integer directorId) {
         return null;
     }
 

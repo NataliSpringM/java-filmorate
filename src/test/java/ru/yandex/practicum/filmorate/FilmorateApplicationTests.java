@@ -1126,7 +1126,7 @@ public class FilmorateApplicationTests {
 
         // получаем список наиболее популярных фильмов
 
-        List<Film> mostPopularFilms = filmController.listMostPopularFilms(null);
+        List<Film> mostPopularFilms = filmController.listMostPopularFilms(null, null, null);
 
         // проверяем корректность списка самых популярных фильмов
 
@@ -1196,7 +1196,7 @@ public class FilmorateApplicationTests {
 
         // получаем список наиболее популярных фильмов
 
-        List<Film> mostPopularFilms = filmController.listMostPopularFilms(10);
+        List<Film> mostPopularFilms = filmController.listMostPopularFilms(10, null, null);
 
         // проверяем корректность списка самых популярных фильмов
 
@@ -1266,7 +1266,7 @@ public class FilmorateApplicationTests {
 
         // получаем список наиболее популярных фильмов
 
-        List<Film> mostPopularFilms = filmController.listMostPopularFilms(10);
+        List<Film> mostPopularFilms = filmController.listMostPopularFilms(10, null, null);
 
         // проверяем корректность списка самых популярных фильмов
 
@@ -1338,7 +1338,7 @@ public class FilmorateApplicationTests {
 
         // получаем список наиболее популярных фильмов
 
-        List<Film> mostPopularFilms = filmController.listMostPopularFilms(3);
+        List<Film> mostPopularFilms = filmController.listMostPopularFilms(3, null, null);
 
         // проверяем корректность сохраненной в списках друзей информации
 

@@ -75,11 +75,13 @@ public class FilmController {
         eventService.addEvent(userId, Long.valueOf(id), "LIKE", "REMOVE");
     }
 
-    // обработка GET-запроса на получение списка наиболее популярных фильмов
+    // обработка запросов GET /films/popular?count={limit}&genreId={genreId}&year={year}
     @GetMapping("/popular")
-    public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
+    public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
+                         @RequestParam(required = false) Integer genreId,
+                         @RequestParam(required = false) Integer year) {
 
-        return filmService.listMostPopularFilms(count);
+        return filmService.listMostPopularFilms(count, genreId, year);
     }
 
     // обработка DELETE-запроса на удаление фильма по id
@@ -122,7 +124,6 @@ public class FilmController {
 
         return filmService.listSearchResult(query, by);
     }
-
 
     // обработка GET-запроса на получение общих фильмов между пользователями
     @GetMapping("/common")

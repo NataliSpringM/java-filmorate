@@ -173,6 +173,82 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    // получение списка наиболее популярных фильмов с возможным ограничением размера списка
+    @Override
+    public List<Film> listMostPopularFilms(Integer limit, Integer genreId, Integer year) {
+
+        if (genreId != null) {
+            filmGenresStorage.getGenreById(genreId); //TODO
+        }
+
+        String genreIdField = "genre_id";
+        String yearField = "EXTRACT(YEAR FROM CAST(films.release_date AS date))";
+
+        String searchByGenreId = genreIdField + " = " + genreId;
+        String searchByYear = yearField + " = " + year;
+
+        String searchTarget1;
+        String searchTarget2;
+        String undoubted = "1 = 1";
+        String unreal = "1 = 0";
+        String condition = " OR ";
+
+        if (genreId == null && year == null) {
+            searchTarget1 = undoubted;
+            searchTarget2 = undoubted;
+        } else {
+            if (genreId != null && year != null) {
+                condition = " AND ";
+                searchTarget1 = searchByGenreId;
+                searchTarget2 = searchByYear;
+            } else if (genreId == null) {
+                searchTarget1 = searchByYear;
+                searchTarget2 = unreal;
+            } else {
+                searchTarget1 = searchByGenreId;
+                searchTarget2 = unreal;
+            }
+        }
+
+        String sqlFilm = new StringBuilder()
+                .append("SELECT ")
+                .append("films.film_id, films.film_name, films.description, films.release_date, films.duration, ")
+                .append("rating_mpa.rating_mpa_id, rating_mpa.rating_mpa_name, ")
+                .append("COUNT(DISTINCT likes.user_id) AS total_likes ")
+                .append("FROM films ")
+                .append("INNER JOIN rating_mpa ON films.rating_mpa_id = rating_mpa.rating_mpa_id ")
+                .append("LEFT JOIN film_genres ON films.film_id = film_genres.film_id ")
+                .append("LEFT JOIN likes ON films.film_id = likes.film_id ")
+                .append("WHERE ")
+                .append(searchTarget1)
+                .append(condition)
+                .append(searchTarget2)
+                .append(" GROUP BY films.film_id ")
+                .append("ORDER BY total_likes DESC ")
+                .append("LIMIT ").append(limit)
+                .toString();
+
+
+        List<Film> films = jdbcTemplate.query(sqlFilm, (rs, rowNum) -> new Film(
+                rs.getInt("film_id"),
+                rs.getString("film_name"),
+                rs.getString("description"),
+                rs.getDate("release_date").toLocalDate(),
+                rs.getInt("duration"),
+                rs.getLong("total_likes"),
+                new Mpa(rs.getInt("rating_mpa_id"), rs.getString("rating_mpa_name")),
+                getFilmGenres(rs.getInt("film_id")),
+                directorStorage.getDirectorsByFilmId(rs.getInt("film_id"))));
+
+        String result = films.stream()
+                .map(Film::toString)
+                .collect(Collectors.joining(", "));
+
+        log.info("Список фильмов по запросу: {}.", result);
+
+        return films;
+    }
+
     // получение списка фильмов по режиссеру
     @Override
     public List<Film> listFilmsOfDirector(Integer directorId) {

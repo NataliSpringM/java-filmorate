@@ -20,7 +20,8 @@ public interface FilmService {
 
     void deleteLike(Integer id, Long userId); // удаление лайка у фильма
 
-    List<Film> listMostPopularFilms(Integer count); // получение списка наиболее популярных фильмов
+    // получение списка наиболее популярных фильмов с фильтрацией по жанру и году
+    List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year);
 
 	boolean delete(Integer id); // удаление фильма
 

@@ -74,15 +74,16 @@ public class FilmServiceImpl implements FilmService {
         likeStorage.deleteLike(filmId, userId);
     }
 
-    // получение списка наиболее популярных фильмов
+    // получение списка наиболее популярных фильмов с фильтрацией по жанру и году
     @Override
-    public List<Film> listMostPopularFilms(Integer count) {
+    public List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        List<Film> mostPopularFilms;
 
         // получение ограничения размера списка или его установка
         int limit = Optional.ofNullable(count).orElse(HIT_LIST_SIZE);
 
         // возвращение отсортированного по популярности фильмов списка определенного размера
-        List<Film> mostPopularFilms = filmStorage.listMostPopularFilms(limit);
+        mostPopularFilms = filmStorage.listMostPopularFilms(limit, genreId, year);
 
         log.info("Количество популярных фильмов по запросу: {}", mostPopularFilms.size());
 
