@@ -139,6 +139,22 @@ public class UserDbStorage implements UserStorage {
                 user.getId());
     }
 
+    // Удаление данных о пользователях в таблице users
+    @Override
+	public void clearAll() {
+    	jdbcTemplate.execute("delete from users");
+	}
+
+    // Удаление данных о пользователях в таблице users
+	@Override
+	public boolean delete(Integer id) {
+		boolean status = false;
+		this.checkUserId(Long.valueOf(id));
+		jdbcTemplate.execute("delete from users where user_id = " + id);
+		status = true;
+		return status;
+	}
+
 
 }
 

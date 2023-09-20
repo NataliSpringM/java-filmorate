@@ -31,5 +31,14 @@ public interface FilmStorage {
         return null;
     }
 
+    List<Film> listSearchResults(String substringQuery, List<String> searchBaseBy); // поиск по названию или режиссеру
+
     void checkFilmId(Integer filmId); // проверка существования id фильма
+
+	boolean delete(Integer id); // удаление фильма по id
+
+	void clearAll(); // удаление всех фильмов
+
+    List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId);
+
 }

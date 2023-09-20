@@ -97,7 +97,7 @@ public class FilmDbStorage implements FilmStorage {
                 mpaStorage.getRatingMpaById(rs.getInt("rating_mpa_id")),
                 getFilmGenres(rs.getInt("film_id")),
                 directorStorage.getDirectorsByFilmId(rs.getInt("film_id"))
-                ));
+        ));
     }
 
 
@@ -261,8 +261,8 @@ public class FilmDbStorage implements FilmStorage {
          */
         String sqlQuery =
                 "SELECT * "
-                + " FROM (SELECT film_id FROM film_directors WHERE director_id = ?) AS ids "
-                + " LEFT JOIN films ON ids.film_id = films.film_id;";
+                        + " FROM (SELECT film_id FROM film_directors WHERE director_id = ?) AS ids "
+                        + " LEFT JOIN films ON ids.film_id = films.film_id;";
 
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> new Film(
                 rs.getInt("ids.film_id"),
@@ -274,6 +274,87 @@ public class FilmDbStorage implements FilmStorage {
                 mpaStorage.getRatingMpaById(rs.getInt("rating_mpa_id")),
                 getFilmGenres(rs.getInt("film_id")),
                 directorStorage.getDirectorsByFilmId(rs.getInt("film_id"))), directorId);
+    }
+
+    //Удаление фильма по id и возвращение boolean успешности операции
+	@Override
+	public boolean delete(Integer id) {
+		boolean status = false;
+		this.checkFilmId(id);
+		jdbcTemplate.execute("delete from films where film_id = " + id);
+		status = true;
+		return status;
+	}
+
+	//Удаление всех фильмов
+	@Override
+	public void clearAll() {
+		jdbcTemplate.execute("delete from films");
+	}
+
+    // поиск фильмов по подстроке - по названию фильма / имени режиссера
+    @Override
+    public List<Film> listSearchResults(String substringQuery, List<String> searchBaseBy) {
+
+        String filmSearch = "title";
+        String directorSearch = "director";
+
+        String filmNameField = "films.film_name)";
+        String directorNameField = "directors.director_name)";
+        String caseInsensitive = " LOWER(";
+
+        String searchTarget1 = null;
+        String searchTarget2 = null;
+        if (searchBaseBy.contains(filmSearch) && searchBaseBy.contains(directorSearch)) {
+            searchTarget1 = caseInsensitive + filmNameField;
+            searchTarget2 = caseInsensitive + directorNameField;
+        } else if (searchBaseBy.contains(filmSearch)) {
+            searchTarget1 = caseInsensitive + filmNameField;
+        } else if (searchBaseBy.contains(directorSearch)) {
+            searchTarget1 = caseInsensitive + directorNameField;
+        }
+
+        String condition = " LIKE '%" + substringQuery.toLowerCase() + "%' ";
+
+        String sqlFilm = new StringBuilder()
+                .append("SELECT ")
+                .append("films.film_id, films.film_name, films.description, films.release_date, films.duration, ")
+                .append("rating_mpa.rating_mpa_id, rating_mpa.rating_mpa_name, ")
+                .append("COUNT(likes.user_id) AS total_likes ").append("FROM films ").append("INNER JOIN rating_mpa ")
+                .append("ON films.rating_mpa_id = rating_mpa.rating_mpa_id ")
+                .append("LEFT JOIN film_directors ON films.film_id = film_directors.film_id ")
+                .append("LEFT JOIN directors ON film_directors.director_id = directors.director_id ")
+                .append("LEFT JOIN likes ON films.film_id = likes.film_id ")
+                .append("WHERE ")
+                .append(searchTarget1)
+                .append(condition)
+                .append(" OR ")
+                .append(searchTarget2)
+                .append(condition)
+                .append("GROUP BY films.film_id, films.film_name, ")
+                .append("films.description, films.release_date, films.duration, ")
+                .append("rating_mpa.rating_mpa_id, rating_mpa.rating_mpa_name ")
+                .append("ORDER BY total_likes DESC;").toString();
+
+        List<Film> films = jdbcTemplate.query(sqlFilm, (rs, rowNum) -> new Film(
+                rs.getInt("film_id"),
+                rs.getString("film_name"),
+                rs.getString("description"),
+                rs.getDate("release_date").toLocalDate(),
+                rs.getInt("duration"),
+                rs.getLong("total_likes"),
+                new Mpa(rs.getInt("rating_mpa_id"), rs.getString("rating_mpa_name")),
+                getFilmGenres(rs.getInt("film_id")),
+                directorStorage.getDirectorsByFilmId(rs.getInt("film_id"))));
+
+        String result = films.stream()
+                .map(Film::toString)
+                .collect(Collectors.joining(", "));
+
+        log.info("Список фильмов по запросу: {}.", result);
+
+        return films;
+
     }
 
     // обновление информации в таблице films
@@ -427,6 +508,36 @@ public class FilmDbStorage implements FilmStorage {
         }
         return mpa;
     }
+
+    // получает общие фильмы между двумя пользователями на основе их идентификаторов.
+    // Он выполняет SQL-запрос к базе данных, возвращая список фильмов, сгруппированных и отсортированных по количеству лайков
+    public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
+        String sqlFilm = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, r.rating_mpa_id, "
+                + "r.rating_mpa_name, COUNT(likes.user_id) AS total_likes "
+                + "FROM films AS f "
+                + "INNER JOIN rating_mpa AS r ON f.rating_mpa_id = r.rating_mpa_id "
+                + "LEFT JOIN likes ON f.film_id = likes.film_id "
+                + "INNER JOIN likes AS l1 ON f.film_id = l1.film_id AND l1.user_id = " + userId + " "
+                + "INNER JOIN likes AS l2 ON f.film_id = l2.film_id AND l2.user_id = " + friendId + " "
+                + "GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration, "
+                + "r.rating_mpa_id, r.rating_mpa_name "
+                + "ORDER BY total_likes DESC";
+
+        List<Film> films = jdbcTemplate.query(sqlFilm, (rs, rowNum) -> new Film(
+                rs.getInt("film_id"),
+                rs.getString("film_name"),
+                rs.getString("description"),
+                rs.getDate("release_date").toLocalDate(),
+                rs.getInt("duration"),
+                rs.getLong("total_likes"),
+                new Mpa(rs.getInt("rating_mpa_id"), rs.getString("rating_mpa_name")),
+                getFilmGenres(rs.getInt("film_id")),
+                directorStorage.getDirectorsByFilmId(rs.getInt("film_id"))));
+
+        return films;
+    }
+
+
 }
 
 

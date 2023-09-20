@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
@@ -104,6 +105,15 @@ public class UserServiceImpl implements UserService {
         return friendshipStorage.isFriendshipConfirmed(userId, friendId);
     }
 
+    @Override
+	public boolean delete(Integer id) {
+    	return userStorage.delete(id);
+	}
+
+	@Override
+	public void clearAll() {
+		userStorage.clearAll();
+	}
 
     // преобразование набора id в список пользователей
     private List<User> convertIdSetToUserList(Set<Long> set) {

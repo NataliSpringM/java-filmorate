@@ -2,9 +2,14 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
@@ -22,6 +27,7 @@ public class FilmController {
     http://localhost:8080/films */
 
     private final FilmService filmService;
+    private final EventService eventService;
 
 
     // обработка POST-запроса на добавление информации о фильме
@@ -58,6 +64,7 @@ public class FilmController {
     public void addLike(@PathVariable Integer id, @PathVariable Long userId) {
 
         filmService.addLike(id, userId);
+        eventService.addEvent(userId, Long.valueOf(id), "LIKE", "ADD");
     }
 
     // обработка DELETE-запроса на удаление лайка фильму
@@ -65,6 +72,7 @@ public class FilmController {
     public void deleteLike(@PathVariable Integer id, @PathVariable Long userId) {
 
         filmService.deleteLike(id, userId);
+        eventService.addEvent(userId, Long.valueOf(id), "LIKE", "REMOVE");
     }
 
     // обработка запросов GET /films/popular?count={limit}&genreId={genreId}&year={year}
@@ -77,6 +85,29 @@ public class FilmController {
         return filmService.listMostPopularFilms(count, genreId, year);
     }
 
+    // обработка DELETE-запроса на удаление фильма по id
+    @DeleteMapping (value = "/{id}")
+	public boolean delete(@PathVariable Integer id) {
+		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS_ID', id:{}", id);
+		boolean deleted = filmService.delete(id);
+		if (deleted) {
+			log.debug("Возвращены данные фильма id = {}.", id);
+			return deleted;
+		} else {
+			log.warn("Фильм id = {} в списке не найден.", id);
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+	}
+
+    // обработка DELETE-запроса на удаление всех фильмов
+    @DeleteMapping
+	public List<Film> deleteAll() {
+		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS'. "
+				+ "Список фильмов пуст.");
+		filmService.clearFilms();
+		return filmService.listFilms();
+	}
+
     // обработка запросов GET /films/director/{directorId}?sortBy=[year,likes]
     @GetMapping("/director/{directorId}")
     public List<Film> getSortedFilmsOfDirector(@PathVariable @Positive Integer directorId,
@@ -87,8 +118,21 @@ public class FilmController {
         return filmService.listSortedFilmsOfDirector(directorId, sortBy);
     }
 
+    // поиск по подстроке названия фильма или режиссера
+    @GetMapping("/search")
+    public List<Film> listSearchResult(@RequestParam(name = "query") String query,
+                                       @RequestParam(name = "by") List<String> by) {
+
+        return filmService.listSearchResult(query, by);
+    }
+
+    // обработка GET-запроса на получение общих фильмов между пользователями
+    @GetMapping("/common")
+    public List<Film> listCommonFilms(
+            @RequestParam(name = "userId") Long userId,
+            @RequestParam(name = "friendId") Long friendId) {
+        return filmService.getCommonFilmsBetweenUsers(userId, friendId);
+    }
 
 }
-
-
 

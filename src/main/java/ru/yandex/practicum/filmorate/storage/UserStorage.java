@@ -20,5 +20,9 @@ public interface UserStorage {
 
     void checkUserId(Long userId); // проверка существования id пользователя
 
+	void clearAll(); // удаление всех пользователей
+
+	boolean delete(Integer id); // удаление пользователя по id
+
 
 }

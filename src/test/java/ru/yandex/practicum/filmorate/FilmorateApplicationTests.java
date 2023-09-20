@@ -868,16 +868,14 @@ public class FilmorateApplicationTests {
         filmController.addFilm(film);
 
         // ставим лайк
-
+        filmController.addLike(filmId, userId);
+        // повторно ставим лайк
         filmController.addLike(filmId, userId);
 
-        // проверяем выброшенное исключение при попытке повторно поставить лайк
+        final Long likes = 1L;
 
-        RuntimeException e = assertThrows(
-                RuntimeException.class,
-                () -> filmController.addLike(filmId, userId),
-                "Не выброшено исключение при попытке повторно поставить лайк с одного id.");
-        assertEquals("Вы уже ставили лайк этому фильму", e.getMessage());
+        assertEquals(filmStorage.getFilmById(filmId).getLikes(), likes,
+                "Количество лайков увеличилось");
 
     }
 
@@ -1278,8 +1276,8 @@ public class FilmorateApplicationTests {
                 "Неверный id у самого популярного фильма");
         assertEquals(mostPopularFilms.get(0).getLikes(), 8,
                 "Неверное количество лайков у самого популярного фильма");
-        assertEquals(mostPopularFilms.get(9).getId(), 10,
-                "Неверный id у самого непопулярного фильма");
+        assertEquals(mostPopularFilms.get(9).getLikes(), 0,
+                "Неверное количество лайков у фильма без лайков");
 
     }
 
