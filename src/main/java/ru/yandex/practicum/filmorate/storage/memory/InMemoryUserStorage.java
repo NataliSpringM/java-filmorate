@@ -91,6 +91,21 @@ public class InMemoryUserStorage implements UserStorage {
                         new ObjectNotFoundException(String.format("Пользователь с id: %d не найден", userId)));
     }
 
+    @Override
+	public void clearAll() {
+		this.users.clear();
+	}
+
+	@Override
+	public boolean delete(Integer id) {
+		boolean isPresent = false;
+		if (users.containsKey(Long.valueOf(id))) {
+			isPresent = true;
+			users.remove(Long.valueOf(id));
+		}
+		return isPresent;
+	}
+
     public void updateUserProperties(User user) { // сохранение новой или обновленной информации о пользователе
         users.put(user.getId(), user);
     }

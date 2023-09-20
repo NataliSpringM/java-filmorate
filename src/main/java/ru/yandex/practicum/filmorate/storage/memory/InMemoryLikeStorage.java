@@ -39,16 +39,14 @@ public class InMemoryLikeStorage implements LikeStorage {
 
             // обновляем список поставивших лайки для фильма
             likes.put(filmId, filmLikesByUsers);
+            log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
 
         } else {
-
-            throw new RuntimeException("Вы уже ставили лайк этому фильму");
+            log.info("Пользователь {} пытался повторно поставить лайк фильму {}", userId, filmId);
         }
 
         // обновление данных о фильме в хранилище фильмов
         updateFilmLikes(filmId);
-
-        log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
 
     }
 

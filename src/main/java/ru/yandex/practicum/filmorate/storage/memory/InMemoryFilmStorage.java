@@ -123,5 +123,37 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Film> listFilmsOfDirector(Integer directorId) {
+        return FilmStorage.super.listFilmsOfDirector(directorId);
+    }
+
+    @Override
+	public void clearAll() {
+		this.films.clear();
+	}
+
+	@Override
+	public boolean delete(Integer id) {
+		boolean isPresent = false;
+		if (films.containsKey(id)) {
+			isPresent = true;
+			films.remove(id);
+		}
+		return isPresent;
+	}
+
+    public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
+
+        return null;
+
+    }
+
+    @Override
+    public List<Film> listSearchResults(String substringQuery, List<String> searchBaseBy) {
+
+        return null;
+
+    }
 
 }

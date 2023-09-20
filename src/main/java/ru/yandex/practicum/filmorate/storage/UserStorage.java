@@ -20,4 +20,10 @@ public interface UserStorage {
     void updateUserProperties(User user); // сохранение новой или обновленной информации о пользователе
 
     void checkUserId(Long userId); // проверка существования id пользователя
+
+	void clearAll(); // удаление всех пользователей
+
+	boolean delete(Integer id); // удаление пользователя по id
+
+
 }

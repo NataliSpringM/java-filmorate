@@ -38,6 +38,7 @@ public class Film {
     Long likes; // количество лайков
     Mpa mpa; // рейтинг MPA
     Set<FilmGenre> genres; // информация о жанрах фильма
+    Set<Director> directors; // информация о режиссерах фильма
 
     public Map<String, Object> toMap() {
 
@@ -51,5 +52,4 @@ public class Film {
 
         return filmProperties;
     }
-
 }
