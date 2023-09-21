@@ -4,16 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
-
-import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.db.FilmDbStorage;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -25,6 +26,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final FilmDbStorage filmDbStorage;
     private final FriendshipStorage friendshipStorage;
 
     // добавление информации о пользователе
@@ -106,14 +108,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-	public boolean delete(Integer id) {
-    	return userStorage.delete(id);
-	}
+    public boolean delete(Integer id) {
+        return userStorage.delete(id);
+    }
 
-	@Override
-	public void clearAll() {
-		userStorage.clearAll();
-	}
+    @Override
+    public void clearAll() {
+        userStorage.clearAll();
+    }
 
     // преобразование набора id в список пользователей
     private List<User> convertIdSetToUserList(Set<Long> set) {
@@ -126,7 +128,7 @@ public class UserServiceImpl implements UserService {
     public List<Film> getRecommendation(Long userId) {
         try {
             userStorage.checkUserId(userId);
-            List<Film> recommendations = filmStorage.getRecommendation(userId);
+            List<Film> recommendations = filmDbStorage.getRecommendation(userId);
             log.info("Получен список рекоммендаций для пользователя user_id=" + userId + ".");
             return recommendations;
         } catch (IncorrectResultSizeDataAccessException e) {

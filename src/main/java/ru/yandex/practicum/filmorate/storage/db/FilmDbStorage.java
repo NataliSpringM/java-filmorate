@@ -9,16 +9,15 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
-
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +33,7 @@ public class FilmDbStorage implements FilmStorage {
     private final LikeDbStorage likeStorage;
     private final RatingMpaDbStorage mpaStorage;
     private final FilmGenreDbStorage filmGenresStorage;
+    private final FilmMapper filmMapper;
     @Autowired
     private final DirectorStorage directorStorage;
 
@@ -283,20 +283,20 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     //Удаление фильма по id и возвращение boolean успешности операции
-	@Override
-	public boolean delete(Integer id) {
-		boolean status = false;
-		this.checkFilmId(id);
-		jdbcTemplate.execute("delete from films where film_id = " + id);
-		status = true;
-		return status;
-	}
+    @Override
+    public boolean delete(Integer id) {
+        boolean status = false;
+        this.checkFilmId(id);
+        jdbcTemplate.execute("delete from films where film_id = " + id);
+        status = true;
+        return status;
+    }
 
-	//Удаление всех фильмов
-	@Override
-	public void clearAll() {
-		jdbcTemplate.execute("delete from films");
-	}
+    //Удаление всех фильмов
+    @Override
+    public void clearAll() {
+        jdbcTemplate.execute("delete from films");
+    }
 
     // поиск фильмов по подстроке - по названию фильма / имени режиссера
     @Override
@@ -426,7 +426,7 @@ public class FilmDbStorage implements FilmStorage {
 
     // получение жанров фильма из таблицы film_genres по id фильма и полную информацию о них из таблицы genres
 
-    private Set<FilmGenre> getFilmGenres(Integer filmId) {
+    public Set<FilmGenre> getFilmGenres(Integer filmId) {
 
         SqlRowSet genreRows = jdbcTemplate
                 .queryForRowSet("SELECT genre_id FROM film_genres WHERE film_id = ?", filmId);
@@ -515,50 +515,10 @@ public class FilmDbStorage implements FilmStorage {
         return mpa;
     }
 
-
-    @Override
-    public List<Film> getRecommendation(Long userId) {
-        String sqlQuery = "SELECT fl1.user_id " +
-                "FROM likes AS fl1 " +
-                "LEFT JOIN likes AS fl2 " +
-                "ON fl1.user_id = fl2.user_id " +
-                "WHERE fl1.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
-                "AND fl1.user_id <> ? " +
-                "GROUP BY fl1.user_id  " +
-                "ORDER BY COUNT (fl1.film_id) DESC, COUNT (fl2.film_id)  DESC LIMIT 1 ";
-        Integer optimalUser = jdbcTemplate.queryForObject(sqlQuery,
-                (ResultSet resultSet, int rowNum) -> resultSet.getInt("user_id"), userId, userId);
-        if (!(optimalUser == null)) {
-            String sqlQuery2 = "SELECT * " +
-                    "FROM likes AS fl LEFT JOIN films AS f " +
-                    "ON fl.film_id = f.film_id " +
-                    "WHERE fl.user_id = ? " +
-                    "AND fl.film_id NOT IN (SELECT film_id FROM films_likes WHERE user_id = ?)";
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(sqlQuery2, optimalUser, userId);
-            List<Film> films = new ArrayList<>();
-            for (Map<String, Object> row : rows) {
-                Film film = new Film(
-                        (Integer) row.get("film_id"),
-                        (String) row.get("film_name"),
-                        (String) row.get("description"),
-                        LocalDate.parse((String) row.get("release_date")),
-                        (Integer) row.get("duration"),
-                        (Long) row.get("likes"),
-                        mpaStorage.getRatingMpaById((Integer) row.get("rating_mpa_id")),
-                        getFilmGenres((Integer) row.get("genre_id"))
-                );
-                films.add(film);
-            }
-            return films;
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    // получает общие фильмы между двумя пользователями на основе их идентификаторов.
-    // Он выполняет SQL-запрос к базе данных, возвращая список фильмов, сгруппированных и отсортированных по количеству лайков
+    //     получает общие фильмы между двумя пользователями на основе их идентификаторов.
+//     Он выполняет SQL-запрос к базе данных, возвращая список фильмов, сгруппированных и отсортированных по количеству лайков
     public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
-        String sqlFilm = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, r.rating_mpa_id, "
+        String sqlFilm = "SELECT f.film_id"
                 + "r.rating_mpa_name, COUNT(likes.user_id) AS total_likes "
                 + "FROM films AS f "
                 + "INNER JOIN rating_mpa AS r ON f.rating_mpa_id = r.rating_mpa_id "
@@ -583,7 +543,40 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
-
+    /**
+     * Метод getRecommendation(Long userId) возвращает список рекомендуемых фильмов для пользователя с указанным
+     * идентификатором. Для этого метод выполняет два SQL-запроса к базе данных: первый запрос находит пользователя,
+     * который совпадает с текущим пользователем по предпочтениям в просмотренных фильмах, а второй запрос находит
+     * фильмы, которые были просмотрены этим оптимальным пользователем, но не были просмотрены текущим пользователем.
+     * Если оптимальный пользователь не найден, то метод возвращает пустой список.
+     *
+     * @param userId
+     * @return dbcTemplate.query(sqlQuery2, filmMapper, optimalUser, userId);
+     * @autor @nvvoronkov
+     */
+    @Override
+    public List<Film> getRecommendation(final Long userId) {
+        String sqlQuery = "SELECT fl1.user_id " +
+                "FROM likes AS fl1 " +
+                "LEFT JOIN likes AS fl2 " +
+                "ON fl1.user_id = fl2.user_id " +
+                "WHERE fl1.film_id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                "AND fl1.user_id <> ? " +
+                "GROUP BY fl1.user_id  " +
+                "ORDER BY COUNT (fl1.film_id) DESC, COUNT (fl2.film_id)  DESC LIMIT 1 ";
+        Integer optimalUser = jdbcTemplate.queryForObject(sqlQuery,
+                (ResultSet resultSet, int rowNum) -> resultSet.getInt("user_id"), userId, userId);
+        if (!(optimalUser == null)) {
+            String sqlQuery2 = "SELECT * " +
+                    "FROM likes AS fl LEFT JOIN films AS f " +
+                    "ON fl.film_id = f.film_id " +
+                    "WHERE fl.user_id = ? " +
+                    "AND fl.film_id NOT IN (SELECT film_id FROM likes WHERE user_id = ?)";
+            return jdbcTemplate.query(sqlQuery2, filmMapper, optimalUser, userId);
+        } else {
+            return Collections.emptyList();
+        }
+    }
 }
 
 
