@@ -3,23 +3,16 @@ package ru.yandex.practicum.filmorate.storage.db;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
-
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.sql.ResultSet;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Repository
@@ -146,20 +139,19 @@ public class UserDbStorage implements UserStorage {
 
     // Удаление данных о пользователях в таблице users
     @Override
-	public void clearAll() {
-    	jdbcTemplate.execute("delete from users");
-	}
+    public void clearAll() {
+        jdbcTemplate.execute("delete from users");
+    }
 
     // Удаление данных о пользователях в таблице users
-	@Override
-	public boolean delete(Integer id) {
-		boolean status = false;
-		this.checkUserId(Long.valueOf(id));
-		jdbcTemplate.execute("delete from users where user_id = " + id);
-		status = true;
-		return status;
-	}
-
+    @Override
+    public boolean delete(Integer id) {
+        boolean status = false;
+        this.checkUserId(Long.valueOf(id));
+        jdbcTemplate.execute("delete from users where user_id = " + id);
+        status = true;
+        return status;
+    }
 
 
 }
