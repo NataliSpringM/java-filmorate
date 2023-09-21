@@ -8,6 +8,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.EventService;
@@ -88,6 +90,13 @@ public class UserController {
         return userService.listCommonFriends(id, otherId);
     }
 
+
+    @GetMapping("{id}/recommendations")
+    @ResponseBody
+    public List<Film> getRecommendation(@PathVariable("id") Long id) {
+        return userService.getRecommendation(id);
+    }
+
     // обработка DELETE-запроса на добавление друга
     @DeleteMapping
 	public List<User> deleteAll() {
@@ -116,7 +125,6 @@ public class UserController {
     public List<Event> listUserEvents(@RequestBody @PathVariable Long id) {
     	return eventService.listUserEvents(id);
     }
-
 }
 
 

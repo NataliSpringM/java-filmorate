@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.memory;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -50,6 +49,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (!films.containsKey(filmId)) {
             throw new ObjectNotFoundException(String.format("Фильм с id: %d не найден", filmId));
         }
+    }
+
+    @Override
+    public List<Film> getRecommendation(Long userId) {
+        return null;
     }
 
     // обновление информации о фильме

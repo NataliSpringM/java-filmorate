@@ -24,5 +24,4 @@ public interface UserStorage {
 
 	boolean delete(Integer id); // удаление пользователя по id
 
-
 }

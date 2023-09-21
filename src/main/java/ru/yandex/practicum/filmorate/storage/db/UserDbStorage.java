@@ -6,14 +6,13 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
-
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Repository
@@ -22,7 +21,6 @@ import java.util.*;
 public class UserDbStorage implements UserStorage {
 
     // реализация сохранения и получения информации о пользователях в базе данных
-
     private final FriendshipDbStorage friendDbStorage;
     private final JdbcTemplate jdbcTemplate;
 
@@ -141,19 +139,19 @@ public class UserDbStorage implements UserStorage {
 
     // Удаление данных о пользователях в таблице users
     @Override
-	public void clearAll() {
-    	jdbcTemplate.execute("delete from users");
-	}
+    public void clearAll() {
+        jdbcTemplate.execute("delete from users");
+    }
 
     // Удаление данных о пользователях в таблице users
-	@Override
-	public boolean delete(Integer id) {
-		boolean status = false;
-		this.checkUserId(Long.valueOf(id));
-		jdbcTemplate.execute("delete from users where user_id = " + id);
-		status = true;
-		return status;
-	}
+    @Override
+    public boolean delete(Integer id) {
+        boolean status = false;
+        this.checkUserId(Long.valueOf(id));
+        jdbcTemplate.execute("delete from users where user_id = " + id);
+        status = true;
+        return status;
+    }
 
 
 }
