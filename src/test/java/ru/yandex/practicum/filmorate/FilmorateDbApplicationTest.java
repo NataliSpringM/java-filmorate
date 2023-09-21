@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.DirectorService;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.*;
@@ -30,6 +31,7 @@ public class FilmorateDbApplicationTest {
     private final UserStorage userStorage;
     private final UserService userService;
     private final FilmStorage filmStorage;
+    private final FilmService filmService;
     private final LikeStorage likeStorage;
     private final RatingMpaStorage mpaStorage;
     private final FilmGenreStorage genreStorage;
@@ -1228,13 +1230,13 @@ public class FilmorateDbApplicationTest {
     @Test
     public void testCommonFilmsBetweenUsersWithLikes() {
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        Film film = filmStorage.addFilm(filmTomAndJerry);
-        userService.addFriend(user1.getId(), user2.getId());
-        likeStorage.addLike(film.getId(), user1.getId());
-        likeStorage.addLike(film.getId(), user2.getId());
-        filmStorage.getCommonFilmsBetweenUsers(user1.getId(), user2.getId());
+        userService.addUser(userAlex1);
+        userService.addUser(userEgor2);
+        filmService.addFilm(filmTomAndJerry);
+        userService.addFriend(1L, 2L);
+        filmService.addLike(1, 1L);
+        filmService.addLike(1, 2L);
+        filmService.getCommonFilmsBetweenUsers(1L, 2L);
 
     }
 }

@@ -518,27 +518,18 @@ public class FilmDbStorage implements FilmStorage {
     //     получает общие фильмы между двумя пользователями на основе их идентификаторов.
 //     Он выполняет SQL-запрос к базе данных, возвращая список фильмов, сгруппированных и отсортированных по количеству лайков
     public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
-        String sqlFilm = "SELECT f.film_id"
-                + "r.rating_mpa_name, COUNT(likes.user_id) AS total_likes "
+    	String sqlFilm = "SELECT f.*, r.*, COUNT(l.user_id) AS total_likes "
                 + "FROM films AS f "
                 + "INNER JOIN rating_mpa AS r ON f.rating_mpa_id = r.rating_mpa_id "
-                + "LEFT JOIN likes ON f.film_id = likes.film_id "
-                + "INNER JOIN likes AS l1 ON f.film_id = l1.film_id AND l1.user_id = " + userId + " "
-                + "INNER JOIN likes AS l2 ON f.film_id = l2.film_id AND l2.user_id = " + friendId + " "
-                + "GROUP BY f.film_id, f.film_name, f.description, f.release_date, f.duration, "
-                + "r.rating_mpa_id, r.rating_mpa_name "
+                + "LEFT JOIN likes AS l ON f.film_id = l.film_id "
+                + "INNER JOIN likes AS l1 ON f.film_id = l1.film_id AND l1.user_id = ? "
+                + "INNER JOIN likes AS l2 ON f.film_id = l2.film_id AND l2.user_id = ? "
+                + "GROUP BY f.film_id "
                 + "ORDER BY total_likes DESC";
 
-        List<Film> films = jdbcTemplate.query(sqlFilm, (rs, rowNum) -> new Film(
-                rs.getInt("film_id"),
-                rs.getString("film_name"),
-                rs.getString("description"),
-                rs.getDate("release_date").toLocalDate(),
-                rs.getInt("duration"),
-                rs.getLong("total_likes"),
-                new Mpa(rs.getInt("rating_mpa_id"), rs.getString("rating_mpa_name")),
-                getFilmGenres(rs.getInt("film_id")),
-                directorStorage.getDirectorsByFilmId(rs.getInt("film_id"))));
+        List<Film> films = jdbcTemplate.query(sqlFilm,
+                filmMapper,
+                userId, friendId);
 
         return films;
     }
