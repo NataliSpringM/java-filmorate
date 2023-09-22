@@ -25,5 +25,5 @@ Authors:
 ### [Vitaly Sarychev](https://github.com/SarychV)  
 ### [Nikita Kirianov](https://github.com/IHukumka)  
 ### [Yaroslav Timoshenko](https://github.com/NewVegas3)  
-### [Nikita Воронков](https://github.com/nvvoronkov)  
+### [Nikita Voronkov](https://github.com/nvvoronkov)  
 GitHub: [Fimorate](https://github.com/NataliSpringM/java-filmorate)  

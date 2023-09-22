@@ -16,43 +16,43 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 @RestControllerAdvice("ru.yandex.practicum.filmorate.controllers")
 public class ErrorHandler {
 
-	/**
-	 * обработка ошибок при запросах с несуществующим идентификатором объета
-	 *
-	 * @param e
-	 * @return
-	 */
-	@ExceptionHandler(ObjectNotFoundException.class)
-	@ResponseStatus(HttpStatus.NOT_FOUND)
-	public ErrorResponse handleNotFoundId(final RuntimeException e) {
+    /**
+     * обработка ошибок при запросах с несуществующим идентификатором объета
+     *
+     * @param e exception
+     * @return ErrorResponse текст
+     */
+    @ExceptionHandler(ObjectNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFoundId(final RuntimeException e) {
 
-		return new ErrorResponse("Несуществующий id: " + e.getMessage());
-	}
+        return new ErrorResponse("Несуществующий id: " + e.getMessage());
+    }
 
-	/**
-	 * обработка ошибок при прохождении валидации
-	 *
-	 * @param e
-	 * @return
-	 */
-	@ExceptionHandler(ConstraintViolationException.class)
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public ErrorResponse handleFailValidation(final RuntimeException e) {
+    /**
+     * обработка ошибок при прохождении валидации
+     *
+     * @param e exception
+     * @return ErrorResponse текст
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleFailValidation(final RuntimeException e) {
 
-		return new ErrorResponse("Ошибка валидации: " + e.getMessage());
-	}
+        return new ErrorResponse("Ошибка валидации: " + e.getMessage());
+    }
 
-	/**
-	 * обработка непредвиденных ошибок
-	 *
-	 * @param e
-	 * @return
-	 */
-	@ExceptionHandler
-	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-	public ErrorResponse handleUnknownError(final Throwable e) {
+    /**
+     * обработка непредвиденных ошибок
+     *
+     * @param e Exception
+     * @return ErrorResponse текст
+     */
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleUnknownError(final Throwable e) {
 
-		return new ErrorResponse("Произошла непредвиденная ошибка: " + e.getMessage());
-	}
+        return new ErrorResponse("Произошла непредвиденная ошибка: " + e.getMessage());
+    }
 
 }

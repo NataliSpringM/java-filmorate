@@ -8,46 +8,39 @@ import java.util.Set;
 
 public interface FriendshipStorage {
 
-	/**
-	 * добавление пользователя в список друзей в UserStorage
-	 *
-	 * @param userId
-	 * @param friendId
-	 */
-	void addFriend(Long userId, Long friendId);
+    /**
+     * добавление пользователя в список друзей в UserStorage
+     *
+     * @param userId   id пользователя
+     * @param friendId id друга
+     */
+    void addFriend(Long userId, Long friendId);
 
-	/**
-	 * удаление пользователя из списка друзей в UserStorage
-	 *
-	 * @param userId
-	 * @param friendId
-	 */
-	void deleteFriend(Long userId, Long friendId);
+    /**
+     * удаление пользователя из списка друзей в UserStorage
+     *
+     * @param userId   id пользователя
+     * @param friendId id друга
+     */
+    void deleteFriend(Long userId, Long friendId);
 
-	/**
-	 * получение списка друзей пользователя из UserStorage
-	 *
-	 * @param id
-	 * @return
-	 */
-	Set<Long> listUserFriends(Long id);
 
-	/**
-	 * получение списка общих друзей
-	 *
-	 * @param userId
-	 * @param otherId
-	 * @return
-	 */
-	Set<Long> listCommonFriends(Long userId, Long otherId);
+    /**
+     * список id друзей пользователя
+     *
+     * @param id id пользователя
+     * @return список id
+     */
+    Set<Long> listUserFriendsId(Long id); // получение списка id  друзей пользователя
 
-	/**
-	 * проверка взаимности дружбы
-	 *
-	 * @param userId
-	 * @param friendId
-	 * @return
-	 */
-	Boolean isFriendshipConfirmed(Long userId, Long friendId);
+
+    /**
+     * проверка взаимности дружбы
+     *
+     * @param userId   id пользователя
+     * @param friendId id потенциального друга
+     * @return подтверждение является ли дружба взаимной
+     */
+    Boolean isFriendshipConfirmed(Long userId, Long friendId);
 
 }

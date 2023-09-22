@@ -35,168 +35,171 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 @RequiredArgsConstructor
 public class FilmController {
 
-	private final FilmService filmService;
-	private final EventService eventService;
+    private final FilmService filmService;
+    private final EventService eventService;
 
-	/**
-	 * обработка POST-запроса на добавление информации о фильме
-	 *
-	 * @param film
-	 * @return
-	 */
-	@PostMapping()
-	public Film addFilm(@Valid @RequestBody Film film) {
+    /**
+     * обработка POST-запроса на добавление информации о фильме
+     *
+     * @param film объект Film
+     * @return объект Film с id
+     */
+    @PostMapping()
+    public Film addFilm(@Valid @RequestBody Film film) {
 
-		return filmService.addFilm(film);
-	}
+        return filmService.addFilm(film);
+    }
 
-	/**
-	 * обработка PUT-запроса на обновление информации о фильме
-	 *
-	 * @param film
-	 * @return
-	 */
-	@PutMapping()
-	public Film updateFilm(@Valid @RequestBody Film film) {
+    /**
+     * обработка PUT-запроса на обновление информации о фильме
+     *
+     * @param film объект Film
+     * @return обновленный объект Film
+     */
+    @PutMapping()
+    public Film updateFilm(@Valid @RequestBody Film film) {
 
-		return filmService.updateFilm(film);
-	}
+        return filmService.updateFilm(film);
+    }
 
-	/**
-	 * обработка GET-запроса на получение фильма по идентификатору
-	 *
-	 * @param id
-	 * @return
-	 */
-	@GetMapping("/{id}")
+    /**
+     * обработка GET-запроса на получение фильма по идентификатору
+     *
+     * @param id id фильма
+     * @return объект Film
+     */
+    @GetMapping("/{id}")
 
-	public Film getFilmById(@PathVariable Integer id) {
+    public Film getFilmById(@PathVariable Integer id) {
 
-		return filmService.getFilmById(id);
-	}
+        return filmService.getFilmById(id);
+    }
 
-	/**
-	 * обработка GET-запроса на получение списка всех фильмов
-	 *
-	 * @return
-	 */
-	@GetMapping()
-	public List<Film> listFilms() {
+    /**
+     * обработка GET-запроса на получение списка всех фильмов
+     *
+     * @return список фильмов
+     */
+    @GetMapping()
+    public List<Film> listFilms() {
 
-		return filmService.listFilms();
-	}
+        return filmService.listFilms();
+    }
 
-	/**
-	 * обработка PUT-запроса на добавление лайка фильму
-	 *
-	 * @param id
-	 * @param userId
-	 */
-	@PutMapping("/{id}/like/{userId}")
-	public void addLike(@PathVariable Integer id, @PathVariable Long userId) {
+    /**
+     * обработка PUT-запроса на добавление лайка фильму
+     *
+     * @param id     id фильма
+     * @param userId id пользователя
+     */
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Integer id, @PathVariable Long userId) {
 
-		filmService.addLike(id, userId);
-		eventService.addEvent(userId, Long.valueOf(id), "LIKE", "ADD");
-	}
+        filmService.addLike(id, userId);
+        eventService.addEvent(userId, Long.valueOf(id), "LIKE", "ADD");
+    }
 
-	/**
-	 * обработка DELETE-запроса на удаление лайка фильму
-	 *
-	 * @param id
-	 * @param userId
-	 */
-	@DeleteMapping("/{id}/like/{userId}")
-	public void deleteLike(@PathVariable Integer id, @PathVariable Long userId) {
+    /**
+     * обработка DELETE-запроса на удаление лайка фильму
+     *
+     * @param id     id фильма
+     * @param userId id пользователя
+     */
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable Integer id, @PathVariable Long userId) {
 
-		filmService.deleteLike(id, userId);
-		eventService.addEvent(userId, Long.valueOf(id), "LIKE", "REMOVE");
-	}
+        filmService.deleteLike(id, userId);
+        eventService.addEvent(userId, Long.valueOf(id), "LIKE", "REMOVE");
+    }
 
-	/**
-	 * обработка GET-запроса на получение списка наиболее популярных фильмов
-	 *
-	 * @param count
-	 * @return
-	 */
-	@GetMapping("/popular")
-	public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
-			@RequestParam(required = false) Integer genreId, @RequestParam(required = false) Integer year) {
+    /**
+     * обработка GET-запроса на получение списка наиболее популярных фильмов
+     *
+     * @param count возможное ограничение размера списка
+     * @return список наиболее популярных фильмов
+     */
+    @GetMapping("/popular")
+    public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
+                                           @RequestParam(required = false) Integer genreId,
+                                           @RequestParam(required = false) Integer year) {
 
-		return filmService.listMostPopularFilms(count, genreId, year);
-	}
+        return filmService.listMostPopularFilms(count, genreId, year);
+    }
 
-	/**
-	 * обработка DELETE-запроса на удаление фильма по id
-	 *
-	 * @param id
-	 * @return
-	 */
-	@DeleteMapping(value = "/{id}")
-	public boolean delete(@PathVariable Integer id) {
-		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS_ID', id:{}", id);
-		boolean deleted = filmService.delete(id);
-		if (deleted) {
-			log.debug("Возвращены данные фильма id = {}.", id);
-			return deleted;
-		} else {
-			log.warn("Фильм id = {} в списке не найден.", id);
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-		}
-	}
+    /**
+     * обработка DELETE-запроса на удаление фильма по id
+     *
+     * @param id id фильма
+     * @return подтверждение удаления
+     */
+    @DeleteMapping(value = "/{id}")
+    public boolean delete(@PathVariable Integer id) {
+        log.info("Получен запрос к эндпоинту: 'DELETE_FILMS_ID', id:{}", id);
+        boolean deleted = filmService.delete(id);
+        if (deleted) {
+            log.debug("Возвращены данные фильма id = {}.", id);
+            return deleted;
+        } else {
+            log.warn("Фильм id = {} в списке не найден.", id);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
 
-	/**
-	 * обработка DELETE-запроса на удаление всех фильмов
-	 *
-	 * @return
-	 */
-	@DeleteMapping
-	public List<Film> deleteAll() {
-		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS'. " + "Список фильмов пуст.");
-		filmService.clearFilms();
-		return filmService.listFilms();
-	}
+    /**
+     * обработка DELETE-запроса на удаление всех фильмов
+     *
+     * @return пустой список
+     */
+    @DeleteMapping
+    public List<Film> deleteAll() {
+        log.info("Получен запрос к эндпоинту: 'DELETE_FILMS'. "
+                + "Список фильмов пуст.");
+        filmService.clearFilms();
+        return filmService.listFilms();
+    }
 
-	/**
-	 * обработка запросов GET /films/director/{directorId}?sortBy=[year,likes]
-	 *
-	 * @param directorId
-	 * @param sortBy
-	 * @return
-	 */
-	@GetMapping("/director/{directorId}")
-	public List<Film> getSortedFilmsOfDirector(@PathVariable @Positive Integer directorId,
-			@RequestParam(required = false, defaultValue = "year") String sortBy) {
-		if (!sortBy.equals("year") && !sortBy.equals("likes")) {
-			sortBy = "year";
-		}
-		return filmService.listSortedFilmsOfDirector(directorId, sortBy);
-	}
+    /**
+     * обработка запросов GET /films/director/{directorId}?sortBy=[year,likes]
+     *
+     * @param directorId id режиссера
+     * @param sortBy     параметр сортировки
+     * @return cписок фильмов определенного режиссера с возможной сортировкой по году или популярности
+     */
+    @GetMapping("/director/{directorId}")
+    public List<Film> getSortedFilmsOfDirector(@PathVariable @Positive Integer directorId,
+                                               @RequestParam(required = false, defaultValue = "year") String sortBy) {
+        if (!sortBy.equals("year") && !sortBy.equals("likes")) {
+            sortBy = "year";
+        }
+        return filmService.listSortedFilmsOfDirector(directorId, sortBy);
+    }
 
-	/**
-	 * поиск по подстроке названия фильма или режиссера
-	 *
-	 * @param query
-	 * @param by
-	 * @return
-	 */
-	@GetMapping("/search")
-	public List<Film> listSearchResult(@RequestParam(name = "query") String query,
-			@RequestParam(name = "by") List<String> by) {
+    /**
+     * поиск по подстроке названия фильма или режиссера
+     *
+     * @param query подстрока для запроса
+     * @param by    параметр поиска по подстроке
+     * @return список найденных фильмов
+     */
+    @GetMapping("/search")
+    public List<Film> listSearchResult(@RequestParam(name = "query") String query,
+                                       @RequestParam(name = "by") List<String> by) {
 
-		return filmService.listSearchResult(query, by);
-	}
+        return filmService.listSearchResult(query, by);
+    }
 
-	/**
-	 * обработка GET-запроса на получение общих фильмов между пользователями
-	 *
-	 * @param userId
-	 * @param friendId
-	 * @return
-	 */
-	@GetMapping("/common")
-	public List<Film> listCommonFilms(@RequestParam(name = "userId") Long userId,
-			@RequestParam(name = "friendId") Long friendId) {
-		return filmService.getCommonFilmsBetweenUsers(userId, friendId);
-	}
+    /**
+     * обработка GET-запроса на получение общих фильмов между пользователями
+     *
+     * @param userId   id пользователя
+     * @param friendId id второго пользователя
+     * @return список общих понравившихся фильмов
+     */
+    @GetMapping("/common")
+    public List<Film> listCommonFilms(@RequestParam(name = "userId") Long userId,
+                                      @RequestParam(name = "friendId") Long friendId) {
+        return filmService.getCommonFilmsBetweenUsers(userId, friendId);
+    }
+
 
 }

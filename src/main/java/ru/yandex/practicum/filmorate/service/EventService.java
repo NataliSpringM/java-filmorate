@@ -13,22 +13,25 @@ import ru.yandex.practicum.filmorate.model.Event;
 @Service
 public interface EventService {
 
-	/**
-	 * получить ленту событий пользователя id
-	 *
-	 * @param id
-	 * @return
-	 */
-	List<Event> listUserEvents(Long id);
+    /**
+     * получить ленту событий пользователя id
+     *
+     * @param id id события
+     * @return объект Event
+     */
+    List<Event> listUserEvents(Long id);
 
-	/**
-	 * добавить событие пользователя id
-	 *
-	 * @param userId
-	 * @param entityId
-	 * @param eventType
-	 * @param operationType
-	 * @return
-	 */
-	Event addEvent(Long userId, Long entityId, String eventType, String operationType);
+    /**
+     * добавить событие пользователя id
+     *
+     * @param userId        id пользователя
+     * @param entityId      id события
+     * @param eventType     тип события
+     * @param operationType тип операции
+     * @return объект Event с c id
+     */
+    Event addEvent(Long userId,
+                   Long entityId,
+                   String eventType,
+                   String operationType);
 }

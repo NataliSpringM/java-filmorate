@@ -12,56 +12,56 @@ import ru.yandex.practicum.filmorate.model.Director;
 
 public interface DirectorStorage {
 
-	/**
-	 * Добавление информации о режиссере.
-	 *
-	 * @param director
-	 * @return
-	 */
-	Director addDirector(Director director);
+    /**
+     * Добавление информации о режиссере.
+     *
+     * @param director объект Director
+     * @return объект Director с id
+     */
+    Director addDirector(Director director);
 
-	/**
-	 * Обновление информации о режиссере.
-	 *
-	 * @param director
-	 * @return
-	 */
-	Director updateDirector(Director director);
+    /**
+     * Обновление информации о режиссере.
+     *
+     * @param director объект Director
+     * @return обновленный объект Director
+     */
+    Director updateDirector(Director director);
 
-	/**
-	 * Удаление информации о режиссере по заданному идентификатору.
-	 *
-	 * @param id
-	 */
-	void deleteDirector(Integer id);
+    /**
+     * Удаление информации о режиссере по заданному идентификатору.
+     *
+     * @param id id режиссера
+     */
+    void deleteDirector(Integer id);
 
-	/**
-	 * Получение из хранилища объекта Director по id режиссера.
-	 *
-	 * @param id
-	 * @return
-	 */
-	Director findDirectorById(Integer id);
+    /**
+     * Получение из хранилища объекта Director по id режиссера.
+     *
+     * @param id id режиссера
+     * @return объект Director
+     */
+    Director findDirectorById(Integer id);
 
-	/**
-	 * Получение списка режиссеров из хранилища.
-	 *
-	 * @return
-	 */
-	Collection<Director> findAllDirectors();
+    /**
+     * Получение списка режиссеров из хранилища.
+     *
+     * @return список режиссеров
+     */
+    Collection<Director> findAllDirectors();
 
-	/**
-	 * Получение списка режиссеров по идентификатору фильма.
-	 *
-	 * @param filmId
-	 * @return
-	 */
-	Set<Director> getDirectorsByFilmId(Integer filmId);
+    /**
+     * Получение списка режиссеров по идентификатору фильма.
+     *
+     * @param filmId id фильма
+     * @return список режиссеров
+     */
+    Set<Director> getDirectorsByFilmId(Integer filmId);
 
-	/**
-	 * Проверка наличия идентификатора режиссера в хранилище.
-	 *
-	 * @param directorId
-	 */
-	void checkDirectorId(Integer directorId);
+    /**
+     * Проверка наличия идентификатора режиссера в хранилище.
+     *
+     * @param directorId id режиссера
+     */
+    void checkDirectorId(Integer directorId);
 }

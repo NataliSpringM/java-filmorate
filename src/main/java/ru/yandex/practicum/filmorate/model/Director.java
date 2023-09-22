@@ -1,19 +1,25 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.springframework.validation.annotation.Validated;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
-
-import lombok.Data;
 
 /**
  * информация о директоре - идентификатор, имя
  */
-@Data
+@Validated
+@Value
+@Builder(toBuilder = true)
+@RequiredArgsConstructor
 public class Director {
 
-	@Positive
-	private Integer id;
-	@NotBlank
-	private String name;
+    @Positive
+    Integer id;
+    @NotBlank
+    String name;
 
 }

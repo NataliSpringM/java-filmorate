@@ -12,51 +12,52 @@ import ru.yandex.practicum.filmorate.model.Review;
 @Repository
 public interface ReviewStorage {
 
-	/**
-	 * добавление отзыва
-	 *
-	 * @param review
-	 * @return
-	 */
-	Review addReview(Review review);
+    /**
+     * добавление отзыва
+     *
+     * @param review объект Review
+     * @return объект Review с id
+     */
+    Review addReview(Review review);
 
-	/**
-	 * обновление отзыва
-	 *
-	 * @param review
-	 * @return
-	 */
-	Review updateReview(Review review);
+    /**
+     * обновление отзыва
+     *
+     * @param review объект Review
+     * @return обновленный объект Review
+     */
+    Review updateReview(Review review);
 
-	/**
-	 * удаление отзыва
-	 *
-	 * @param reviewId
-	 */
-	void deleteReview(Integer reviewId);
+    /**
+     * удаление отзыва
+     *
+     * @param reviewId id отзыва
+     */
+    void deleteReview(Integer reviewId);
 
-	/**
-	 * получение списка отзывов
-	 *
-	 * @param filmId
-	 * @param count
-	 * @return
-	 */
-	List<Review> listReviews(Integer filmId, Integer count);
+    /**
+     * получение списка отзывов
+     *
+     * @param filmId id фильма
+     * @param count  возможное ограничение количества отзывов в списке
+     * @return список отзывов
+     */
+    List<Review> listReviews(Integer filmId, Integer count);
 
-	/**
-	 * получение отзыва по идентификатору
-	 *
-	 * @param id
-	 * @return
-	 */
-	Review getReviewById(Integer id);
+    /**
+     * получение отзыва по идентификатору
+     *
+     * @param id id отзыва
+     * @return объект Review
+     */
+    Review getReviewById(Integer id);
 
-	/**
-	 * проверка существования id отзыва
-	 *
-	 * @param reviewId
-	 */
-	void checkReviewId(Integer reviewId);
+    /**
+     * проверка существования id отзыва
+     *
+     * @param reviewId id отзыва
+     */
+    void checkReviewId(Integer reviewId);
+
 
 }

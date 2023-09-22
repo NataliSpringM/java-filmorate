@@ -12,9 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.LikeStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 /**
  * реализация сервиса для определения рейтинга фильмов
@@ -24,133 +22,147 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 @RequiredArgsConstructor
 public class FilmServiceImpl implements FilmService {
 
-	private static final Integer HIT_LIST_SIZE = 10;
-	private final FilmStorage filmStorage;
-	private final LikeStorage likeStorage;
-	private final UserStorage userStorage;
+    private static final Integer HIT_LIST_SIZE = 10;
+    private final FilmStorage filmStorage;
+    private final LikeStorage likeStorage;
+    private final FilmGenreStorage filmGenreStorage;
+    private final UserStorage userStorage;
+    private final DirectorStorage directorStorage;
 
-	/**
-	 * добавление информации о фильме в FilmStorage
-	 */
-	@Override
-	public Film addFilm(Film film) {
+    /**
+     * добавление информации о фильме в FilmStorage
+     */
+    @Override
+    public Film addFilm(Film film) {
 
-		return filmStorage.addFilm(film);
-	}
+        return filmStorage.addFilm(film);
+    }
 
-	/**
-	 * обновление информации о фильме в FilmStorage
-	 */
-	@Override
-	public Film updateFilm(Film film) {
+    /**
+     * обновление информации о фильме в FilmStorage
+     */
+    @Override
+    public Film updateFilm(Film film) {
 
-		return filmStorage.updateFilm(film);
-	}
+        return filmStorage.updateFilm(film);
+    }
 
-	/**
-	 * получение списка фильмов из FilmStorage
-	 */
-	@Override
-	public List<Film> listFilms() {
+    /**
+     * получение списка фильмов из FilmStorage
+     */
+    @Override
+    public List<Film> listFilms() {
 
-		return filmStorage.listFilms();
-	}
+        return filmStorage.listFilms();
+    }
 
-	/**
-	 * получение фильма по идентификатору из FilmStorage
-	 */
-	@Override
-	public Film getFilmById(Integer id) {
+    /**
+     * получение фильма по идентификатору из FilmStorage
+     */
+    @Override
+    public Film getFilmById(Integer id) {
 
-		return filmStorage.getFilmById(id);
-	}
+        return filmStorage.getFilmById(id);
+    }
 
-	/**
-	 * добавляем лайк фильму
-	 */
-	@Override
-	public void addLike(Integer filmId, Long userId) {
+    /**
+     * добавляем лайк фильму
+     */
+    @Override
+    public void addLike(Integer filmId, Long userId) {
 
-		filmStorage.checkFilmId(filmId);
-		userStorage.checkUserId(userId);
+        filmStorage.checkFilmId(filmId);
+        userStorage.checkUserId(userId);
 
-		likeStorage.addLike(filmId, userId);
-	}
+        likeStorage.addLike(filmId, userId);
+    }
 
-	/**
-	 * удаляем лайк у фильма
-	 */
-	@Override
-	public void deleteLike(Integer filmId, Long userId) {
+    /**
+     * удаляем лайк у фильма
+     */
+    @Override
+    public void deleteLike(Integer filmId, Long userId) {
 
-		filmStorage.checkFilmId(filmId);
-		userStorage.checkUserId(userId);
+        filmStorage.checkFilmId(filmId);
+        userStorage.checkUserId(userId);
 
-		likeStorage.deleteLike(filmId, userId);
-	}
+        likeStorage.deleteLike(filmId, userId);
+    }
 
-	/**
-	 * получение списка наиболее популярных фильмов
-	 */
-	@Override
-	public List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
-		List<Film> mostPopularFilms;
+    /**
+     * получение списка наиболее популярных фильмов
+     */
+    @Override
+    public List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
 
-		// получение ограничения размера списка или его установка
-		int limit = Optional.ofNullable(count).orElse(HIT_LIST_SIZE);
+        if (genreId != null) {
+            filmGenreStorage.checkGenreId(genreId);
+        }
+        List<Film> mostPopularFilms;
 
-		// возвращение отсортированного по популярности фильмов списка определенного
-		// размера
-		mostPopularFilms = filmStorage.listMostPopularFilms(limit, genreId, year);
+        // получение ограничения размера списка или его установка
+        int limit = Optional.ofNullable(count).orElse(HIT_LIST_SIZE);
 
-		log.info("Количество популярных фильмов по запросу: {}", mostPopularFilms.size());
+        // возвращение отсортированного по популярности фильмов списка определенного
+        // размера
+        mostPopularFilms = filmStorage.listMostPopularFilms(limit, genreId, year);
 
-		return mostPopularFilms;
-	}
+        log.info("Количество популярных фильмов по запросу: {}", mostPopularFilms.size());
 
-	/**
-	 * Удаление фильма по id
-	 */
-	@Override
-	public boolean delete(Integer id) {
-		return filmStorage.delete(id);
-	}
+        return mostPopularFilms;
+    }
 
-	/**
-	 * удаление всех фильмов
-	 */
-	@Override
-	public void clearFilms() {
-		filmStorage.clearAll();
-	}
+    /**
+     * Удаление фильма по id
+     */
+    @Override
+    public boolean delete(Integer id) {
+        return filmStorage.delete(id);
+    }
 
-	/**
-	 * получение списка фильмов режиссера
-	 */
-	@Override
-	public List<Film> listSortedFilmsOfDirector(Integer directorId, String sortBy) {
-		List<Film> films = filmStorage.listFilmsOfDirector(directorId);
-		if (sortBy.equals("year")) {
-			return films.stream().sorted(comparing(Film::getReleaseDate)).collect(Collectors.toList());
-		} else {
-			return films.stream().sorted(comparing(Film::getLikes)).collect(Collectors.toList());
-		}
-	}
+    /**
+     * удаление всех фильмов
+     */
+    @Override
+    public void clearFilms() {
+        filmStorage.clearAll();
+    }
 
-	/**
-	 * получение списка общих фильмов
-	 */
-	@Override
-	public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
-		return filmStorage.getCommonFilmsBetweenUsers(userId, friendId);
-	}
+    /**
+     * получение списка фильмов режиссера
+     */
+    @Override
+    public List<Film> listSortedFilmsOfDirector(Integer directorId, String sortBy) {
 
-	// поиск по названию или режиссеру
-	@Override
-	public List<Film> listSearchResult(String substringQuery, List<String> searchBaseBy) {
+        directorStorage.checkDirectorId(directorId);
 
-		return filmStorage.listSearchResults(substringQuery, searchBaseBy);
+        List<Film> films = filmStorage.listFilmsOfDirector(directorId);
+        if (sortBy.equals("year")) {
+            return films.stream()
+                    .sorted(comparing(Film::getReleaseDate))
+                    .collect(Collectors.toList());
+        } else {
+            return films.stream()
+                    .sorted(comparing(Film::getLikes))
+                    .collect(Collectors.toList());
+        }
+    }
 
-	}
+    /**
+     * получение списка общих фильмов
+     */
+    @Override
+    public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
+
+        return filmStorage.getCommonFilmsBetweenUsers(userId, friendId);
+    }
+
+    // поиск по названию или режиссеру
+    @Override
+    public List<Film> listSearchResult(String substringQuery, List<String> searchBaseBy) {
+
+        return filmStorage.listSearchResults(substringQuery, searchBaseBy);
+
+    }
 
 }
