@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -72,6 +73,26 @@ public interface UserService {
      * @return
      */
     Boolean isFriendShipConfirmed(Long userId, Long friendId);
+
+    /**
+     * Получение списка рекомендаций
+     * @param id
+     * @return
+     */
+    List<Film> getRecommendation(Long id);
+
+    /** удаление пользователя по id
+     * 
+     * @param id
+     * @return
+     */
+	boolean delete(Integer id); // Удаление id
+
+	/** 
+	 * удаление всех пользователей
+	 */
+	void clearAll();
+
 
 }
 

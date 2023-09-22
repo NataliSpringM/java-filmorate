@@ -2,14 +2,18 @@ package ru.yandex.practicum.filmorate.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
-
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -22,6 +26,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
     private final FriendshipStorage friendshipStorage;
 
     /**
@@ -70,9 +75,7 @@ public class UserServiceImpl implements UserService {
         userStorage.checkUserId(friendId);
 
         friendshipStorage.addFriend(userId, friendId);
-
     }
-
 
     /**
      *  удаление из друзей
@@ -85,7 +88,6 @@ public class UserServiceImpl implements UserService {
         userStorage.checkUserId(friendId);
 
         friendshipStorage.deleteFriend(userId, friendId);
-
     }
 
     /**
@@ -98,7 +100,6 @@ public class UserServiceImpl implements UserService {
         Set<Long> friendsId = friendshipStorage.listUserFriends(userId);
 
         return convertIdSetToUserList(friendsId);
-
     }
 
     /**
@@ -113,7 +114,6 @@ public class UserServiceImpl implements UserService {
         Set<Long> commonFriendsId = friendshipStorage.listCommonFriends(userId, otherId);
 
         return convertIdSetToUserList(commonFriendsId);
-
     }
 
     /**
@@ -125,6 +125,21 @@ public class UserServiceImpl implements UserService {
         return friendshipStorage.isFriendshipConfirmed(userId, friendId);
     }
 
+    /**
+     * удаление пользователя по id
+     */
+    @Override
+    public boolean delete(Integer id) {
+        return userStorage.delete(id);
+    }
+
+    /**
+     *  удаление всех пользователей
+     */
+    @Override
+    public void clearAll() {
+        userStorage.clearAll();
+    }
 
     /**
      *  преобразование набора id в список пользователей
@@ -136,10 +151,19 @@ public class UserServiceImpl implements UserService {
         return set.stream()
                 .map(userStorage::getUserById)
                 .collect(Collectors.toList());
-
     }
 
+    /**
+     *  получение списка рекомендаций
+     */
+    public List<Film> getRecommendation(Long userId) {
+        try {
+            userStorage.checkUserId(userId);
+            List<Film> recommendations = filmStorage.getRecommendation(userId);
+            log.info("Получен список рекоммендаций для пользователя user_id=" + userId + ".");
+            return recommendations;
+        } catch (IncorrectResultSizeDataAccessException e) {
+            return Collections.emptyList();
+        }
+    }
 }
-
-
-

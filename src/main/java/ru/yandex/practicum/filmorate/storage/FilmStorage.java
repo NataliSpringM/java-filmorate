@@ -46,11 +46,15 @@ public interface FilmStorage {
     void updateFilmData(Film film);
 
     /**
-     *  получение списка наиболее популярных фильмов
+     *  получение списка наиболее популярных фильмов с фильтрацией по жанру и году
      * @param count
+     * @param genreId
+     * @param year
      * @return
      */
-    List<Film> listMostPopularFilms(Integer count);
+    default List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return null;
+    }
 
     /**
      *  получение списка фильмов по режиссеру
@@ -62,10 +66,37 @@ public interface FilmStorage {
     }
 
     /**
+     *  поиск по названию или режиссеру
+     * @param substringQuery
+     * @param searchBaseBy
+     * @return
+     */
+    List<Film> listSearchResults(String substringQuery, List<String> searchBaseBy);
+
+    /**
      *  проверка существования id фильма
      * @param filmId
      */
     void checkFilmId(Integer filmId);
+
+    /**
+     *  удаление фильма по id
+     * @param userId
+     * @return
+     */
+    List<Film> getRecommendation(Long userId);
+
+    /**
+     *  удаление фильма по id
+     * @param id
+     * @return
+     */
+	boolean delete(Integer id);
+
+	/**
+	 *  удаление всех фильмов
+	 */
+	void clearAll();
 
     /**
      *  получение списка общих фильмов

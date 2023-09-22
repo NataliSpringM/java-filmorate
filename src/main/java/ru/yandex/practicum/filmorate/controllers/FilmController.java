@@ -2,11 +2,12 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import ru.yandex.practicum.filmorate.model.Event.EventType;
-import ru.yandex.practicum.filmorate.model.Event.OperationType;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -104,10 +105,42 @@ public class FilmController {
      * @return
      */
     @GetMapping("/popular")
-    public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
+    public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
+                         @RequestParam(required = false) Integer genreId,
+                         @RequestParam(required = false) Integer year) {
 
-        return filmService.listMostPopularFilms(count);
+        return filmService.listMostPopularFilms(count, genreId, year);
     }
+
+    /**
+     *  обработка DELETE-запроса на удаление фильма по id
+     * @param id
+     * @return
+     */
+    @DeleteMapping (value = "/{id}")
+	public boolean delete(@PathVariable Integer id) {
+		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS_ID', id:{}", id);
+		boolean deleted = filmService.delete(id);
+		if (deleted) {
+			log.debug("Возвращены данные фильма id = {}.", id);
+			return deleted;
+		} else {
+			log.warn("Фильм id = {} в списке не найден.", id);
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+	}
+
+    /**
+     *  обработка DELETE-запроса на удаление всех фильмов
+     * @return
+     */
+    @DeleteMapping
+	public List<Film> deleteAll() {
+		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS'. "
+				+ "Список фильмов пуст.");
+		filmService.clearFilms();
+		return filmService.listFilms();
+	}
 
     /**
      *  обработка запросов GET /films/director/{directorId}?sortBy=[year,likes]
@@ -125,6 +158,19 @@ public class FilmController {
     }
 
     /**
+     *  поиск по подстроке названия фильма или режиссера
+     * @param query
+     * @param by
+     * @return
+     */
+    @GetMapping("/search")
+    public List<Film> listSearchResult(@RequestParam(name = "query") String query,
+                                       @RequestParam(name = "by") List<String> by) {
+
+        return filmService.listSearchResult(query, by);
+    }
+
+    /**
      *  обработка GET-запроса на получение общих фильмов между пользователями
      * @param userId
      * @param friendId
@@ -138,6 +184,4 @@ public class FilmController {
     }
 
 }
-
-
 

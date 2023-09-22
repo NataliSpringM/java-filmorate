@@ -2,9 +2,14 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Event.EventType;
 import ru.yandex.practicum.filmorate.model.Event.OperationType;
@@ -120,6 +125,49 @@ public class UserController {
         return userService.listCommonFriends(id, otherId);
     }
 
+
+    /**
+     * Получение списка рекомендаций
+     * @param id
+     * @return
+     */
+    @GetMapping("{id}/recommendations")
+    @ResponseBody
+    public List<Film> getRecommendation(@PathVariable("id") Long id) {
+        return userService.getRecommendation(id);
+    }
+
+    /**
+     *  обработка DELETE-запроса на добавление друга
+     * @return
+     */
+    @DeleteMapping
+	public List<User> deleteAll() {
+		log.info("Получен запрос к эндпоинту: 'DELETE_USERS'. "
+				+ "Список пользователей пуст.");
+		userService.clearAll();
+		return userService.listUsers();
+	}
+
+    /**
+     *  обработка DELETE-запроса на добавление друга
+     * @param id
+     * @return
+     */
+	@DeleteMapping (value = "/{id}")
+	public boolean delete(@Valid @PathVariable Integer id) {
+		log.info("Получен запрос к эндпоинту: 'DELETE_USERS_ID'.");
+		boolean deleted = userService.delete(id);
+		if (deleted) {
+			log.debug("Возвращены данные пользователя id = {}.", id);
+			return deleted;
+		} else {
+			log.warn("Пользователь id = {} в списке не найден.", id);
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+	}
+
+
     /**
      * обработка GET-запроса на получение ленты событий для пользователя
      * @param id
@@ -129,7 +177,6 @@ public class UserController {
     public List<Event> listUserEvents(@RequestBody @PathVariable Long id) {
     	return eventService.listUserEvents(id);
     }
-
 }
 
 

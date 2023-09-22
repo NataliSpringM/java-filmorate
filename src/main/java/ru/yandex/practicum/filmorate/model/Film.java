@@ -1,13 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.validation.annotations.CheckReleaseDate;
 
 import javax.validation.constraints.*;
-
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @Validated
 @Value

@@ -10,7 +10,10 @@ import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.storage.FilmGenreStorage;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  *  реализация получения информации о жанрах фильмов из базы данных
@@ -63,5 +66,22 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
             log.info("Жанр с идентификатором {} не найден.", genreId);
             throw new ObjectNotFoundException(String.format("Жанр с id %d не найден", genreId));
         }
+    }
+
+    public Set<FilmGenre> getGenres(int filmId) {
+
+        SqlRowSet genreRows = jdbcTemplate
+                .queryForRowSet("SELECT genre_id FROM film_genres WHERE film_id = ?", filmId);
+
+        Set<FilmGenre> genres = new TreeSet<>(Comparator.comparing(FilmGenre::getId));
+
+        while (genreRows.next()) {
+            // получение всей информации о жанре фильма
+            FilmGenre filmGenre = getGenreById(genreRows.getInt("genre_id"));
+            genres.add(filmGenre);
+
+        }
+
+        return genres;
     }
 }

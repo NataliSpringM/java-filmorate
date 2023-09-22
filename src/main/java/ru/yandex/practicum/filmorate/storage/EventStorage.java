@@ -1,15 +1,15 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Event;
+
 import java.util.List;
 
-import org.springframework.stereotype.Repository;
-
-import ru.yandex.practicum.filmorate.model.Event;
 
 /**
  *  Интерфейс обеспечивает набор методов для работы с объектом Event в хранилище
  */
-
+@Repository
 public interface EventStorage {
 	/**
      * Получение из хранилища объектов Event по id пользователя.

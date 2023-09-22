@@ -5,7 +5,7 @@ import ru.yandex.practicum.filmorate.model.*;
 import java.util.List;
 
 /**
- *  сервис для определения рейтинга фильмов
+ * сервис для определения рейтинга фильмов
  */
 public interface FilmService {
 
@@ -51,11 +51,25 @@ public interface FilmService {
     void deleteLike(Integer id, Long userId);
 
     /**
-     *  получение списка наиболее популярных фильмов
+     *  получение списка наиболее популярных фильмов с фильтрацией по жанру и году
      * @param count
+     * @param genreId
+     * @param year
      * @return
      */
-    List<Film> listMostPopularFilms(Integer count);
+    List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year);
+ 
+    /**
+     *  удаление фильма
+     * @param id
+     * @return
+     */
+	boolean delete(Integer id); 
+
+	/**
+	 *  удаление всех фильмов
+	 */
+	void clearFilms(); 
 
     /** получение списка общих фильмов
      * 
@@ -73,4 +87,12 @@ public interface FilmService {
      * @return
      */
     List<Film> listSortedFilmsOfDirector(Integer directorId, String sortBy);
+
+    /**
+     *  поиск по названию или режиссеру
+     * @param substringQuery
+     * @param searchBaseBy
+     * @return
+     */
+    List<Film> listSearchResult(String substringQuery, List<String> searchBaseBy); 
 }

@@ -91,18 +91,35 @@ public class FilmServiceImpl implements FilmService {
      *  получение списка наиболее популярных фильмов
      */
     @Override
-    public List<Film> listMostPopularFilms(Integer count) {
+    public List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        List<Film> mostPopularFilms;
 
         // получение ограничения размера списка или его установка
         int limit = Optional.ofNullable(count).orElse(HIT_LIST_SIZE);
 
         // возвращение отсортированного по популярности фильмов списка определенного размера
-        List<Film> mostPopularFilms = filmStorage.listMostPopularFilms(limit);
+        mostPopularFilms = filmStorage.listMostPopularFilms(limit, genreId, year);
 
         log.info("Количество популярных фильмов по запросу: {}", mostPopularFilms.size());
 
         return mostPopularFilms;
     }
+
+    /**
+     * Удаление фильма по id
+     */
+	@Override
+	public boolean delete(Integer id) {
+		return filmStorage.delete(id);
+	}
+
+	/**
+	 *  удаление всех фильмов 
+	 */
+	@Override
+	public void clearFilms() {
+		filmStorage.clearAll();
+	}
 
     /**
      *  получение списка фильмов режиссера
@@ -127,6 +144,14 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
         return filmStorage.getCommonFilmsBetweenUsers(userId, friendId);
+    }
+
+    // поиск по названию или режиссеру
+    @Override
+    public List<Film> listSearchResult(String substringQuery, List<String> searchBaseBy) {
+
+        return filmStorage.listSearchResults(substringQuery, searchBaseBy);
+
     }
 
 }

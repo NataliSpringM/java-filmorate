@@ -11,7 +11,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.Event.EventType;
 import ru.yandex.practicum.filmorate.model.Event.OperationType;
+import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.EventService;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.*;
@@ -32,14 +34,16 @@ public class FilmorateDbApplicationTest {
     private final UserStorage userStorage;
     private final UserService userService;
     private final FilmStorage filmStorage;
+    private final FilmService filmService;
     private final LikeStorage likeStorage;
     private final EventService eventService;
     private final RatingMpaStorage mpaStorage;
     private final FilmGenreStorage genreStorage;
     private final ReviewStorage reviewStorage;
-
     private final ReviewService reviewService;
     private final ReviewLikeStorage reviewLikeStorage;
+    private final DirectorStorage directorStorage;
+    private final DirectorService directorService;
     User userAlex1;
     User userEgor2;
     User userAnna3;
@@ -47,8 +51,12 @@ public class FilmorateDbApplicationTest {
     Film filmAllHatesCris;
     Film filmTomAndJerry;
     Film filmDiamondHand;
+    Film filmSearchTestForALL;
     Mpa mpa;
     Set<FilmGenre> genres;
+    Director director1;
+    Director director2;
+    Director director3;
     Review review1;
     Review review2;
     Review review3;
@@ -84,6 +92,12 @@ public class FilmorateDbApplicationTest {
                 .build();
         mpa = Mpa.builder().id(1).build();
         genres = Set.of(new FilmGenre(2, null), new FilmGenre(3, null));
+        director1 = new Director();
+        director1.setName("Adam Smith");
+        director2 = new Director();
+        director2.setName("Adam Brown");
+        director3 = new Director();
+        director3.setName("Daniel Dan");
         filmAllHatesCris = Film.builder()
                 .name("All hates Cris")
                 .description("Good comedy")
@@ -106,6 +120,7 @@ public class FilmorateDbApplicationTest {
                 .releaseDate(LocalDate.of(1998, 1, 1))
                 .mpa(Mpa.builder().id(3).build())
                 .build();
+        filmSearchTestForALL = filmDiamondHand.toBuilder().name("Search test should find ALL").build();
         review1 = Review.builder()
                 .content("Content")
                 .isPositive(true)
@@ -666,6 +681,8 @@ public class FilmorateDbApplicationTest {
     @Test
     public void shouldAddFilmAndFindFilmById() { // добавление фильма и его получение по id
 
+        directorStorage.addDirector(director1);
+        filmAllHatesCris.toBuilder().directors(Set.of(director1)).build();
         Film film = filmStorage.addFilm(filmAllHatesCris);
 
         Optional<Film> filmOptional = Optional.ofNullable(filmStorage.getFilmById(film.getId()));
@@ -803,7 +820,7 @@ public class FilmorateDbApplicationTest {
     }
 
     @Test
-    public void shouldListMostPopularFilms() { // получение списка наиболее популярных фильмов
+    public void shouldListMostPopularFilmsByGenreId() { // получение списка наиболее популярных фильмов по id жанра
 
         // создаем трех пользователей и три фильма
         User user1 = userStorage.addUser(userAlex1);
@@ -820,18 +837,84 @@ public class FilmorateDbApplicationTest {
         likeStorage.addLike(film1.getId(), user3.getId());
         likeStorage.addLike(film2.getId(), user1.getId());
 
-        // получаем список фильмов отсортированных по количеству лайков
-        List<Film> listFilms = filmStorage.listMostPopularFilms(10);
+        // получаем список фильмов отсортированных по количеству лайков (ограничение размера - 1 фильм)
+        List<Film> listFilms = filmStorage.listMostPopularFilms(1, 2, null);
+
+        // проверяем корректность полученных данных - 1 фильм,
+
+        assertThat(listFilms).asList().hasSize(1);
+
+        // проверяем фильм в списке - с жанром 2 фильм с id 1
+
+        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
+        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film1.getId()));
+
+        assertThat(Optional.of(listFilms.get(0)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film)
+                                .hasFieldOrPropertyWithValue("name", "All hates Cris"));
+
+    }
+
+    @Test
+    public void shouldListMostPopularFilmsByYear() { // получение списка наиболее популярных фильмов по году
+
+        // создаем трех пользователей и три фильма
+        User user1 = userStorage.addUser(userAlex1);
+        User user2 = userStorage.addUser(userEgor2);
+        User user3 = userStorage.addUser(userAnna3);
+        Film film1 = filmStorage.addFilm(filmAllHatesCris);
+        Film film2 = filmStorage.addFilm(filmDiamondHand);
+        Film film3 = filmStorage.addFilm(filmTomAndJerry);
+
+        // ставим лайки фильмам 1 (3 штуки) и 2 (1 штука)
+        likeStorage.addLike(film1.getId(), user1.getId());
+        likeStorage.addLike(film1.getId(), user2.getId());
+        likeStorage.addLike(film1.getId(), user3.getId());
+        likeStorage.addLike(film2.getId(), user1.getId());
+
+        // получаем список фильмов c запросом по году
+        List<Film> listFilms = filmStorage.listMostPopularFilms(1, null, 1978);
 
         // проверяем корректность полученных данных - 3 фильма,
 
-        assertThat(listFilms).asList().hasSize(3);
+        assertThat(listFilms).asList().hasSize(1);
 
-        // проверяем порядок фильмов в списке - на первом месте фильм с id 1, на последнем фильм без лайков
+        // проверяем фильм в списке - год выпуска совпадает у фильма с id 2
+
+        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film2.getId()));
+
+        assertThat(Optional.of(listFilms.get(0)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "Diamond hand"));
+    }
+
+    @Test
+    public void shouldSearchFilmsByTitle() { // поиск фильма по названию
+
+       /* создаем четыре фильма - названия двух из них  "All hates Cris" и "Search test should find ALL"
+       и включают подстроку "all" без учета регистра*/
+        Film film1 = filmStorage.addFilm(filmAllHatesCris);
+        Film film2 = filmStorage.addFilm(filmDiamondHand);
+        Film film3 = filmStorage.addFilm(filmTomAndJerry);
+        Film film4 = filmStorage.addFilm(filmSearchTestForALL);
+
+        List<String> searchBase = List.of("title", "director");
+
+
+        // получаем список фильмов, содержащих в названии подстроку "all" без учета регистра
+        List<Film> listFilms = filmStorage.listSearchResults("all", searchBase);
+
+        // проверяем корректность полученных данных - 2 фильма,
+
+        assertThat(listFilms).asList().hasSize(2);
+
+        // проверяем порядок фильмов в списке - на первом месте фильм с id 1, на последнем фильм с id 4
 
         assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
-        assertThat(listFilms).asList().contains(filmStorage.getFilmById(film2.getId()));
-        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film3.getId()));
+        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film3.getId()));
+        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film2.getId()));
+        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film4.getId()));
 
         assertThat(Optional.of(listFilms.get(0)))
                 .hasValueSatisfying(film ->
@@ -841,49 +924,108 @@ public class FilmorateDbApplicationTest {
         assertThat(Optional.of(listFilms.get(1)))
                 .hasValueSatisfying(film ->
                         AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Diamond hand"));
+                                .hasFieldOrPropertyWithValue("name", "Search test should find ALL"));
 
-        assertThat(Optional.of(listFilms.get(2)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Tom and Jerry"));
+
     }
 
     @Test
-    public void shouldListMostPopularFilms2() { // получение списка наиболее популярных фильмов с ограничением размера
+    public void shouldSearchFilmsByDirectors() { // поиск фильма по названию
 
-        // создаем трех пользователей и три фильма
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        User user3 = userStorage.addUser(userAnna3);
+        // создаем три фильма - имена режиссеров двух из них "Adam" включают подстроку "dam" без учета регистра
 
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
-        Film film2 = filmStorage.addFilm(filmDiamondHand);
-        Film film3 = filmStorage.addFilm(filmTomAndJerry);
+        Director directorFirst = directorStorage.addDirector(director1);
+        Director directorSecond = directorStorage.addDirector(director2);
+        Director directorThird = directorStorage.addDirector(director3);
+        Film filmAllHatesCrisWithDirector = filmAllHatesCris.toBuilder()
+                .directors(Set.of(directorFirst)).build();
+        Film filmTomAndJerryWithDirector = filmTomAndJerry.toBuilder()
+                .directors(Set.of(directorThird)).build();
+        Film filmDiamondHandWithDirector = filmDiamondHand.toBuilder()
+                .directors(Set.of(directorSecond, directorThird)).build();
+        Film film1 = filmStorage.addFilm(filmAllHatesCrisWithDirector);
+        Film film2 = filmStorage.addFilm(filmDiamondHandWithDirector);
+        Film film3 = filmStorage.addFilm(filmTomAndJerryWithDirector);
 
-        // ставим лайки фильмам 1 (3 штуки) и 2 (1 штука)
-        likeStorage.addLike(film1.getId(), user1.getId());
-        likeStorage.addLike(film1.getId(), user2.getId());
-        likeStorage.addLike(film1.getId(), user3.getId());
-        likeStorage.addLike(film2.getId(), user1.getId());
+        // ставим лайк второму фильму "Diamond Hand" для проверка сортировки
+        User user = userStorage.addUser(userAnna3);
+        likeStorage.addLike(film2.getId(), user.getId());
 
-        // получаем список фильмов отсортированных по количеству лайков (ограничение размера - 2 фильма)
-        List<Film> listFilms = filmStorage.listMostPopularFilms(2);
+        List<String> searchBase = List.of("director");
 
-        // проверяем корректность полученных данных - 3 фильма,
+
+        // получаем список фильмов, содержащих в названии подстроку all без учета регистра
+        List<Film> listFilms = filmStorage.listSearchResults("daM", searchBase);
+
+        // проверяем корректность полученных данных - 2 фильма,
 
         assertThat(listFilms).asList().hasSize(2);
 
-        // проверяем порядок фильмов в списке - на первом месте фильм с id 1, на последнем фильм без лайков
+        // проверяем порядок фильмов в списке - на первом месте фильм с id 2 - с лайком, на втором фильм с id 1
 
-        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
-        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film2.getId()));
+        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film2.getId()));
+        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film1.getId()));
+
         assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film3.getId()));
 
         assertThat(Optional.of(listFilms.get(0)))
                 .hasValueSatisfying(film ->
                         AssertionsForClassTypes.assertThat(film)
+                                .hasFieldOrPropertyWithValue("name", "Diamond hand"));
+
+        assertThat(Optional.of(listFilms.get(1)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film)
                                 .hasFieldOrPropertyWithValue("name", "All hates Cris"));
+    }
+
+    @Test
+    public void shouldSearchFilmsByDirectorsAndTitle() { // поиск фильма по названию
+
+       /* создаем три фильма
+         имя режиссера одного из них "Daniel Dan"
+         и название фильма "Diamond Hand" включают подстроку "an" без учета регистра*/
+
+        Director directorFirst = directorStorage.addDirector(director1);
+        Director directorSecond = directorStorage.addDirector(director2);
+        Director directorThird = directorStorage.addDirector(director3);
+        Film filmAllHatesCrisWithDirector = filmAllHatesCris.toBuilder()
+                .directors(Set.of(directorFirst)).build();
+        Film filmTomAndJerryWithDirector = filmTomAndJerry.toBuilder()
+                .directors(Set.of(directorThird)).build();
+        Film filmDiamondHandWithDirector = filmDiamondHand.toBuilder()
+                .directors(Set.of(directorSecond, directorFirst)).build();
+        Film film1 = filmStorage.addFilm(filmAllHatesCrisWithDirector);
+        Film film2 = filmStorage.addFilm(filmDiamondHandWithDirector);
+        Film film3 = filmStorage.addFilm(filmTomAndJerryWithDirector);
+
+        // ставим два лайка третьему фильму ("Tom and Jerry") для проверка сортировки
+        User userEgor = userStorage.addUser(userEgor2);
+        User userAnna = userStorage.addUser(userAnna3);
+        likeStorage.addLike(film3.getId(), userEgor.getId());
+        likeStorage.addLike(film3.getId(), userAnna.getId());
+
+        List<String> searchBase = List.of("title", "director");
+
+
+        // получаем список фильмов, содержащих в названии или имени режиссера подстроку "an" без учета регистра
+        List<Film> listFilms = filmStorage.listSearchResults("An", searchBase);
+
+        // проверяем корректность полученных данных - 2 фильма,
+
+        assertThat(listFilms).asList().hasSize(2);
+
+        // проверяем порядок фильмов в списке - на первом месте фильм с id 3 - с лайками, на втором фильм с id 2
+
+        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film3.getId()));
+        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film2.getId()));
+
+        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film1.getId()));
+
+        assertThat(Optional.of(listFilms.get(0)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film)
+                                .hasFieldOrPropertyWithValue("name", "Tom and Jerry"));
 
         assertThat(Optional.of(listFilms.get(1)))
                 .hasValueSatisfying(film ->
@@ -893,6 +1035,44 @@ public class FilmorateDbApplicationTest {
 
     }
 
+    @Test
+    public void shouldSearchFilmsByTitleWithoutDirector() { // поиск фильма по названию
+
+        // создаем четыре фильма - названия двух из них включают подстроку all без учета регистра
+        Film film1 = filmStorage.addFilm(filmAllHatesCris);
+        Film film2 = filmStorage.addFilm(filmDiamondHand);
+        Film film3 = filmStorage.addFilm(filmTomAndJerry);
+        Film film4 = filmStorage.addFilm(filmSearchTestForALL);
+
+        List<String> searchBase = List.of("title");
+
+
+        // получаем список фильмов, содержащих в названии подстроку all без учета регистра
+        List<Film> listFilms = filmStorage.listSearchResults("all", searchBase);
+
+        // проверяем корректность полученных данных - 2 фильма,
+
+        assertThat(listFilms).asList().hasSize(2);
+
+        // проверяем порядок фильмов в списке - на первом месте фильм с id 1, на последнем фильм с id 4
+
+        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
+        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film3.getId()));
+        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film2.getId()));
+        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film4.getId()));
+
+        assertThat(Optional.of(listFilms.get(0)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film)
+                                .hasFieldOrPropertyWithValue("name", "All hates Cris"));
+
+        assertThat(Optional.of(listFilms.get(1)))
+                .hasValueSatisfying(film ->
+                        AssertionsForClassTypes.assertThat(film)
+                                .hasFieldOrPropertyWithValue("name", "Search test should find ALL"));
+
+
+    }
 
     //************************* Тестирование работы сервиса работы с рейтингами MPA *************************
 
@@ -963,61 +1143,61 @@ public class FilmorateDbApplicationTest {
     @Test
     public void testCommonFilmsBetweenUsersWithLikes() {
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        Film film = filmStorage.addFilm(filmTomAndJerry);
-        userService.addFriend(user1.getId(), user2.getId());
-        likeStorage.addLike(film.getId(), user1.getId());
-        likeStorage.addLike(film.getId(), user2.getId());
-        filmStorage.getCommonFilmsBetweenUsers(user1.getId(), user2.getId());
+        userService.addUser(userAlex1);
+        userService.addUser(userEgor2);
+        filmService.addFilm(filmTomAndJerry);
+        userService.addFriend(1L, 2L);
+        filmService.addLike(1, 1L);
+        filmService.addLike(1, 2L);
+        filmService.getCommonFilmsBetweenUsers(1L, 2L);
 
     }
+    
 
-    @Test
-    public void testGetUserFeed() {
-    	userService.addUser(userAlex1);
-    	eventService.addEvent(1L, 2L, "FRIEND", "ADD");
-    	eventService.addEvent(1L, 2L, "FRIEND", "REMOVE");
-        eventService.addEvent(1L, 1L, "LIKE", "ADD");
-        eventService.addEvent(1L, 1L, "LIKE", "REMOVE");
-        eventService.addEvent(1L, 1L, "REVIEW", "ADD");
-        eventService.addEvent(1L, 1L, "REVIEW", "UPDATE");
-        eventService.addEvent(1L, 1L, "REVIEW", "REMOVE");
-        List<Event> feed = eventService.listUserEvents(1L);
-        assertThat(feed).asList().hasSize(7);
-        assertThat(feed.get(0)).hasFieldOrPropertyWithValue("entityId", 2L);
-        assertThat(feed.get(0)).hasFieldOrPropertyWithValue("userId", 1L);
-        assertThat(feed.get(0)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
-        assertThat(feed.get(0)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
-        assertThat(feed.get(1)).hasFieldOrPropertyWithValue("entityId", 2L);
-        assertThat(feed.get(1)).hasFieldOrPropertyWithValue("userId", 1L);
-        assertThat(feed.get(1)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
-        assertThat(feed.get(1)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
-        assertThat(feed.get(2)).hasFieldOrPropertyWithValue("entityId", 1L);
-        assertThat(feed.get(2)).hasFieldOrPropertyWithValue("userId", 1L);
-        assertThat(feed.get(2)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
-        assertThat(feed.get(2)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
-        assertThat(feed.get(3)).hasFieldOrPropertyWithValue("entityId", 1L);
-        assertThat(feed.get(3)).hasFieldOrPropertyWithValue("userId", 1L);
-        assertThat(feed.get(3)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
-        assertThat(feed.get(3)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
-        assertThat(feed.get(4)).hasFieldOrPropertyWithValue("entityId", 1L);
-        assertThat(feed.get(4)).hasFieldOrPropertyWithValue("userId", 1L);
-        assertThat(feed.get(4)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
-        assertThat(feed.get(4)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
-        assertThat(feed.get(5)).hasFieldOrPropertyWithValue("entityId", 1L);
-        assertThat(feed.get(5)).hasFieldOrPropertyWithValue("userId", 1L);
-        assertThat(feed.get(5)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
-        assertThat(feed.get(5)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("UPDATE"));
-        assertThat(feed.get(6)).hasFieldOrPropertyWithValue("entityId", 1L);
-        assertThat(feed.get(6)).hasFieldOrPropertyWithValue("userId", 1L);
-        assertThat(feed.get(6)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
-        assertThat(feed.get(6)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
-    }
+@Test
+public void testGetUserFeed() {
+	userService.addUser(userAlex1);
+	eventService.addEvent(1L, 2L, "FRIEND", "ADD");
+	eventService.addEvent(1L, 2L, "FRIEND", "REMOVE");
+    eventService.addEvent(1L, 1L, "LIKE", "ADD");
+    eventService.addEvent(1L, 1L, "LIKE", "REMOVE");
+    eventService.addEvent(1L, 1L, "REVIEW", "ADD");
+    eventService.addEvent(1L, 1L, "REVIEW", "UPDATE");
+    eventService.addEvent(1L, 1L, "REVIEW", "REMOVE");
+    List<Event> feed = eventService.listUserEvents(1L);
+    assertThat(feed).asList().hasSize(7);
+    assertThat(feed.get(0)).hasFieldOrPropertyWithValue("entityId", 2L);
+    assertThat(feed.get(0)).hasFieldOrPropertyWithValue("userId", 1L);
+    assertThat(feed.get(0)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
+    assertThat(feed.get(0)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
+    assertThat(feed.get(1)).hasFieldOrPropertyWithValue("entityId", 2L);
+    assertThat(feed.get(1)).hasFieldOrPropertyWithValue("userId", 1L);
+    assertThat(feed.get(1)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
+    assertThat(feed.get(1)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
+    assertThat(feed.get(2)).hasFieldOrPropertyWithValue("entityId", 1L);
+    assertThat(feed.get(2)).hasFieldOrPropertyWithValue("userId", 1L);
+    assertThat(feed.get(2)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
+    assertThat(feed.get(2)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
+    assertThat(feed.get(3)).hasFieldOrPropertyWithValue("entityId", 1L);
+    assertThat(feed.get(3)).hasFieldOrPropertyWithValue("userId", 1L);
+    assertThat(feed.get(3)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
+    assertThat(feed.get(3)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
+    assertThat(feed.get(4)).hasFieldOrPropertyWithValue("entityId", 1L);
+    assertThat(feed.get(4)).hasFieldOrPropertyWithValue("userId", 1L);
+    assertThat(feed.get(4)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
+    assertThat(feed.get(4)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
+    assertThat(feed.get(5)).hasFieldOrPropertyWithValue("entityId", 1L);
+    assertThat(feed.get(5)).hasFieldOrPropertyWithValue("userId", 1L);
+    assertThat(feed.get(5)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
+    assertThat(feed.get(5)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("UPDATE"));
+    assertThat(feed.get(6)).hasFieldOrPropertyWithValue("entityId", 1L);
+    assertThat(feed.get(6)).hasFieldOrPropertyWithValue("userId", 1L);
+    assertThat(feed.get(6)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
+    assertThat(feed.get(6)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
 }
 
 
-
+}
 
 
 
