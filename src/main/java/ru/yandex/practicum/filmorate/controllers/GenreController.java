@@ -1,14 +1,22 @@
 package ru.yandex.practicum.filmorate.controllers;
 
+import java.util.List;
+
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.service.GenresService;
 
-import java.util.List;
-
+/**
+ * обработка запросов HTTP-клиентов на получение информации о жанрах фильмов по
+ * адресу <a href="http://localhost:8080/genres">...</a>
+ */
 @RestController
 @Slf4j
 @RequestMapping("/genres")
@@ -16,20 +24,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GenreController {
 
-      /* обработка запросов HTTP-клиентов на  получение информации о жанрах фильмов по адресу
-    http://localhost:8080/genres */
-
     private final GenresService genreService;
 
-
-    // обработка GET-запроса на получение списка всех жанров
+    /**
+     * обработка GET-запроса на получение списка всех жанров
+     *
+     * @return список жанров
+     */
     @GetMapping()
     public List<FilmGenre> listGenres() {
 
         return genreService.listFilmGenres();
     }
 
-    // обработка GET-запроса на получение жанра по id
+    /**
+     * обработка GET-запроса на получение жанра по id
+     *
+     * @param id id жанра
+     * @return объект FilmGenre
+     */
     @GetMapping("/{id}")
     public FilmGenre getGenreById(@PathVariable Integer id) {
 

@@ -1,20 +1,35 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.*;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Pattern;
+
 import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.*;
-import java.time.LocalDate;
-import java.util.*;
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
+
+/**
+ * информация о пользователе - id, email, имя (необязательное поле), логин, дата
+ * рождения, друзья (список id)
+ */
 @Validated
 @Value
 @Builder(toBuilder = true)
 @RequiredArgsConstructor
 public class User {
 
-    //информация о пользователе - id, email, имя (необязательное поле), логин, дата рождения, друзья (список id)
 
     Long id; // id пользователя
 
@@ -54,6 +69,5 @@ public class User {
 
         return userProperties;
     }
-
 
 }

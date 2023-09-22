@@ -1,52 +1,59 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
+/**
+ * реализация хранения информации о лайках в базе данных
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Repository
 @Primary
 public class LikeDbStorage implements LikeStorage {
 
-    // реализация хранения информации о лайках в базе данных
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * добавляем лайк
+     */
     @Override
     public void addLike(Integer filmId, Long userId) {
 
-        // получаем информацию о наличии лайков в базе данных
-        SqlRowSet sqlLikesQuantity = jdbcTemplate.queryForRowSet(
-                "SELECT * FROM likes WHERE film_id = ? AND user_id = ?", filmId, userId);
+
+        SqlRowSet sqlLikesQuantity = jdbcTemplate
+                .queryForRowSet("SELECT * FROM likes WHERE film_id = ? AND user_id = ?", filmId, userId);
 
         if (sqlLikesQuantity.next()) {
 
-            // выбрасываем исключение при попытке поставить повторный лайк
-            throw new RuntimeException("Вы уже ставили лайк этому фильму");
+            log.info("Пользователь {} пытался повторно поставить лайк фильму {}", userId, filmId);
 
         } else {
 
             // ставим лайк фильму
-            String sqlQueryAddFriend = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
-            jdbcTemplate.update(sqlQueryAddFriend, filmId, userId);
+            String sqlQueryAddLike = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+            jdbcTemplate.update(sqlQueryAddLike, filmId, userId);
 
             log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
 
         }
-
     }
 
+    /**
+     * удаляем лайк
+     */
     @Override
     public void deleteLike(Integer filmId, Long userId) {
 
         // получаем информацию о наличии лайков в базе данных
-        SqlRowSet sqlLikesQuantity = jdbcTemplate.queryForRowSet(
-                "SELECT * FROM likes WHERE film_id = ? AND user_id = ?", filmId, userId);
+        SqlRowSet sqlLikesQuantity = jdbcTemplate
+                .queryForRowSet("SELECT * FROM likes WHERE film_id = ? AND user_id = ?", filmId, userId);
 
         if (!sqlLikesQuantity.next()) {
 
@@ -55,9 +62,9 @@ public class LikeDbStorage implements LikeStorage {
 
         } else {
             // удаляем лайк у фильма
-            String sqlQueryAddFriend = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+            String sqlQueryDeleteLike = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
 
-            jdbcTemplate.update(sqlQueryAddFriend, filmId, userId);
+            jdbcTemplate.update(sqlQueryDeleteLike, filmId, userId);
 
             log.info("Пользователь {} удалил лайк у фильма {}", userId, filmId);
 
@@ -65,7 +72,10 @@ public class LikeDbStorage implements LikeStorage {
 
     }
 
-    // подсчет лайков определенному фильму от всех пользователей
+    /**
+     * подсчет лайков определенному фильму от всех пользователей
+     */
+    @Override
     public Long getFilmLikesTotalCount(Integer filmId) {
 
         SqlRowSet sqlLikes = jdbcTemplate
@@ -80,6 +90,4 @@ public class LikeDbStorage implements LikeStorage {
         return likes;
 
     }
-
-
 }

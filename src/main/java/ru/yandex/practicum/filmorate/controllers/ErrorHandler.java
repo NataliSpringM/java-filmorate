@@ -1,20 +1,27 @@
 package ru.yandex.practicum.filmorate.controllers;
 
+import javax.validation.ConstraintViolationException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
-import javax.validation.ConstraintViolationException;
-
+/**
+ * обработка выбрасываемых исключений
+ */
 @RestControllerAdvice("ru.yandex.practicum.filmorate.controllers")
 public class ErrorHandler {
 
-    // обработка выбрасываемых исключений
-
-    // обработка ошибок при запросах с несуществующим идентификатором объета
+    /**
+     * обработка ошибок при запросах с несуществующим идентификатором объета
+     *
+     * @param e exception
+     * @return ErrorResponse текст
+     */
     @ExceptionHandler(ObjectNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundId(final RuntimeException e) {
@@ -22,7 +29,12 @@ public class ErrorHandler {
         return new ErrorResponse("Несуществующий id: " + e.getMessage());
     }
 
-    // обработка ошибок при прохождении валидации
+    /**
+     * обработка ошибок при прохождении валидации
+     *
+     * @param e exception
+     * @return ErrorResponse текст
+     */
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleFailValidation(final RuntimeException e) {
@@ -30,7 +42,12 @@ public class ErrorHandler {
         return new ErrorResponse("Ошибка валидации: " + e.getMessage());
     }
 
-    // обработка непредвиденных ошибок
+    /**
+     * обработка непредвиденных ошибок
+     *
+     * @param e Exception
+     * @return ErrorResponse текст
+     */
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleUnknownError(final Throwable e) {

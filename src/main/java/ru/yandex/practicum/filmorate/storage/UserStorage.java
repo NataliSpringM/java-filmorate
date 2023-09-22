@@ -1,24 +1,89 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.model.User;
-
 import java.util.List;
 
-//хранение информации о пользователях
+import ru.yandex.practicum.filmorate.model.User;
+
+/**
+ * хранение информации о пользователях
+ */
 
 public interface UserStorage {
 
-    User addUser(User user);  // добавление информации о пользователе
+    /**
+     * добавление информации о пользователе
+     *
+     * @param user объект User
+     * @return объект User с id
+     */
+    User addUser(User user);
 
-    User updateUser(User user);  // обновление информации о пользователе
+    /**
+     * обновление информации о пользователе
+     *
+     * @param user объект User
+     * @return обновленный объект User
+     */
+    User updateUser(User user);
 
-    List<User> listUsers(); // получение списка пользователей
+    /**
+     * получение списка пользователей
+     *
+     * @return список пользователей
+     */
+    List<User> listUsers();
 
-    User getUserById(Long id); // получение пользователя по идентификатору
+    /**
+     * получение пользователя по идентификатору
+     *
+     * @param id id пользователя
+     * @return объект User
+     */
+    User getUserById(Long id);
 
-    void updateUserProperties(User user); // сохранение новой или обновленной информации о пользователе
+    /**
+     * сохранение новой или обновленной информации о пользователе
+     *
+     * @param user объект User
+     */
+    void updateUserProperties(User user);
 
-    void checkUserId(Long userId); // проверка существования id пользователя
+    /**
+     * проверка существования id пользователя
+     *
+     * @param userId id пользователя
+     */
+    void checkUserId(Long userId);
+
+    /**
+     * удаление всех пользователей
+     */
+    void clearAll();
+
+    /**
+     * удаление пользователя по id
+     *
+     * @param id id пользователя
+     * @return подтверждение удаления
+     */
+    boolean delete(Integer id);
+
+    /**
+     * получение списка друзей пользователя
+     *
+     * @param id id пользователя
+     * @return список друзей пользователя
+     */
+    List<User> listUserFriends(Long id);
+
+    /**
+     * получение списка общих друзей
+     *
+     * @param userId  id пользователя
+     * @param otherId id второго пользователя
+     * @return список общих друзей
+     */
+    List<User> listCommonFriends(Long userId, Long otherId); // получение списка общих друзей
 
 
 }

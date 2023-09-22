@@ -1,14 +1,34 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-
 import java.util.List;
 
-// получение информации о жанрах фильмов
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+
+/**
+ * получение информации о жанрах фильмов
+ */
+
 public interface FilmGenreStorage {
 
-    List<FilmGenre> listFilmGenres(); // получение списка всех жанров фильмов
+    /**
+     * получение списка всех жанров фильмов
+     *
+     * @return список жанров
+     */
+    List<FilmGenre> listFilmGenres();
 
-    FilmGenre getGenreById(Integer id); // получение жанра по id
+    /**
+     * получение жанра по id
+     *
+     * @param id id жанра
+     * @return список жанров
+     */
+    FilmGenre getGenreById(Integer id);
 
+    /**
+     * проверка существования жанра по id
+     *
+     * @param genreId id жанра
+     */
+    void checkGenreId(Integer genreId);
 }
