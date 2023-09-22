@@ -23,7 +23,7 @@ import ru.yandex.practicum.filmorate.service.ReviewService;
 
 /**
  * обработка запросов HTTP-клиентов на добавление, обновление, получение
- * информации об отзывах по адресу http://localhost:8080/reviews
+ * информации об отзывах по адресу <a href="http://localhost:8080/reviews">...</a>
  */
 @RestController
 @Slf4j
@@ -32,123 +32,123 @@ import ru.yandex.practicum.filmorate.service.ReviewService;
 @RequiredArgsConstructor
 public class ReviewController {
 
-	private final ReviewService reviewService;
-	private final EventService eventService;
+    private final ReviewService reviewService;
+    private final EventService eventService;
 
-	/**
-	 * обработка POST-запроса на добавление отзыва
-	 *
-	 * @param review
-	 * @return
-	 */
-	@PostMapping()
-	public Review addReview(@Valid @RequestBody Review review) {
+    /**
+     * обработка POST-запроса на добавление отзыва
+     *
+     * @param review объект Review
+     * @return объект Review с id
+     */
+    @PostMapping()
+    public Review addReview(@Valid @RequestBody Review review) {
 
-		Review newReview = reviewService.addReview(review);
-		eventService.addEvent(newReview.getUserId(), Long.valueOf(newReview.getReviewId()), "REVIEW", "ADD");
-		return newReview;
-	}
+        Review newReview = reviewService.addReview(review);
+        eventService.addEvent(newReview.getUserId(), Long.valueOf(newReview.getReviewId()), "REVIEW", "ADD");
+        return newReview;
+    }
 
-	/**
-	 * обработка PUT-запроса на обновление отзыва
-	 *
-	 * @param review
-	 * @return
-	 */
-	@PutMapping()
-	public Review updateReview(@Valid @RequestBody Review review) {
+    /**
+     * обработка PUT-запроса на обновление отзыва
+     *
+     * @param review объект Review
+     * @return обновленный объект Review
+     */
+    @PutMapping()
+    public Review updateReview(@Valid @RequestBody Review review) {
 
-		Review newReview = reviewService.updateReview(review);
-		eventService.addEvent(newReview.getUserId(), Long.valueOf(newReview.getReviewId()), "REVIEW", "UPDATE");
-		return newReview;
-	}
+        Review newReview = reviewService.updateReview(review);
+        eventService.addEvent(newReview.getUserId(), Long.valueOf(newReview.getReviewId()), "REVIEW", "UPDATE");
+        return newReview;
+    }
 
-	/**
-	 * обработка GET-запроса на получение отзыва по идентификатору
-	 *
-	 * @param id
-	 * @return
-	 */
-	@GetMapping("/{id}")
+    /**
+     * обработка GET-запроса на получение отзыва по идентификатору
+     *
+     * @param id id отзыва
+     * @return объект Review по id
+     */
+    @GetMapping("/{id}")
 
-	public Review getReviewById(@PathVariable Integer id) {
+    public Review getReviewById(@PathVariable Integer id) {
 
-		return reviewService.getReviewById(id);
-	}
+        return reviewService.getReviewById(id);
+    }
 
-	/**
-	 * обработка DELETE-запроса на удаление отзыва
-	 *
-	 * @param id
-	 */
-	@DeleteMapping("/{id}")
-	public void deleteReview(@PathVariable Integer id) {
+    /**
+     * обработка DELETE-запроса на удаление отзыва
+     *
+     * @param id id объекта Review для удаления
+     */
+    @DeleteMapping("/{id}")
+    public void deleteReview(@PathVariable Integer id) {
 
-		eventService.addEvent(this.getReviewById(id).getUserId(), Long.valueOf(id), "REVIEW", "REMOVE");
-		reviewService.deleteReview(id);
-	}
+        eventService.addEvent(this.getReviewById(id).getUserId(), Long.valueOf(id), "REVIEW", "REMOVE");
+        reviewService.deleteReview(id);
+    }
 
-	/**
-	 * обработка GET-запроса на получение списка отзывов
-	 *
-	 * @param filmId
-	 * @param count
-	 * @return
-	 */
-	@GetMapping()
+    /**
+     * обработка GET-запроса на получение списка отзывов
+     *
+     * @param filmId id фильма
+     * @param count  возможное ограничение количества отзывов в списке
+     * @return список отзывов
+     */
+    @GetMapping()
 
-	public List<Review> listReviews(@RequestParam(required = false) Integer filmId,
-			@RequestParam(required = false, defaultValue = "10") Integer count) {
+    public List<Review> listReviews(@RequestParam(required = false) Integer filmId,
+                                    @RequestParam(required = false, defaultValue = "10") Integer count) {
 
-		return reviewService.listReviews(filmId, count);
-	}
+        return reviewService.listReviews(filmId, count);
+    }
 
-	/**
-	 * обработка PUT-запроса на добавление лайка отзыву
-	 *
-	 * @param reviewId
-	 * @param userId
-	 */
-	@PutMapping("/{reviewId}/like/{userId}")
-	public void addLikeToReview(@PathVariable Integer reviewId, @PathVariable Long userId) {
+    /**
+     * обработка PUT-запроса на добавление лайка отзыву
+     *
+     * @param reviewId id фильма
+     * @param userId   id пользователя
+     */
+    @PutMapping("/{reviewId}/like/{userId}")
+    public void addLikeToReview(@PathVariable Integer reviewId, @PathVariable Long userId) {
 
-		reviewService.addLikeToReview(reviewId, userId);
-	}
+        reviewService.addLikeToReview(reviewId, userId);
+    }
 
-	/**
-	 * обработка PUT-запроса на добавление дизлайка отзыву
-	 *
-	 * @param reviewId
-	 * @param userId
-	 */
-	@PutMapping("/{reviewId}/dislike/{userId}")
-	public void addDislikeToReview(@PathVariable Integer reviewId, @PathVariable Long userId) {
+    /**
+     * обработка PUT-запроса на добавление дизлайка отзыву
+     *
+     * @param reviewId id отзыва
+     * @param userId   id пользователя
+     */
+    @PutMapping("/{reviewId}/dislike/{userId}")
+    public void addDislikeToReview(@PathVariable Integer reviewId, @PathVariable Long userId) {
 
-		reviewService.addDislikeToReview(reviewId, userId);
-	}
+        reviewService.addDislikeToReview(reviewId, userId);
+    }
 
-	/**
-	 * обработка DELETE-запроса на удаление лайка у отзыва
-	 *
-	 * @param reviewId
-	 * @param userId
-	 */
-	@DeleteMapping("/{reviewId}/like/{userId}")
-	public void deleteLikeFromReview(@PathVariable Integer reviewId, @PathVariable Long userId) {
+    /**
+     * обработка DELETE-запроса на удаление лайка у отзыва
+     *
+     * @param reviewId id отзыва
+     * @param userId   id пользователя
+     */
+    @DeleteMapping("/{reviewId}/like/{userId}")
+    public void deleteLikeFromReview(@PathVariable Integer reviewId, @PathVariable Long userId) {
 
-		reviewService.deleteLikeFromReview(reviewId, userId);
-	}
+        reviewService.deleteLikeFromReview(reviewId, userId);
+    }
 
-	/**
-	 * обработка DELETE-запроса на удаление дизлайка у отзыва
-	 *
-	 * @param reviewId
-	 * @param userId
-	 */
-	@DeleteMapping("/{reviewId}/dislike/{userId}")
-	public void deleteDislikeFromReview(@PathVariable Integer reviewId, @PathVariable Long userId) {
+    /**
+     * обработка DELETE-запроса на удаление дизлайка у отзыва
+     *
+     * @param reviewId id отзыва
+     * @param userId   id пользователя
+     */
+    @DeleteMapping("/{reviewId}/dislike/{userId}")
+    public void deleteDislikeFromReview(@PathVariable Integer reviewId, @PathVariable Long userId) {
 
-		reviewService.deleteDislikeFromReview(reviewId, userId);
-	}
+        reviewService.deleteDislikeFromReview(reviewId, userId);
+    }
 
 }

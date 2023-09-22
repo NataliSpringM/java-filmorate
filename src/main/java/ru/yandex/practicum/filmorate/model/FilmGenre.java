@@ -13,7 +13,7 @@ import lombok.Value;
 @RequiredArgsConstructor
 public class FilmGenre {
 
-	Integer id;
-	String name;
+    Integer id;
+    String name;
 
 }

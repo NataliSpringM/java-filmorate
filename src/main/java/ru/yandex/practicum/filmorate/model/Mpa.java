@@ -12,7 +12,7 @@ import lombok.Value;
 @RequiredArgsConstructor
 public class Mpa {
 
-	Integer id;
-	String name;
+    Integer id;
+    String name;
 
 }

@@ -15,63 +15,63 @@ import ru.yandex.practicum.filmorate.storage.db.DirectorDbStorage;
 @Service
 public class DirectorService {
 
-	private final DirectorStorage directorStorage;
+    private final DirectorStorage directorStorage;
 
-	/**
-	 * Конструктор сервиса
-	 *
-	 * @param directorStorage
-	 */
-	@Autowired
-	public DirectorService(DirectorDbStorage directorStorage) {
-		this.directorStorage = directorStorage;
-	}
+    /**
+     * Конструктор сервиса
+     *
+     * @param directorStorage хранилище режиссеры
+     */
+    @Autowired
+    public DirectorService(DirectorDbStorage directorStorage) {
+        this.directorStorage = directorStorage;
+    }
 
-	/**
-	 * Возврат списка всех режиссеров
-	 *
-	 * @return
-	 */
-	public Collection<Director> findAllDirectors() {
-		return this.directorStorage.findAllDirectors();
-	}
+    /**
+     * Возврат списка всех режиссеров
+     *
+     * @return список режиссеров
+     */
+    public Collection<Director> findAllDirectors() {
+        return this.directorStorage.findAllDirectors();
+    }
 
-	/**
-	 * Получение режиссера по id
-	 *
-	 * @param id
-	 * @return
-	 */
-	public Director findDirectorById(Integer id) {
-		return directorStorage.findDirectorById(id);
-	}
+    /**
+     * Получение режиссера по id
+     *
+     * @param id id режиссера
+     * @return объект Director
+     */
+    public Director findDirectorById(Integer id) {
+        return directorStorage.findDirectorById(id);
+    }
 
-	/**
-	 * Добавление данных о режиссере
-	 *
-	 * @param director
-	 * @return
-	 */
-	public Director addDirector(Director director) {
-		return directorStorage.addDirector(director);
-	}
+    /**
+     * Добавление данных о режиссере
+     *
+     * @param director объект Director
+     * @return объект Director с id
+     */
+    public Director addDirector(Director director) {
+        return directorStorage.addDirector(director);
+    }
 
-	/**
-	 * Обновление данных о режиссере
-	 *
-	 * @param director
-	 * @return
-	 */
-	public Director updateDirector(Director director) {
-		return directorStorage.updateDirector(director);
-	}
+    /**
+     * Обновление данных о режиссере
+     *
+     * @param director объект Director
+     * @return обновленный объект Director
+     */
+    public Director updateDirector(Director director) {
+        return directorStorage.updateDirector(director);
+    }
 
-	/**
-	 * Удаление данных о режиссере
-	 *
-	 * @param id
-	 */
-	public void deleteDirector(Integer id) {
-		directorStorage.deleteDirector(id);
-	}
+    /**
+     * Удаление данных о режиссере
+     *
+     * @param id id режиссера
+     */
+    public void deleteDirector(Integer id) {
+        directorStorage.deleteDirector(id);
+    }
 }

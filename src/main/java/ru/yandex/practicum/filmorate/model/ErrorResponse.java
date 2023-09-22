@@ -13,6 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ErrorResponse {
 
-	String error;
+    String error;
 
 }

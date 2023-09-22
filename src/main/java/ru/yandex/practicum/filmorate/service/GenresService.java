@@ -10,19 +10,19 @@ import ru.yandex.practicum.filmorate.model.FilmGenre;
 
 public interface GenresService {
 
-	/**
-	 * получение списка всех жанров фильмов
-	 *
-	 * @return
-	 */
-	List<FilmGenre> listFilmGenres();
+    /**
+     * получение списка всех жанров фильмов
+     *
+     * @return список жанров
+     */
+    List<FilmGenre> listFilmGenres();
 
-	/**
-	 * получение жанра по id
-	 *
-	 * @param id
-	 * @return
-	 */
-	FilmGenre getGenreById(Integer id);
+    /**
+     * получение жанра по id
+     *
+     * @param id id жанра
+     * @return объект FilmGenre
+     */
+    FilmGenre getGenreById(Integer id);
 
 }

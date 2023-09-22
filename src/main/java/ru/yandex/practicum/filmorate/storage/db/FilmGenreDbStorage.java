@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.mappers.FilmGenreMapper;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.storage.FilmGenreStorage;
 
@@ -25,56 +24,69 @@ import ru.yandex.practicum.filmorate.storage.FilmGenreStorage;
 @Primary
 public class FilmGenreDbStorage implements FilmGenreStorage {
 
-	private final JdbcTemplate jdbcTemplate;
 
-	/**
-	 * получение списка жанров фильмов из базы данных
-	 */
-	@Override
-	public List<FilmGenre> listFilmGenres() {
+    private final JdbcTemplate jdbcTemplate;
+    private final FilmGenreMapper filmGenreMapper;
 
-		String sql = "SELECT * FROM genres ORDER BY genre_id";
+    /**
+     * получение списка жанров фильмов из базы данных
+     */
+    @Override
+    public List<FilmGenre> listFilmGenres() {
 
-		return jdbcTemplate.query(sql,
-				(rs, rowNum) -> new FilmGenre(rs.getInt("genre_id"), rs.getString("genre_name")));
+        String sql = "SELECT * FROM genres ORDER BY genre_id";
+        List<FilmGenre> genres = jdbcTemplate.query(sql,
+                filmGenreMapper);
+        logResultList(genres);
+        return genres;
 
-	}
+    }
 
-	/**
-	 * получение информации о жанре фильма по id
-	 */
-	@Override
-	public FilmGenre getGenreById(Integer genreId) {
+    /**
+     * получение информации о жанре фильма по id
+     */
+    @Override
+    public FilmGenre getGenreById(Integer genreId) {
 
-		SqlRowSet sqlGenre = jdbcTemplate.queryForRowSet("SELECT * FROM genres WHERE genre_id = ?", genreId);
+        checkGenreId(genreId);
+        String sql = "SELECT * FROM genres WHERE genre_id = ?";
+        FilmGenre filmGenre = jdbcTemplate.queryForObject(sql, filmGenreMapper, genreId);
+        log.info("Найден жанр: {} {}", genreId, Objects.requireNonNull(filmGenre).getName());
+        return filmGenre;
 
-		if (sqlGenre.next()) {
+    }
 
-			FilmGenre filmGenre = new FilmGenre(sqlGenre.getInt("genre_id"), sqlGenre.getString("genre_name"));
+    public Set<FilmGenre> getFilmGenres(Integer filmId) {
 
-			log.info("Найден жанр: {} {}", genreId, filmGenre.getName());
-			return filmGenre;
+        String sql = "SELECT g.* FROM genres AS g JOIN film_genres fg ON fg.genre_id = g.genre_id WHERE fg.film_id = ?";
+        List<FilmGenre> filmGenres = jdbcTemplate.query(sql, filmGenreMapper, filmId);
 
-		} else {
+        Set<FilmGenre> genres = new TreeSet<>(Comparator.comparing(FilmGenre::getId));
+        genres.addAll(filmGenres);
+        logResultList(genres);
+        return genres;
+    }
 
-			log.info("Жанр с идентификатором {} не найден.", genreId);
-			throw new ObjectNotFoundException(String.format("Жанр с id %d не найден", genreId));
-		}
-	}
 
-	public Set<FilmGenre> getGenres(int filmId) {
+    // проверка сущестования id жанра в базе данных
+    @Override
+    public void checkGenreId(Integer genreId) {
 
-		SqlRowSet genreRows = jdbcTemplate.queryForRowSet("SELECT genre_id FROM film_genres WHERE film_id = ?", filmId);
+        SqlRowSet sql = jdbcTemplate.queryForRowSet("SELECT genre_id FROM genres WHERE genre_id = ?", genreId);
+        if (!sql.next()) {
+            log.info("Жанр с идентификатором {} не найден.", genreId);
+            throw new ObjectNotFoundException(String.format("Жанр с id: %d не найден", genreId));
+        }
+    }
 
-		Set<FilmGenre> genres = new TreeSet<>(Comparator.comparing(FilmGenre::getId));
+    /**
+     * логирование списка
+     */
+    private void logResultList(Collection<FilmGenre> genres) {
 
-		while (genreRows.next()) {
-			// получение всей информации о жанре фильма
-			FilmGenre filmGenre = getGenreById(genreRows.getInt("genre_id"));
-			genres.add(filmGenre);
-
-		}
-
-		return genres;
-	}
+        String result = genres.stream()
+                .map(FilmGenre::toString)
+                .collect(Collectors.joining(", "));
+        log.info("Список жанров по запросу: {}", result);
+    }
 }

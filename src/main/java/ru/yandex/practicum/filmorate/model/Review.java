@@ -22,28 +22,28 @@ import lombok.Value;
 @RequiredArgsConstructor
 public class Review {
 
-	Integer reviewId; // id отзыва
-	@NotNull
-	@NotBlank
-	String content; // содержание отзыва
-	@NotNull
-	Boolean isPositive; // оценка фильма (положительный / негативный)
-	@NotNull
-	Long userId; // id пользователя
-	@NotNull
-	Integer filmId; // id фильма
-	Integer useful; // рейтинг полезности
+    Integer reviewId; // id отзыва
+    @NotNull
+    @NotBlank
+    String content; // содержание отзыва
+    @NotNull
+    Boolean isPositive; // оценка фильма (положительный / негативный)
+    @NotNull
+    Long userId; // id пользователя
+    @NotNull
+    Integer filmId; // id фильма
+    Integer useful; // рейтинг полезности
 
-	public Map<String, Object> toMap() {
+    public Map<String, Object> toMap() {
 
-		Map<String, Object> reviewProperties = new HashMap<>();
+        Map<String, Object> reviewProperties = new HashMap<>();
 
-		reviewProperties.put("content", content);
-		reviewProperties.put("is_positive", isPositive);
-		reviewProperties.put("user_id", userId);
-		reviewProperties.put("film_id", filmId);
+        reviewProperties.put("content", content);
+        reviewProperties.put("is_positive", isPositive);
+        reviewProperties.put("user_id", userId);
+        reviewProperties.put("film_id", filmId);
 
-		return reviewProperties;
-	}
+        return reviewProperties;
+    }
 
 }

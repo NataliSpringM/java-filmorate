@@ -9,19 +9,19 @@ import ru.yandex.practicum.filmorate.model.Mpa;
  */
 public interface RatingMpaService {
 
-	/**
-	 * получение списка рейтингов MPA
-	 *
-	 * @return
-	 */
-	List<Mpa> listRatingMpa();
+    /**
+     * получение списка рейтингов MPA
+     *
+     * @return список рейтингов
+     */
+    List<Mpa> listRatingMpa();
 
-	/**
-	 * получение рейтинга MPA по id
-	 *
-	 * @param id
-	 * @return
-	 */
-	Mpa getRatingMPAById(Integer id);
+    /**
+     * получение рейтинга MPA по id
+     *
+     * @param id id рейтинга
+     * @return объект Mpa
+     */
+    Mpa getRatingMPAById(Integer id);
 
 }
