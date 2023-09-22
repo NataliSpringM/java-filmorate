@@ -2,18 +2,52 @@ package ru.yandex.practicum.filmorate.storage;
 
 import java.util.Set;
 
+/**
+ * хранение информации о дружбе пользователей
+ */
+
 public interface FriendshipStorage {
 
-    // хранение информации о дружбе пользователей
+	/**
+	 * добавление пользователя в список друзей в UserStorage
+	 *
+	 * @param userId
+	 * @param friendId
+	 */
+	void addFriend(Long userId, Long friendId);
 
-    void addFriend(Long userId, Long friendId); //добавление пользователя в список друзей в UserStorage
+	/**
+	 * удаление пользователя из списка друзей в UserStorage
+	 *
+	 * @param userId
+	 * @param friendId
+	 */
+	void deleteFriend(Long userId, Long friendId);
 
-    void deleteFriend(Long userId, Long friendId);  // удаление пользователя из списка друзей в UserStorage
+	/**
+	 * получение списка друзей пользователя из UserStorage
+	 *
+	 * @param id
+	 * @return
+	 */
+	Set<Long> listUserFriends(Long id);
 
-    Set<Long> listUserFriends(Long id); // получение списка друзей пользователя из UserStorage
+	/**
+	 * получение списка общих друзей
+	 *
+	 * @param userId
+	 * @param otherId
+	 * @return
+	 */
+	Set<Long> listCommonFriends(Long userId, Long otherId);
 
-    Set<Long> listCommonFriends(Long userId, Long otherId); // получение списка общих друзей
-
-    Boolean isFriendshipConfirmed(Long userId, Long friendId); // проверка взаимности дружбы
+	/**
+	 * проверка взаимности дружбы
+	 *
+	 * @param userId
+	 * @param friendId
+	 * @return
+	 */
+	Boolean isFriendshipConfirmed(Long userId, Long friendId);
 
 }

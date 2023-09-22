@@ -1,21 +1,33 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-
+/**
+ * обработка запросов HTTP-клиентов на добавление, обновление, получение
+ * информации о фильмах по адресуhttp://localhost:8080/films
+ */
 @RestController
 @Slf4j
 @RequestMapping("/films")
@@ -23,69 +35,103 @@ import javax.validation.constraints.Positive;
 @RequiredArgsConstructor
 public class FilmController {
 
-    /* обработка запросов HTTP-клиентов на добавление, обновление, получение информации о фильмах по адресу
-    http://localhost:8080/films */
+	private final FilmService filmService;
+	private final EventService eventService;
 
-    private final FilmService filmService;
-    private final EventService eventService;
+	/**
+	 * обработка POST-запроса на добавление информации о фильме
+	 *
+	 * @param film
+	 * @return
+	 */
+	@PostMapping()
+	public Film addFilm(@Valid @RequestBody Film film) {
 
+		return filmService.addFilm(film);
+	}
 
-    // обработка POST-запроса на добавление информации о фильме
-    @PostMapping()
-    public Film addFilm(@Valid @RequestBody Film film) {
+	/**
+	 * обработка PUT-запроса на обновление информации о фильме
+	 *
+	 * @param film
+	 * @return
+	 */
+	@PutMapping()
+	public Film updateFilm(@Valid @RequestBody Film film) {
 
-        return filmService.addFilm(film);
-    }
+		return filmService.updateFilm(film);
+	}
 
-    // обработка PUT-запроса на обновление информации о фильме
-    @PutMapping()
-    public Film updateFilm(@Valid @RequestBody Film film) {
+	/**
+	 * обработка GET-запроса на получение фильма по идентификатору
+	 *
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/{id}")
 
-        return filmService.updateFilm(film);
-    }
+	public Film getFilmById(@PathVariable Integer id) {
 
-    // обработка GET-запроса на получение фильма по идентификатору
-    @GetMapping("/{id}")
+		return filmService.getFilmById(id);
+	}
 
-    public Film getFilmById(@PathVariable Integer id) {
+	/**
+	 * обработка GET-запроса на получение списка всех фильмов
+	 *
+	 * @return
+	 */
+	@GetMapping()
+	public List<Film> listFilms() {
 
-        return filmService.getFilmById(id);
-    }
+		return filmService.listFilms();
+	}
 
-    // обработка GET-запроса на получение списка всех фильмов
-    @GetMapping()
-    public List<Film> listFilms() {
+	/**
+	 * обработка PUT-запроса на добавление лайка фильму
+	 *
+	 * @param id
+	 * @param userId
+	 */
+	@PutMapping("/{id}/like/{userId}")
+	public void addLike(@PathVariable Integer id, @PathVariable Long userId) {
 
-        return filmService.listFilms();
-    }
+		filmService.addLike(id, userId);
+		eventService.addEvent(userId, Long.valueOf(id), "LIKE", "ADD");
+	}
 
-    // обработка PUT-запроса на добавление лайка фильму
-    @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Integer id, @PathVariable Long userId) {
+	/**
+	 * обработка DELETE-запроса на удаление лайка фильму
+	 *
+	 * @param id
+	 * @param userId
+	 */
+	@DeleteMapping("/{id}/like/{userId}")
+	public void deleteLike(@PathVariable Integer id, @PathVariable Long userId) {
 
-        filmService.addLike(id, userId);
-        eventService.addEvent(userId, Long.valueOf(id), "LIKE", "ADD");
-    }
+		filmService.deleteLike(id, userId);
+		eventService.addEvent(userId, Long.valueOf(id), "LIKE", "REMOVE");
+	}
 
-    // обработка DELETE-запроса на удаление лайка фильму
-    @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable Integer id, @PathVariable Long userId) {
+	/**
+	 * обработка GET-запроса на получение списка наиболее популярных фильмов
+	 *
+	 * @param count
+	 * @return
+	 */
+	@GetMapping("/popular")
+	public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
+			@RequestParam(required = false) Integer genreId, @RequestParam(required = false) Integer year) {
 
-        filmService.deleteLike(id, userId);
-        eventService.addEvent(userId, Long.valueOf(id), "LIKE", "REMOVE");
-    }
+		return filmService.listMostPopularFilms(count, genreId, year);
+	}
 
-    // обработка запросов GET /films/popular?count={limit}&genreId={genreId}&year={year}
-    @GetMapping("/popular")
-    public List<Film> listMostPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
-                         @RequestParam(required = false) Integer genreId,
-                         @RequestParam(required = false) Integer year) {
-
-        return filmService.listMostPopularFilms(count, genreId, year);
-    }
-
-    // обработка DELETE-запроса на удаление фильма по id
-    @DeleteMapping (value = "/{id}")
+	/**
+	 * обработка DELETE-запроса на удаление фильма по id
+	 *
+	 * @param id
+	 * @return
+	 */
+	@DeleteMapping(value = "/{id}")
 	public boolean delete(@PathVariable Integer id) {
 		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS_ID', id:{}", id);
 		boolean deleted = filmService.delete(id);
@@ -98,40 +144,59 @@ public class FilmController {
 		}
 	}
 
-    // обработка DELETE-запроса на удаление всех фильмов
-    @DeleteMapping
+	/**
+	 * обработка DELETE-запроса на удаление всех фильмов
+	 *
+	 * @return
+	 */
+	@DeleteMapping
 	public List<Film> deleteAll() {
-		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS'. "
-				+ "Список фильмов пуст.");
+		log.info("Получен запрос к эндпоинту: 'DELETE_FILMS'. " + "Список фильмов пуст.");
 		filmService.clearFilms();
 		return filmService.listFilms();
 	}
 
-    // обработка запросов GET /films/director/{directorId}?sortBy=[year,likes]
-    @GetMapping("/director/{directorId}")
-    public List<Film> getSortedFilmsOfDirector(@PathVariable @Positive Integer directorId,
-                                               @RequestParam(required = false, defaultValue = "year") String sortBy) {
-        if (!sortBy.equals("year") && !sortBy.equals("likes")) {
-            sortBy = "year";
-        }
-        return filmService.listSortedFilmsOfDirector(directorId, sortBy);
-    }
+	/**
+	 * обработка запросов GET /films/director/{directorId}?sortBy=[year,likes]
+	 *
+	 * @param directorId
+	 * @param sortBy
+	 * @return
+	 */
+	@GetMapping("/director/{directorId}")
+	public List<Film> getSortedFilmsOfDirector(@PathVariable @Positive Integer directorId,
+			@RequestParam(required = false, defaultValue = "year") String sortBy) {
+		if (!sortBy.equals("year") && !sortBy.equals("likes")) {
+			sortBy = "year";
+		}
+		return filmService.listSortedFilmsOfDirector(directorId, sortBy);
+	}
 
-    // поиск по подстроке названия фильма или режиссера
-    @GetMapping("/search")
-    public List<Film> listSearchResult(@RequestParam(name = "query") String query,
-                                       @RequestParam(name = "by") List<String> by) {
+	/**
+	 * поиск по подстроке названия фильма или режиссера
+	 *
+	 * @param query
+	 * @param by
+	 * @return
+	 */
+	@GetMapping("/search")
+	public List<Film> listSearchResult(@RequestParam(name = "query") String query,
+			@RequestParam(name = "by") List<String> by) {
 
-        return filmService.listSearchResult(query, by);
-    }
+		return filmService.listSearchResult(query, by);
+	}
 
-    // обработка GET-запроса на получение общих фильмов между пользователями
-    @GetMapping("/common")
-    public List<Film> listCommonFilms(
-            @RequestParam(name = "userId") Long userId,
-            @RequestParam(name = "friendId") Long friendId) {
-        return filmService.getCommonFilmsBetweenUsers(userId, friendId);
-    }
+	/**
+	 * обработка GET-запроса на получение общих фильмов между пользователями
+	 *
+	 * @param userId
+	 * @param friendId
+	 * @return
+	 */
+	@GetMapping("/common")
+	public List<Film> listCommonFilms(@RequestParam(name = "userId") Long userId,
+			@RequestParam(name = "friendId") Long friendId) {
+		return filmService.getCommonFilmsBetweenUsers(userId, friendId);
+	}
 
 }
-

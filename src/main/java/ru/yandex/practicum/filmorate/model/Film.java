@@ -1,58 +1,67 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import org.springframework.validation.annotation.Validated;
-import ru.yandex.practicum.filmorate.validation.annotations.CheckReleaseDate;
-
-import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
+
+import org.springframework.validation.annotation.Validated;
+
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import ru.yandex.practicum.filmorate.validation.annotations.CheckReleaseDate;
+
+/**
+ * информация о фильме - id, название, описание, дата выпуска, продолжительность
+ * фильма, количество лайков
+ */
 @Validated
 @Value
 @Builder(toBuilder = true)
 @RequiredArgsConstructor
 public class Film {
 
-    // информация о фильме - id, название, описание, дата выпуска, продолжительность фильма, количество лайков
-    private static final int MAX_DESCRIPTION_LENGTH = 200;
+	private static final int MAX_DESCRIPTION_LENGTH = 200;
 
-    Integer id; // id фильма
+	Integer id; // id фильма
 
-    @NotNull
-    @NotBlank
-    @NotEmpty
-    String name; // название фильма
+	@NotNull
+	@NotBlank
+	@NotEmpty
+	String name; // название фильма
 
-    @NotNull
-    @Size(max = MAX_DESCRIPTION_LENGTH)
-    String description; // описание фильма
+	@NotNull
+	@Size(max = MAX_DESCRIPTION_LENGTH)
+	String description; // описание фильма
 
-    @CheckReleaseDate(message = "не должно быть ранее 28-12-1895")
-    LocalDate releaseDate; // дата выхода фильма
+	@CheckReleaseDate(message = "не должно быть ранее 28-12-1895")
+	LocalDate releaseDate; // дата выхода фильма
 
-    @NotNull
-    @Positive
-    Integer duration; // продолжительность фильма
-    Long likes; // количество лайков
-    Mpa mpa; // рейтинг MPA
-    Set<FilmGenre> genres; // информация о жанрах фильма
-    Set<Director> directors; // информация о режиссерах фильма
+	@NotNull
+	@Positive
+	Integer duration; // продолжительность фильма
+	Long likes; // количество лайков
+	Mpa mpa; // рейтинг MPA
+	Set<FilmGenre> genres; // информация о жанрах фильма
+	Set<Director> directors; // информация о режиссерах фильма
 
-    public Map<String, Object> toMap() {
+	public Map<String, Object> toMap() {
 
-        Map<String, Object> filmProperties = new HashMap<>();
+		Map<String, Object> filmProperties = new HashMap<>();
 
-        filmProperties.put("film_name", name);
-        filmProperties.put("description", description);
-        filmProperties.put("release_date", releaseDate);
-        filmProperties.put("duration", duration);
-        filmProperties.put("rating_mpa_id", mpa.getId());
+		filmProperties.put("film_name", name);
+		filmProperties.put("description", description);
+		filmProperties.put("release_date", releaseDate);
+		filmProperties.put("duration", duration);
+		filmProperties.put("rating_mpa_id", mpa.getId());
 
-        return filmProperties;
-    }
+		return filmProperties;
+	}
 }

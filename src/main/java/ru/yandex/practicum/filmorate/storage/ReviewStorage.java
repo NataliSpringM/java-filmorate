@@ -1,21 +1,62 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.model.Review;
-
 import java.util.List;
 
+import org.springframework.stereotype.Repository;
+
+import ru.yandex.practicum.filmorate.model.Review;
+
+/**
+ * хранение информации об отзывах
+ */
+@Repository
 public interface ReviewStorage {
 
-    Review addReview(Review review);  // добавление отзыва
+	/**
+	 * добавление отзыва
+	 *
+	 * @param review
+	 * @return
+	 */
+	Review addReview(Review review);
 
-    Review updateReview(Review review); // обновление отзыва
+	/**
+	 * обновление отзыва
+	 *
+	 * @param review
+	 * @return
+	 */
+	Review updateReview(Review review);
 
-    void deleteReview(Integer reviewId); // удаление отзыва
+	/**
+	 * удаление отзыва
+	 *
+	 * @param reviewId
+	 */
+	void deleteReview(Integer reviewId);
 
-    List<Review> listReviews(Integer filmId, Integer count); // получение списка отзывов
+	/**
+	 * получение списка отзывов
+	 *
+	 * @param filmId
+	 * @param count
+	 * @return
+	 */
+	List<Review> listReviews(Integer filmId, Integer count);
 
-    Review getReviewById(Integer id); // получение отзыва по идентификатору
+	/**
+	 * получение отзыва по идентификатору
+	 *
+	 * @param id
+	 * @return
+	 */
+	Review getReviewById(Integer id);
 
-    void checkReviewId(Integer reviewId); // проверка существования id отзыва
+	/**
+	 * проверка существования id отзыва
+	 *
+	 * @param reviewId
+	 */
+	void checkReviewId(Integer reviewId);
 
 }

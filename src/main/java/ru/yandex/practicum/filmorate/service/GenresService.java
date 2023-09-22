@@ -1,16 +1,28 @@
 package ru.yandex.practicum.filmorate.service;
 
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-
 import java.util.List;
 
-// сервис для работы с жанрами
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+
+/**
+ * сервис для работы с жанрами
+ */
 
 public interface GenresService {
 
-    List<FilmGenre> listFilmGenres(); // получение списка всех жанров фильмов
+	/**
+	 * получение списка всех жанров фильмов
+	 *
+	 * @return
+	 */
+	List<FilmGenre> listFilmGenres();
 
-    FilmGenre getGenreById(Integer id); // получение жанра по id
-
+	/**
+	 * получение жанра по id
+	 *
+	 * @param id
+	 * @return
+	 */
+	FilmGenre getGenreById(Integer id);
 
 }

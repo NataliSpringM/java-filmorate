@@ -1,39 +1,107 @@
 package ru.yandex.practicum.filmorate.service;
 
+import java.util.List;
+
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.List;
-
-
-// сервис для добавления, удаления, получения списков друзей пользователя
-
+/**
+ * сервис для добавления, удаления, получения списков друзей пользователя
+ */
 public interface UserService {
-    User addUser(User user);  // добавление информации о пользователе
 
-    User updateUser(User user);  // обновление информации о пользователе
+	/**
+	 * добавление информации о пользователе
+	 *
+	 * @param user
+	 * @return
+	 */
+	User addUser(User user);
 
-    List<User> listUsers(); // получение списка пользователей
+	/**
+	 * обновление информации о пользователе
+	 *
+	 * @param user
+	 * @return
+	 */
+	User updateUser(User user);
 
-    User getUserById(Long id); // получение пользователя по идентификатору
+	/**
+	 * получение списка пользователей
+	 *
+	 * @return
+	 */
+	List<User> listUsers();
 
-    void addFriend(Long userId, Long friendId); //добавление пользователя в список друзей
+	/**
+	 * получение пользователя по идентификатору
+	 *
+	 * @param id
+	 * @return
+	 */
+	User getUserById(Long id);
 
-    void deleteFriend(Long userId, Long friendId);  // удаление пользователя из списка друзей
+	/**
+	 * добавление пользователя в список друзей
+	 *
+	 * @param userId
+	 * @param friendId
+	 */
+	void addFriend(Long userId, Long friendId);
 
-    List<User> listUserFriends(Long id); // получение списка друзей пользователя
+	/**
+	 * удаление пользователя из списка друзей
+	 *
+	 * @param userId
+	 * @param friendId
+	 */
+	void deleteFriend(Long userId, Long friendId);
 
-    List<User> listCommonFriends(Long userId, Long otherId); // получение списка общих друзей пользователей
+	/**
+	 * получение списка друзей пользователя
+	 *
+	 * @param id
+	 * @return
+	 */
+	List<User> listUserFriends(Long id);
 
-    Boolean isFriendShipConfirmed(Long userId, Long friendId); // подтверждение взаимности дружбы пользователей
+	/**
+	 * получение списка общих друзей пользователей
+	 *
+	 * @param userId
+	 * @param otherId
+	 * @return
+	 */
+	List<User> listCommonFriends(Long userId, Long otherId);
 
+	/**
+	 * подтверждение взаимности дружбы пользователей
+	 *
+	 * @param userId
+	 * @param friendId
+	 * @return
+	 */
+	Boolean isFriendShipConfirmed(Long userId, Long friendId);
 
-    List<Film> getRecommendation(Long id);
+	/**
+	 * Получение списка рекомендаций
+	 *
+	 * @param id
+	 * @return
+	 */
+	List<Film> getRecommendation(Long id);
 
+	/**
+	 * удаление пользователя по id
+	 *
+	 * @param id
+	 * @return
+	 */
 	boolean delete(Integer id); // Удаление id
 
+	/**
+	 * удаление всех пользователей
+	 */
 	void clearAll();
 
-
 }
-

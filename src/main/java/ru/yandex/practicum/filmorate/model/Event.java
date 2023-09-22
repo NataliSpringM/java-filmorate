@@ -10,9 +10,16 @@ import javax.validation.constraints.PastOrPresent;
 
 import org.springframework.validation.annotation.Validated;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Инофрмация о событие, совершенном пользователем: тип события, операции и
+ * объекта
+ */
 @Validated
 @Data
 @Builder(toBuilder = true)
@@ -20,42 +27,146 @@ public class Event implements Comparable<Event> {
 
 	Long eventId; // id события
 
-    @NotNull
-    @NotBlank
-    @NotEmpty
-    Long userId; // id пользователя инициатора
+	@NotNull
+	@NotBlank
+	@NotEmpty
+	Long userId; // id пользователя инициатора
 
-    @NotNull
-    @NotBlank
-    @NotEmpty
-    Long entityId; // id объекта события
+	@NotNull
+	@NotBlank
+	@NotEmpty
+	Long entityId; // id объекта события
 
-    @NotNull
-    String eventType; // тип события
+	@NotNull
+	EventType eventType; // тип события
 
-    @NotNull
-    String operation; // тип операции
+	@NotNull
+	OperationType operation; // тип операции
 
-    @PastOrPresent
-    Long timestamp; // дата и время события
+	@PastOrPresent
+	Long timestamp; // дата и время события
 
-    public Map<String, Object> toMap() {
+	/**
+	 * Маппер объектов типа Event в строку
+	 */
+	public Map<String, Object> toMap() {
 
-        Map<String, Object> eventProperties = new HashMap<>();
+		Map<String, Object> eventProperties = new HashMap<>();
 
-        eventProperties.put("event_id", eventId);
-        eventProperties.put("user_id", userId);
-        eventProperties.put("entity_id", entityId);
-        eventProperties.put("event_type", eventType);
-        eventProperties.put("operation_type", operation);
-        eventProperties.put("time_stamp", timestamp);
+		eventProperties.put("event_id", eventId);
+		eventProperties.put("user_id", userId);
+		eventProperties.put("entity_id", entityId);
+		eventProperties.put("event_type", eventType.getName());
+		eventProperties.put("operation_type", operation.getName());
+		eventProperties.put("time_stamp", timestamp);
 
-        return eventProperties;
-    }
+		return eventProperties;
+	}
 
-    @Override
+	/**
+	 * Перегрузка метода сравнения объектов типа Event
+	 */
+	@Override
 	public int compareTo(Event otherEvent) {
-		return this.getTimestamp()
-				.compareTo(otherEvent.getTimestamp());
+		return this.getTimestamp().compareTo(otherEvent.getTimestamp());
+	}
+
+	/**
+	 * Перечисление типов событий
+	 */
+	public enum EventType {
+		FRIEND("FRIEND"), LIKE("LIKE"), REVIEW("REVIEW");
+
+		private String name;
+
+		EventType(String name) {
+			this.name = name;
+		}
+
+		/**
+		 * Получение строкового значения из типа события
+		 */
+		@JsonValue
+		public String getName() {
+			return name;
+		}
+
+		/**
+		 * Получение типа события из строкового значения
+		 */
+		@JsonCreator
+		public static EventType fromName(String name) {
+
+			if (name == null) {
+				return null;
+			}
+
+			switch (name) {
+			case "FRIEND": {
+				return FRIEND;
+			}
+
+			case "LIKE": {
+				return LIKE;
+			}
+
+			case "REVIEW": {
+				return REVIEW;
+			}
+
+			default: {
+				throw new UnsupportedOperationException(String.format("Неизвестный тип события: '%s'", name));
+			}
+			}
+		}
+	}
+
+	/**
+	 * Перечисление типов операций
+	 */
+	public enum OperationType {
+		ADD("ADD"), UPDATE("UPDATE"), REMOVE("REMOVE");
+
+		private String name;
+
+		OperationType(String name) {
+			this.name = name;
+		}
+
+		/**
+		 * Получение строкового значения из типа операции
+		 */
+		@JsonValue
+		public String getName() {
+			return name;
+		}
+
+		/**
+		 * Получение типа события из строкового значения
+		 */
+		@JsonCreator
+		public static OperationType fromName(String name) {
+
+			if (name == null) {
+				return null;
+			}
+
+			switch (name) {
+			case "ADD": {
+				return ADD;
+			}
+
+			case "UPDATE": {
+				return UPDATE;
+			}
+
+			case "REMOVE": {
+				return REMOVE;
+			}
+			default: {
+				throw new UnsupportedOperationException(String.format("Неизвестная операция: '%s'", name));
+			}
+			}
+		}
 	}
 }
