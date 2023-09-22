@@ -225,6 +225,28 @@ public class FilmDbStorage implements FilmStorage {
 	}
 
 	/**
+	 * получение списка фильмов по режиссеру
+	 */
+	@Override
+	public List<Film> listFilmsOfDirector(Integer directorId) {
+		directorStorage.checkDirectorId(directorId);
+		/*
+		 * SQL query: SELECT * FROM (SELECT film_id FROM film_directors WHERE
+		 * director_id = ?) AS ids LEFT JOIN films ON ids.film_id = films.film_id;
+		 */
+		String sqlQuery = "SELECT * " + " FROM (SELECT film_id FROM film_directors WHERE director_id = ?) AS ids "
+				+ " LEFT JOIN films ON ids.film_id = films.film_id;";
+
+		return jdbcTemplate.query(sqlQuery,
+				(rs, rowNum) -> new Film(rs.getInt("ids.film_id"), rs.getString("film_name"),
+						rs.getString("description"), rs.getDate("release_date").toLocalDate(), rs.getInt("duration"),
+						likeStorage.getFilmLikesTotalCount(rs.getInt("film_id")),
+						mpaStorage.getRatingMpaById(rs.getInt("rating_mpa_id")), getFilmGenres(rs.getInt("film_id")),
+						directorStorage.getDirectorsByFilmId(rs.getInt("film_id"))),
+				directorId);
+	}
+
+	/**
 	 * Удаление фильма по id и возвращение boolean успешности операции
 	 */
 	@Override

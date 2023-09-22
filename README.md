@@ -1,7 +1,7 @@
 java-filmorate
 ## Filmorate project.
 
-![Entity Relationship Diagram](https://github.com/NataliSpringM/java-filmorate/blob/main/src/main/resources/ER_filmorate.png)
+![Entity Relationship Diagram](https://github.com/NataliSpringM/java-filmorate/blob/develop/src/main/resources/ER_filmorate.png)
 
 
 
