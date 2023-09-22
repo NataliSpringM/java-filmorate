@@ -13,6 +13,9 @@ import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import java.sql.PreparedStatement;
 import java.util.*;
 
+/**
+ *  реализация сохранения и получения информации о режиссерах в базе данных
+ */
 @Slf4j
 @Repository
 public class DirectorDbStorage implements DirectorStorage {
@@ -89,7 +92,9 @@ public class DirectorDbStorage implements DirectorStorage {
         return directors;
     }
 
-    // получение информации о режиссерах фильма по id фильма из таблиц film_director и directors
+    /**
+     *  получение информации о режиссерах фильма по id фильма из таблиц film_director и directors
+     */
     @Override
     public Set<Director> getDirectorsByFilmId(Integer filmId) {
         /*
@@ -116,7 +121,9 @@ public class DirectorDbStorage implements DirectorStorage {
         return directors;
     }
 
-    // проверка существования id фильма в базе данных
+    /**
+     *  проверка существования id фильма в базе данных
+     */
     @Override
     public void checkDirectorId(Integer directorId) {
         String sqlQuery = "SELECT director_id FROM directors WHERE director_id = ?;";

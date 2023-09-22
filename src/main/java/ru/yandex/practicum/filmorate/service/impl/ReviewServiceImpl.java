@@ -13,19 +13,23 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.List;
 import java.util.Optional;
 
-//реализация сервиса для работы с отзывами
+/**
+ * реализация сервиса для работы с отзывами
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
+    private static final Integer REVIEW_LIST_SIZE = 10;
     private final ReviewStorage reviewStorage;
     private final ReviewLikeStorage reviewLikeStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
-    private static final Integer REVIEW_LIST_SIZE = 10;
 
-    //добавление отзыва в ReviewStorage
+    /**
+     * добавление отзыва в ReviewStorage
+     */
     @Override
     public Review addReview(Review review) {
 
@@ -35,7 +39,9 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewStorage.addReview(review);
     }
 
-    // обновление отзыва в ReviewStorage
+    /**
+     *  обновление отзыва в ReviewStorage
+     */
     @Override
     public Review updateReview(Review review) {
 
@@ -45,7 +51,9 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewStorage.updateReview(review);
     }
 
-    // получение отзыва по идентификатору из ReviewStorage
+    /**
+     *  получение отзыва по идентификатору из ReviewStorage
+     */
     @Override
     public Review getReviewById(Integer reviewId) {
 
@@ -53,7 +61,9 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
 
-    // удаление отзыва из ReviewStorage
+    /**
+     *  удаление отзыва из ReviewStorage
+     */
     @Override
     public void deleteReview(Integer reviewId) {
 
@@ -61,7 +71,9 @@ public class ReviewServiceImpl implements ReviewService {
 
     }
 
-    // получение списка фильмов из ReviewStorage
+    /**
+     *  получение списка фильмов из ReviewStorage
+     */
     @Override
     public List<Review> listReviews(Integer reviewId, Integer count) {
 
@@ -76,7 +88,9 @@ public class ReviewServiceImpl implements ReviewService {
         return listReviews;
     }
 
-    // добавляем лайк фильму в ReviewLikeStorage
+    /**
+     *  добавляем лайк фильму в ReviewLikeStorage
+     */
     @Override
     public void addLikeToReview(Integer reviewId, Long userId) {
 
@@ -86,7 +100,9 @@ public class ReviewServiceImpl implements ReviewService {
         reviewLikeStorage.addLikeToReview(reviewId, userId);
     }
 
-    // добавляем дизлайк фильму в ReviewLikeStorage
+    /**
+     *  добавляем дизлайк фильму в ReviewLikeStorage
+     */
     @Override
     public void addDislikeToReview(Integer reviewId, Long userId) {
 
@@ -97,7 +113,9 @@ public class ReviewServiceImpl implements ReviewService {
 
     }
 
-    // удаляем лайк у фильма в ReviewLikeStorage
+    /**
+     *  удаляем лайк у фильма в ReviewLikeStorage
+     */
     @Override
     public void deleteLikeFromReview(Integer reviewId, Long userId) {
 
@@ -109,7 +127,9 @@ public class ReviewServiceImpl implements ReviewService {
 
     }
 
-    // удаляем дизлайк у фильма в ReviewLikeStorage
+    /**
+     *  удаляем дизлайк у фильма в ReviewLikeStorage
+     */
     @Override
     public void deleteDislikeFromReview(Integer reviewId, Long userId) {
 

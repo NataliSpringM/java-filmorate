@@ -4,28 +4,75 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
 
-// хранение информации о фильмах
+import org.springframework.stereotype.Repository;
+
+/**
+ *  хранение информации о фильмах
+ */
 
 public interface FilmStorage {
 
-    Film addFilm(Film film);  //добавление информации о фильме
+	/**
+	 * добавление информации о фильме
+	 * @param film
+	 * @return
+	 */
+    Film addFilm(Film film);
 
-    Film updateFilm(Film film); // обновление информации о фильме
+    /**
+     *  обновление информации о фильме
+     * @param film
+     * @return
+     */
+    Film updateFilm(Film film);
 
-    List<Film> listFilms(); // получение списка фильмов
+    /**
+     *  получение списка фильмов
+     * @return
+     */
+    List<Film> listFilms();
 
-    Film getFilmById(Integer id); // получение фильма по идентификатору
+    /**
+     *  получение фильма по идентификатору
+     * @param id
+     * @return
+     */
+    Film getFilmById(Integer id);
 
-    void updateFilmData(Film film); // сохранение новой или обновленной информации о фильме
+    /**
+     *  сохранение новой или обновленной информации о фильме
+     * @param film
+     */
+    void updateFilmData(Film film);
 
-    List<Film> listMostPopularFilms(Integer count); // получение списка наиболее популярных фильмов
+    /**
+     *  получение списка наиболее популярных фильмов
+     * @param count
+     * @return
+     */
+    List<Film> listMostPopularFilms(Integer count);
 
-    default List<Film> listFilmsOfDirector(Integer directorId) { // получение списка фильмов по режиссеру
+    /**
+     *  получение списка фильмов по режиссеру
+     * @param directorId
+     * @return
+     */
+    default List<Film> listFilmsOfDirector(Integer directorId) {
         return null;
     }
 
-    void checkFilmId(Integer filmId); // проверка существования id фильма
+    /**
+     *  проверка существования id фильма
+     * @param filmId
+     */
+    void checkFilmId(Integer filmId);
 
+    /**
+     *  получение списка общих фильмов
+     * @param userId
+     * @param friendId
+     * @return
+     */
     List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId);
 
 }

@@ -9,7 +9,9 @@ import ru.yandex.practicum.filmorate.storage.RatingMpaStorage;
 
 import java.util.List;
 
-// реализация сервиса для получения информации о жанрах фильмов
+/**
+ *  реализация сервиса для получения информации о жанрах фильмов
+ */
 
 @Slf4j
 @Service
@@ -18,14 +20,18 @@ public class RatingMpaServiceImpl implements RatingMpaService {
 
     private final RatingMpaStorage ratingMpaStorage;
 
-    // получение списка рейтингов
+    /**
+     *  получение списка рейтингов
+     */
     @Override
     public List<Mpa> listRatingMpa() {
 
         return ratingMpaStorage.listRatingMpa();
     }
 
-    // получение рейтинга по id
+    /**
+     *  получение рейтинга по id
+     */
     @Override
     public Mpa getRatingMPAById(Integer id) {
 

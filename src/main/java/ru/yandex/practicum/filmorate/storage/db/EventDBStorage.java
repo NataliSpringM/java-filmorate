@@ -11,8 +11,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Event.EventType;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
-
+/**
+ *  реализация сохранения и получения информации о событиях в базе данных
+ */
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -30,14 +33,17 @@ public class EventDBStorage implements EventStorage {
         		.eventId(rs.getLong("event_id"))
         		.userId(rs.getLong("user_id"))
         		.entityId(rs.getLong("entity_id"))
-        		.eventType(rs.getString("event_type"))
-        		.operation(rs.getString("operation_type"))
+        		.eventType(Event.EventType.fromName(rs.getString("event_type")))
+        		.operation(Event.OperationType.fromName(rs.getString("operation_type")))
         		.timestamp(rs.getLong("time_stamp"))
         		.build());
 	}
 
 	@Override
-	public Event addEvent(Long userId, Long entityId, String eventType, String operationType) {
+	public Event addEvent(Long userId,
+			Long entityId,
+			String eventType,
+			String operationType) {
 		// вставляем данные события в базу данных и получаем сгенерированный id
 
 		SimpleJdbcInsert eventInsertion = new SimpleJdbcInsert(jdbcTemplate)
@@ -47,8 +53,8 @@ public class EventDBStorage implements EventStorage {
         Event event = Event.builder()
         		.userId(userId)
         		.entityId(entityId)
-        		.eventType(eventType)
-        		.operation(operationType)
+        		.eventType(Event.EventType.fromName(eventType))
+        		.operation(Event.OperationType.fromName(operationType))
         		.timestamp(System.currentTimeMillis())
         		.build();
 
@@ -73,8 +79,8 @@ public class EventDBStorage implements EventStorage {
             		.eventId(rs.getLong("event_id"))
             		.userId(rs.getLong("user_id"))
             		.entityId(rs.getLong("entity_id"))
-            		.eventType(rs.getString("event_type"))
-            		.operation(rs.getString("operation_type"))
+            		.eventType(Event.EventType.fromName(rs.getString("event_type")))
+            		.operation(Event.OperationType.fromName(rs.getString("operation_type")))
             		.timestamp(rs.getLong("time_stamp"))
             		.build();
         } else {

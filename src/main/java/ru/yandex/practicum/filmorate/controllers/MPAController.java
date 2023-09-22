@@ -12,6 +12,11 @@ import ru.yandex.practicum.filmorate.service.RatingMpaService;
 
 import java.util.List;
 
+
+/**
+ *  обработка запросов HTTP-клиентов на  получение информации о рейтингах 
+ *  фильмов по адресу http://localhost:8080/mpa
+ */
 @RestController
 @Slf4j
 @RequestMapping("/mpa")
@@ -19,19 +24,24 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MPAController {
 
-      /* обработка запросов HTTP-клиентов на  получение информации о рейтингах фильмов по адресу
-    http://localhost:8080/mpa */
 
     private final RatingMpaService mpaService;
 
-    // обработка GET-запроса на получение списка всех рейтингов
+    /**
+     *  обработка GET-запроса на получение списка всех рейтингов
+     * @return
+     */
     @GetMapping()
     public List<Mpa> listRatingMPA() {
 
         return mpaService.listRatingMpa();
     }
 
-    // обработка GET-запроса на получение рейтинга по id
+    /**
+     *  обработка GET-запроса на получение рейтинга по id
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
     public Mpa getGenreById(@PathVariable Integer id) {
 

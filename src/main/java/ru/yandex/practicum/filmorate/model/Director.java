@@ -4,9 +4,12 @@ import lombok.Data;
 
 import javax.validation.constraints.*;
 
+/**
+ *  информация о директоре - идентификатор, имя
+ */
 @Data
 public class Director {
-    // информация о директоре - идентификатор, имя
+
     @Positive
     private Integer id;
     @NotBlank

@@ -12,17 +12,22 @@ import ru.yandex.practicum.filmorate.storage.FilmGenreStorage;
 
 import java.util.List;
 
+/**
+ *  реализация получения информации о жанрах фильмов из базы данных
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Repository
 @Primary
 public class FilmGenreDbStorage implements FilmGenreStorage {
 
-    // реализация получения информации о жанрах фильмов из базы данных
+
 
     private final JdbcTemplate jdbcTemplate;
 
-    // получение списка жанров фильмов из базы данных
+    /**
+     *  получение списка жанров фильмов из базы данных
+     */
     @Override
     public List<FilmGenre> listFilmGenres() {
 
@@ -35,7 +40,9 @@ public class FilmGenreDbStorage implements FilmGenreStorage {
 
     }
 
-    // получение информации о жанре фильма по id
+    /**
+     *  получение информации о жанре фильма по id
+     */
     @Override
     public FilmGenre getGenreById(Integer genreId) {
 

@@ -4,10 +4,23 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
 
+import org.springframework.stereotype.Repository;
+/**
+ *  хранение информации о рейтингах фильмов
+ */
+
 public interface RatingMpaStorage {
 
-    // хранение информации о рейтингах фильмов
-    List<Mpa> listRatingMpa(); // получение списка рейтингов в системе MPA
+	/**
+	 *  получение списка рейтингов в системе MPA
+	 * @return
+	 */
+    List<Mpa> listRatingMpa();
 
-    Mpa getRatingMpaById(Integer id); // получение значение рейтинга MPA по id
+    /**
+     *  получение значение рейтинга MPA по id
+     * @param id
+     * @return
+     */
+    Mpa getRatingMpaById(Integer id);
 }

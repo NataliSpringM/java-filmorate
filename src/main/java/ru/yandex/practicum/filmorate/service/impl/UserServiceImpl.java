@@ -13,7 +13,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
-// реализация сервиса для обработки запросов на создание / удаление / получение списков друзей пользователя
+/**
+ *  реализация сервиса для обработки запросов на создание / удаление / получение списков друзей пользователя
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -22,35 +24,45 @@ public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final FriendshipStorage friendshipStorage;
 
-    // добавление информации о пользователе
+    /**
+     *  добавление информации о пользователе
+     */
     @Override
     public User addUser(User user) {
 
         return userStorage.addUser(user);
     }
 
-    // обновление информации о пользователе
+    /**
+     *  обновление информации о пользователе
+     */
     @Override
     public User updateUser(User user) {
 
         return userStorage.updateUser(user);
     }
 
-    // получение списка пользователей
+    /**
+     *  получение списка пользователей
+     */
     @Override
     public List<User> listUsers() {
 
         return userStorage.listUsers();
     }
 
-    // получение пользователя по id
+    /**
+     *  получение пользователя по id
+     */
     @Override
     public User getUserById(Long id) {
 
         return userStorage.getUserById(id);
     }
 
-    // добавление друга
+    /**
+     *  добавление друга
+     */
     @Override
     public void addFriend(Long userId, Long friendId) {
 
@@ -62,7 +74,9 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    // удаление из друзей
+    /**
+     *  удаление из друзей
+     */
     @Override
     public void deleteFriend(Long userId, Long friendId) {
 
@@ -74,7 +88,9 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    // получение списка друзей пользователя
+    /**
+     *  получение списка друзей пользователя
+     */
     @Override
     public List<User> listUserFriends(Long userId) {
 
@@ -85,7 +101,9 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    // получение списка общих друзей пользователей
+    /**
+     *  получение списка общих друзей пользователей
+     */
     @Override
     public List<User> listCommonFriends(Long userId, Long otherId) {
 
@@ -98,7 +116,9 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    // получение информации о взаимности дружбы пользователей
+    /**
+     *  получение информации о взаимности дружбы пользователей
+     */
     @Override
     public Boolean isFriendShipConfirmed(Long userId, Long friendId) {
 
@@ -106,7 +126,11 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    // преобразование набора id в список пользователей
+    /**
+     *  преобразование набора id в список пользователей
+     * @param set
+     * @return
+     */
     private List<User> convertIdSetToUserList(Set<Long> set) {
 
         return set.stream()

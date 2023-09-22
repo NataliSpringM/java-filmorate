@@ -16,13 +16,16 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ *  реализация сохранения и получения информации о фильмах в базе данных
+ */
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 @Primary
 public class FilmDbStorage implements FilmStorage {
 
-    // реализация сохранения и получения информации о фильмах в базе данных
+    
 
     private final JdbcTemplate jdbcTemplate;
     private final LikeDbStorage likeStorage;
@@ -31,7 +34,9 @@ public class FilmDbStorage implements FilmStorage {
     @Autowired
     private final DirectorStorage directorStorage;
 
-    // добавление информации о фильме
+    /**
+     *  добавление информации о фильме
+     */
     @Override
     public Film addFilm(Film film) {
 
@@ -53,7 +58,9 @@ public class FilmDbStorage implements FilmStorage {
         return newFilm;
     }
 
-    // проверка существования id фильма в базе данных
+    /**
+     *  проверка существования id фильма в базе данных
+     */
     @Override
     public void checkFilmId(Integer filmId) {
 
@@ -68,7 +75,9 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    // обновление информации о фильме
+    /**
+     *  обновление информации о фильме
+     */
     @Override
     public Film updateFilm(Film film) {
 
@@ -81,7 +90,9 @@ public class FilmDbStorage implements FilmStorage {
         return result;
     }
 
-    // получение списка фильмов
+    /**
+     *  получение списка фильмов
+     */
     @Override
     public List<Film> listFilms() {
 
@@ -101,7 +112,9 @@ public class FilmDbStorage implements FilmStorage {
     }
 
 
-    // получение информации о фильме по id
+    /**
+     *  получение информации о фильме по id
+     */
     @Override
     public Film getFilmById(Integer filmId) {
 
@@ -134,7 +147,9 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
-    // обновление информации о фильме
+    /**
+     *  обновление информации о фильме
+     */
 
     @Override
     public void updateFilmData(Film film) {
@@ -148,7 +163,9 @@ public class FilmDbStorage implements FilmStorage {
         updateFilmDirectorTable(film);
 
     }
-    // получение списка наиболее популярных фильмов с возможным ограничением размера списка
+    /**
+     *  получение списка наиболее популярных фильмов с возможным ограничением размера списка
+     */
 
     @Override
     public List<Film> listMostPopularFilms(Integer limit) {
@@ -173,16 +190,13 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
-    // получение списка фильмов по режиссеру
+    /**
+     *  получение списка фильмов по режиссеру
+     */
     @Override
     public List<Film> listFilmsOfDirector(Integer directorId) {
         directorStorage.checkDirectorId(directorId);
-        /*
-        SQL query:
-        SELECT *
-        FROM (SELECT film_id FROM film_directors WHERE director_id = ?) AS ids
-        LEFT JOIN films ON ids.film_id = films.film_id;
-         */
+
         String sqlQuery =
                 "SELECT * "
                 + " FROM (SELECT film_id FROM film_directors WHERE director_id = ?) AS ids "
@@ -200,7 +214,10 @@ public class FilmDbStorage implements FilmStorage {
                 directorStorage.getDirectorsByFilmId(rs.getInt("film_id"))), directorId);
     }
 
-    // обновление информации в таблице films
+    /**
+     *  обновление информации в таблице films
+     * @param film
+     */
     private void updateFilmTable(Film film) {
 
         String sqlQueryFilm = "UPDATE films SET "
@@ -216,7 +233,10 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId());
     }
 
-    // обновление информации в таблице film_genres
+    /**
+     *  обновление информации в таблице film_genres
+     * @param film
+     */
     private void updateFilmGenreTable(Film film) {
         // получаем жанры фильма
         Set<FilmGenre> genres = film.getGenres();
@@ -261,7 +281,11 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    // получение жанров фильма из таблицы film_genres по id фильма и полную информацию о них из таблицы genres
+    /**
+     *  получение жанров фильма из таблицы film_genres по id фильма и полную информацию о них из таблицы genres
+     * @param filmId
+     * @return
+     */
 
     private Set<FilmGenre> getFilmGenres(Integer filmId) {
 
@@ -281,7 +305,10 @@ public class FilmDbStorage implements FilmStorage {
         return genres;
     }
 
-    // обновление информации в таблице film_directors
+    /**
+     *  обновление информации в таблице film_directors
+     * @param film
+     */
     private void updateFilmDirectorTable(Film film) {
 
         // получаем список режиссеров из объекта
@@ -326,7 +353,11 @@ public class FilmDbStorage implements FilmStorage {
         log.info("Обновлена информация о режиссерах для фильма {}", film.getId());
     }
 
-    // получение информации о рейтинге фильма из таблицы rating_mpa по id фильма
+    /**
+     *  получение информации о рейтинге фильма из таблицы rating_mpa по id фильма
+     * @param filmId
+     * @return
+     */
     private Mpa getMpa(Integer filmId) {
 
         // запрос к таблице films для получения id рейтинга
@@ -352,8 +383,10 @@ public class FilmDbStorage implements FilmStorage {
         return mpa;
     }
 
-    // получает общие фильмы между двумя пользователями на основе их идентификаторов.
-    // Он выполняет SQL-запрос к базе данных, возвращая список фильмов, сгруппированных и отсортированных по количеству лайков
+    /**
+     *  получает общие фильмы между двумя пользователями на основе их идентификаторов.
+     *  Он выполняет SQL-запрос к базе данных, возвращая список фильмов, сгруппированных и отсортированных по количеству лайков
+     */
     public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
         String sqlFilm = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, r.rating_mpa_id, "
                 + "r.rating_mpa_name, COUNT(likes.user_id) AS total_likes "

@@ -15,18 +15,21 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
 
+/**
+ *  реализация сохранения и получения информации о пользователях в базе данных
+ */
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 @Primary
 public class UserDbStorage implements UserStorage {
 
-    // реализация сохранения и получения информации о пользователях в базе данных
-
     private final FriendshipDbStorage friendDbStorage;
     private final JdbcTemplate jdbcTemplate;
 
-    // добавление нового пользователя
+    /**
+     *  добавление нового пользователя
+     */
     @Override
     public User addUser(User user) {
 
@@ -45,7 +48,9 @@ public class UserDbStorage implements UserStorage {
         return newUser;
     }
 
-    // проверка сущестования id пользователя в базе данных
+    /**
+     *  проверка сущестования id пользователя в базе данных
+     */
     @Override
     public void checkUserId(Long userId) {
 
@@ -60,7 +65,9 @@ public class UserDbStorage implements UserStorage {
 
     }
 
-    // обновление данных существующего пользователя
+    /**
+     *  обновление данных существующего пользователя
+     */
     @Override
     public User updateUser(User user) {
 
@@ -121,7 +128,9 @@ public class UserDbStorage implements UserStorage {
     }
 
 
-    // обновление данных о пользователе в таблице users
+    /**
+     *  обновление данных о пользователе в таблице users
+     */
     @Override
     public void updateUserProperties(User user) {
 

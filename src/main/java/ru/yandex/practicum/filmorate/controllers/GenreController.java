@@ -9,6 +9,10 @@ import ru.yandex.practicum.filmorate.service.GenresService;
 
 import java.util.List;
 
+/**
+ *  обработка запросов HTTP-клиентов на  получение информации о жанрах фильмов по адресу
+ *  http://localhost:8080/genres
+ */
 @RestController
 @Slf4j
 @RequestMapping("/genres")
@@ -16,20 +20,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GenreController {
 
-      /* обработка запросов HTTP-клиентов на  получение информации о жанрах фильмов по адресу
-    http://localhost:8080/genres */
 
     private final GenresService genreService;
 
 
-    // обработка GET-запроса на получение списка всех жанров
+    /**
+     *  обработка GET-запроса на получение списка всех жанров
+     * @return
+     */
     @GetMapping()
     public List<FilmGenre> listGenres() {
 
         return genreService.listFilmGenres();
     }
 
-    // обработка GET-запроса на получение жанра по id
+    /**
+     *  обработка GET-запроса на получение жанра по id
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
     public FilmGenre getGenreById(@PathVariable Integer id) {
 

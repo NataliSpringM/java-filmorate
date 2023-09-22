@@ -13,16 +13,21 @@ import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.util.List;
 
+/**
+ *  реализация сохранения и получения информации об отзывах в базе данных
+ */
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 @Primary
 public class ReviewDbStorage implements ReviewStorage {
 
-    // реализация сохранения и получения информации об отзывах в базе данных
+    
     private final JdbcTemplate jdbcTemplate;
 
-    // добавление отзыва
+    /**
+     *  добавление отзыва
+     */
     @Override
     public Review addReview(Review review) {
 
@@ -44,7 +49,9 @@ public class ReviewDbStorage implements ReviewStorage {
         return newReview;
     }
 
-    // проверка сущестования id отзыва в базе данных
+    /**
+     *  проверка сущестования id отзыва в базе данных
+     */
     @Override
     public void checkReviewId(Integer reviewId) {
 
@@ -57,7 +64,9 @@ public class ReviewDbStorage implements ReviewStorage {
         }
     }
 
-    // обновление отзыва
+    /**
+     *  обновление отзыва
+     */
     @Override
     public Review updateReview(Review review) {
 
@@ -76,7 +85,9 @@ public class ReviewDbStorage implements ReviewStorage {
         return updatedReview;
     }
 
-    // удаление отзыва
+    /**
+     *  удаление отзыва
+     */
     @Override
     public void deleteReview(Integer reviewId) {
 
@@ -86,7 +97,9 @@ public class ReviewDbStorage implements ReviewStorage {
 
     }
 
-    // получение списка отзывов (опции - все отзывы, отзывы по id фильма)
+    /**
+     *  получение списка отзывов (опции - все отзывы, отзывы по id фильма)
+     */
     @Override
     public List<Review> listReviews(Integer filmId, Integer count) {
 
@@ -117,7 +130,9 @@ public class ReviewDbStorage implements ReviewStorage {
                 rs.getInt("useful")));
     }
 
-    // получение отзыва по идентификатору
+    /**
+     *  получение отзыва по идентификатору
+     */
     @Override
     public Review getReviewById(Integer reviewId) {
 

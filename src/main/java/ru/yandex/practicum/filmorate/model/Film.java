@@ -15,7 +15,9 @@ import java.util.*;
 @RequiredArgsConstructor
 public class Film {
 
-    // информация о фильме - id, название, описание, дата выпуска, продолжительность фильма, количество лайков
+	/**
+	 *  информация о фильме - id, название, описание, дата выпуска, продолжительность фильма, количество лайков
+	 */
     private static final int MAX_DESCRIPTION_LENGTH = 200;
 
     Integer id; // id фильма

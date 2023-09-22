@@ -1,13 +1,40 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.stereotype.Repository;
+
+/**
+ *  хранение информации о лайках
+ */
+
 public interface ReviewLikeStorage {
-    void addLikeToReview(Integer reviewId, Long userId); // добавление лайка
 
-    void addDislikeToReview(Integer reviewId, Long userId); // добавление дизлайка
+	/**
+	 *  добавление лайка
+	 * @param reviewId
+	 * @param userId
+	 */
+    void addLikeToReview(Integer reviewId, Long userId);
 
-    void deleteLikeFromReview(Integer reviewId, Long userId); // удалить лайк у отзыва
+    /**
+     *  добавление дизлайка
+     * @param reviewId
+     * @param userId
+     */
+    void addDislikeToReview(Integer reviewId, Long userId);
 
-    void deleteDislikeFromReview(Integer reviewId, Long userId); // удалить дизлайк у отзыва
+    /**
+     *  удалить лайк у отзыва
+     * @param reviewId
+     * @param userId
+     */
+    void deleteLikeFromReview(Integer reviewId, Long userId);
+
+    /**
+     *  удалить дизлайк у отзыва
+     * @param reviewId
+     * @param userId
+     */
+    void deleteDislikeFromReview(Integer reviewId, Long userId);
 
 
 }

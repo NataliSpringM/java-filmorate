@@ -14,47 +14,58 @@ import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
 
-//реализация сервиса для определения рейтинга фильмов
+/**
+ * реализация сервиса для определения рейтинга фильмов
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilmServiceImpl implements FilmService {
 
+    private static final Integer HIT_LIST_SIZE = 10;
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
     private final UserStorage userStorage;
 
-    private static final Integer HIT_LIST_SIZE = 10;
-
-    //добавление информации о фильме в FilmStorage
+    /**
+     * добавление информации о фильме в FilmStorage
+     */
     @Override
     public Film addFilm(Film film) {
 
         return filmStorage.addFilm(film);
     }
 
-    // обновление информации о фильме в FilmStorage
+    /**
+     *  обновление информации о фильме в FilmStorage
+     */
     @Override
     public Film updateFilm(Film film) {
 
         return filmStorage.updateFilm(film);
     }
 
-    // получение списка фильмов из FilmStorage
+    /**
+     *  получение списка фильмов из FilmStorage
+     */
     @Override
     public List<Film> listFilms() {
 
         return filmStorage.listFilms();
     }
 
-    // получение фильма по идентификатору из FilmStorage
+    /**
+     *  получение фильма по идентификатору из FilmStorage
+     */
     @Override
     public Film getFilmById(Integer id) {
 
         return filmStorage.getFilmById(id);
     }
 
-    // добавляем лайк фильму
+    /**
+     *  добавляем лайк фильму
+     */
     @Override
     public void addLike(Integer filmId, Long userId) {
 
@@ -64,7 +75,9 @@ public class FilmServiceImpl implements FilmService {
         likeStorage.addLike(filmId, userId);
     }
 
-    // удаляем лайк у фильма
+    /**
+     *  удаляем лайк у фильма
+     */
     @Override
     public void deleteLike(Integer filmId, Long userId) {
 
@@ -74,7 +87,9 @@ public class FilmServiceImpl implements FilmService {
         likeStorage.deleteLike(filmId, userId);
     }
 
-    // получение списка наиболее популярных фильмов
+    /**
+     *  получение списка наиболее популярных фильмов
+     */
     @Override
     public List<Film> listMostPopularFilms(Integer count) {
 
@@ -89,6 +104,9 @@ public class FilmServiceImpl implements FilmService {
         return mostPopularFilms;
     }
 
+    /**
+     *  получение списка фильмов режиссера
+     */
     @Override
     public List<Film> listSortedFilmsOfDirector(Integer directorId, String sortBy) {
         List<Film> films = filmStorage.listFilmsOfDirector(directorId);
@@ -103,6 +121,9 @@ public class FilmServiceImpl implements FilmService {
         }
     }
 
+    /**
+     *  получение списка общих фильмов
+     */
     @Override
     public List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId) {
         return filmStorage.getCommonFilmsBetweenUsers(userId, friendId);

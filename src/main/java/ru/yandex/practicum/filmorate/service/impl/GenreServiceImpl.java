@@ -9,7 +9,9 @@ import ru.yandex.practicum.filmorate.storage.FilmGenreStorage;
 
 import java.util.List;
 
-// реализация сервиса для получения информации о жанрах фильмов
+/**
+ * реализация сервиса для получения информации о жанрах фильмов
+ */ 
 
 @Slf4j
 @Service
@@ -18,14 +20,18 @@ public class GenreServiceImpl implements GenresService {
 
     private final FilmGenreStorage filmGenreStorage;
 
-    // получение списка жанров
+    /**
+     *  получение списка жанров
+     */
     @Override
     public List<FilmGenre> listFilmGenres() {
 
         return filmGenreStorage.listFilmGenres();
     }
 
-    // получение жанра по id
+    /**
+     *  получение жанра по id
+     */
     @Override
     public FilmGenre getGenreById(Integer id) {
 

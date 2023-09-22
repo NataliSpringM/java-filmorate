@@ -9,14 +9,14 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 
 import java.util.*;
-
+/**
+ *  реализация сохранения и получения информации о друзьях пользователей в базе данных
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Repository
 @Primary
 public class FriendshipDbStorage implements FriendshipStorage {
-
-    // реализация сохранения и получения информации о друзьях пользователей в базе данных
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -60,7 +60,9 @@ public class FriendshipDbStorage implements FriendshipStorage {
         }
     }
 
-    // получение списка друзей пользователя
+    /**
+     *  получение списка друзей пользователя
+     */
     @Override
     public Set<Long> listUserFriends(Long userId) {
 
@@ -77,7 +79,9 @@ public class FriendshipDbStorage implements FriendshipStorage {
         return friends;
     }
 
-    // получение списка общих друзей
+    /**
+     *  получение списка общих друзей
+     */
     @Override
     public Set<Long> listCommonFriends(Long userId, Long otherId) {
 
@@ -98,7 +102,9 @@ public class FriendshipDbStorage implements FriendshipStorage {
 
     }
 
-    // получение информации о взаимном подтверждении дружбы двумя пользователями
+    /**
+     *  получение информации о взаимном подтверждении дружбы двумя пользователями
+     */
     @Override
     public Boolean isFriendshipConfirmed(Long userId, Long friendId) {
 
@@ -115,7 +121,12 @@ public class FriendshipDbStorage implements FriendshipStorage {
         return status;
     }
 
-    // проверка наличия заявки на дружбу от потенциального друга пользователя
+    /**
+     *  проверка наличия заявки на дружбу от потенциального друга пользователя
+     * @param userId
+     * @param friendId
+     * @return
+     */
     private Boolean isFriendshipMutual(Long userId, Long friendId) {
 
         SqlRowSet sqlQueryIsFriendshipMutual = jdbcTemplate.queryForRowSet("SELECT * FROM friendship "

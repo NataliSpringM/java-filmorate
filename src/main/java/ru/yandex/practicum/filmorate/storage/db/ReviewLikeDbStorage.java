@@ -10,16 +10,21 @@ import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 
 import java.util.Objects;
 
+
+/**
+ *  реализация сохранения и получения информации о лайках отзывам в базе данных
+ */
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 @Primary
 public class ReviewLikeDbStorage implements ReviewLikeStorage {
 
-    // реализация сохранения и получения информации о лайках отзывам в базе данных
     private final JdbcTemplate jdbcTemplate;
 
-    // добавляем лайк отзыву
+    /**
+     *  добавляем лайк отзыву
+     */
     @Override
     public void addLikeToReview(Integer reviewId, Long userId) {
 
@@ -49,7 +54,9 @@ public class ReviewLikeDbStorage implements ReviewLikeStorage {
         }
     }
 
-    // добавляем дизлайк у отзыва
+    /**
+     *  добавляем дизлайк у отзыва
+     */
     @Override
     public void addDislikeToReview(Integer reviewId, Long userId) {
 
@@ -79,7 +86,9 @@ public class ReviewLikeDbStorage implements ReviewLikeStorage {
         }
     }
 
-    // удаляем лайк у отзыва
+    /**
+     *  удаляем лайк у отзыва
+     */
     @Override
     public void deleteLikeFromReview(Integer reviewId, Long userId) {
 
@@ -104,7 +113,9 @@ public class ReviewLikeDbStorage implements ReviewLikeStorage {
         }
     }
 
-    // удаляем дизлайк у отзыва
+    /**
+     *  удаляем дизлайк у отзыва
+     */
     @Override
     public void deleteDislikeFromReview(Integer reviewId, Long userId) {
 

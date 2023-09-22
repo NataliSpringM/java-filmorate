@@ -4,21 +4,52 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 
-//хранение информации о пользователях
+import org.springframework.stereotype.Repository;
+
+/**
+ *  хранение информации о пользователях
+ */
 
 public interface UserStorage {
 
-    User addUser(User user);  // добавление информации о пользователе
+	/**
+	 *  добавление информации о пользователе
+	 * @param user
+	 * @return
+	 */
+    User addUser(User user);
 
-    User updateUser(User user);  // обновление информации о пользователе
+    /**
+     *  обновление информации о пользователе
+     * @param user
+     * @return
+     */
+    User updateUser(User user);
 
-    List<User> listUsers(); // получение списка пользователей
+    /**
+     *  получение списка пользователей
+     * @return
+     */
+    List<User> listUsers();
 
-    User getUserById(Long id); // получение пользователя по идентификатору
+    /**
+     *  получение пользователя по идентификатору
+     * @param id
+     * @return
+     */
+    User getUserById(Long id);
 
-    void updateUserProperties(User user); // сохранение новой или обновленной информации о пользователе
+    /**
+     *  сохранение новой или обновленной информации о пользователе
+     * @param user
+     */
+    void updateUserProperties(User user);
 
-    void checkUserId(Long userId); // проверка существования id пользователя
+    /**
+     *  проверка существования id пользователя
+     * @param userId
+     */
+    void checkUserId(Long userId);
 
 
 }

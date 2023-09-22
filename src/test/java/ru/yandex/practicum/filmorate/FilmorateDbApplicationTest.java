@@ -9,6 +9,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Event.EventType;
+import ru.yandex.practicum.filmorate.model.Event.OperationType;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.*;
@@ -30,6 +33,7 @@ public class FilmorateDbApplicationTest {
     private final UserService userService;
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
+    private final EventService eventService;
     private final RatingMpaStorage mpaStorage;
     private final FilmGenreStorage genreStorage;
     private final ReviewStorage reviewStorage;
@@ -969,6 +973,47 @@ public class FilmorateDbApplicationTest {
 
     }
 
+    @Test
+    public void testGetUserFeed() {
+    	userService.addUser(userAlex1);
+    	eventService.addEvent(1L, 2L, "FRIEND", "ADD");
+    	eventService.addEvent(1L, 2L, "FRIEND", "REMOVE");
+        eventService.addEvent(1L, 1L, "LIKE", "ADD");
+        eventService.addEvent(1L, 1L, "LIKE", "REMOVE");
+        eventService.addEvent(1L, 1L, "REVIEW", "ADD");
+        eventService.addEvent(1L, 1L, "REVIEW", "UPDATE");
+        eventService.addEvent(1L, 1L, "REVIEW", "REMOVE");
+        List<Event> feed = eventService.listUserEvents(1L);
+        assertThat(feed).asList().hasSize(7);
+        assertThat(feed.get(0)).hasFieldOrPropertyWithValue("entityId", 2L);
+        assertThat(feed.get(0)).hasFieldOrPropertyWithValue("userId", 1L);
+        assertThat(feed.get(0)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
+        assertThat(feed.get(0)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
+        assertThat(feed.get(1)).hasFieldOrPropertyWithValue("entityId", 2L);
+        assertThat(feed.get(1)).hasFieldOrPropertyWithValue("userId", 1L);
+        assertThat(feed.get(1)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
+        assertThat(feed.get(1)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
+        assertThat(feed.get(2)).hasFieldOrPropertyWithValue("entityId", 1L);
+        assertThat(feed.get(2)).hasFieldOrPropertyWithValue("userId", 1L);
+        assertThat(feed.get(2)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
+        assertThat(feed.get(2)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
+        assertThat(feed.get(3)).hasFieldOrPropertyWithValue("entityId", 1L);
+        assertThat(feed.get(3)).hasFieldOrPropertyWithValue("userId", 1L);
+        assertThat(feed.get(3)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
+        assertThat(feed.get(3)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
+        assertThat(feed.get(4)).hasFieldOrPropertyWithValue("entityId", 1L);
+        assertThat(feed.get(4)).hasFieldOrPropertyWithValue("userId", 1L);
+        assertThat(feed.get(4)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
+        assertThat(feed.get(4)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
+        assertThat(feed.get(5)).hasFieldOrPropertyWithValue("entityId", 1L);
+        assertThat(feed.get(5)).hasFieldOrPropertyWithValue("userId", 1L);
+        assertThat(feed.get(5)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
+        assertThat(feed.get(5)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("UPDATE"));
+        assertThat(feed.get(6)).hasFieldOrPropertyWithValue("entityId", 1L);
+        assertThat(feed.get(6)).hasFieldOrPropertyWithValue("userId", 1L);
+        assertThat(feed.get(6)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
+        assertThat(feed.get(6)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
+    }
 }
 
 

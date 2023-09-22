@@ -12,17 +12,22 @@ import ru.yandex.practicum.filmorate.storage.RatingMpaStorage;
 
 import java.util.List;
 
+/**
+ *  реализация получения информации о рейтингах фильмов из базы данных
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Repository
 @Primary
 public class RatingMpaDbStorage implements RatingMpaStorage {
 
-    // реализация получения информации о рейтингах фильмов из базы данных
+
 
     private final JdbcTemplate jdbcTemplate;
 
-    // получение списка возможных рейтингов отсортированных по id
+    /**
+     *  получение списка возможных рейтингов отсортированных по id
+     */
     @Override
     public List<Mpa> listRatingMpa() {
 
@@ -34,7 +39,9 @@ public class RatingMpaDbStorage implements RatingMpaStorage {
 
     }
 
-    // получение рейтинга фильма по id
+    /**
+     *  получение рейтинга фильма по id
+     */
     @Override
     public Mpa getRatingMpaById(Integer ratingMpaId) {
 

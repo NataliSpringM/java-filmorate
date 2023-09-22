@@ -8,27 +8,30 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 
+/**
+ *  реализация хранения информации о лайках в базе данных
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Repository
 @Primary
 public class LikeDbStorage implements LikeStorage {
 
-    // реализация хранения информации о лайках в базе данных
     private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void addLike(Integer filmId, Long userId) {
 
-        // получаем информацию о наличии лайков в базе данных
+        /**
+         *  получаем информацию о наличии лайков в базе данных
+         */
         SqlRowSet sqlLikesQuantity = jdbcTemplate.queryForRowSet(
                 "SELECT * FROM likes WHERE film_id = ? AND user_id = ?", filmId, userId);
 
         if (sqlLikesQuantity.next()) {
-/*
-            // выбрасываем исключение при попытке поставить повторный лайк
-            throw new RuntimeException("Вы уже ставили лайк этому фильму");
-*/
+
+            log.info("Пользователь {} пытался повторно поставить лайк фильму {}", userId, filmId);
+
         } else {
 
             // ставим лайк фильму
@@ -65,7 +68,9 @@ public class LikeDbStorage implements LikeStorage {
 
     }
 
-    // подсчет лайков определенному фильму от всех пользователей
+    /**
+     *  подсчет лайков определенному фильму от всех пользователей
+     */
     public Long getFilmLikesTotalCount(Integer filmId) {
 
         SqlRowSet sqlLikes = jdbcTemplate

@@ -10,13 +10,15 @@ import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ *  информация об отзыве - id, содержание, оценка (положительный / негативный), id автора, id фильма, рейтинг
+ */
 @Validated
 @Value
 @Builder(toBuilder = true)
 @RequiredArgsConstructor
 public class Review {
 
-    // информация об отзыве - id, содержание, оценка (положительный / негативный), id автора, id фильма, рейтинг
     Integer reviewId; // id отзыва
     @NotNull
     @NotBlank
