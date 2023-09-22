@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 /**
- *  информация о жанре фильма - id, описание
+ * информация о жанре фильма - id, описание
  */
 
 @Value
@@ -13,7 +13,7 @@ import lombok.Value;
 @RequiredArgsConstructor
 public class FilmGenre {
 
-    Integer id;
-    String name;
+	Integer id;
+	String name;
 
 }

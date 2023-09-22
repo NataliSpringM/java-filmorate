@@ -31,1175 +31,941 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class FilmorateDbApplicationTest {
 
-    private final UserStorage userStorage;
-    private final UserService userService;
-    private final FilmStorage filmStorage;
-    private final FilmService filmService;
-    private final LikeStorage likeStorage;
-    private final EventService eventService;
-    private final RatingMpaStorage mpaStorage;
-    private final FilmGenreStorage genreStorage;
-    private final ReviewStorage reviewStorage;
-    private final ReviewService reviewService;
-    private final ReviewLikeStorage reviewLikeStorage;
-    private final DirectorStorage directorStorage;
-    private final DirectorService directorService;
-    User userAlex1;
-    User userEgor2;
-    User userAnna3;
-    User userOlga4;
-    Film filmAllHatesCris;
-    Film filmTomAndJerry;
-    Film filmDiamondHand;
-    Film filmSearchTestForALL;
-    Mpa mpa;
-    Set<FilmGenre> genres;
-    Director director1;
-    Director director2;
-    Director director3;
-    Review review1;
-    Review review2;
-    Review review3;
-    Review review4;
-
-
-    @BeforeEach
-    public void create() {
-
-        userAlex1 = User.builder()
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
-        userEgor2 = User.builder()
-                .email("Egor@yandex.ru")
-                .login("egor")
-                .name(" ")
-                .birthday(LocalDate.of(2000, 3, 3))
-                .build();
-        userAnna3 = User.builder()
-                .email("Anna@yandex.ru")
-                .login("anna")
-                .name("Anna Smith")
-                .birthday(LocalDate.of(2000, 12, 12))
-                .build();
-        userOlga4 = User.builder()
-                .email("Olga@yandex.ru")
-                .login("olga")
-                .name("Olga Smith")
-                .birthday(LocalDate.of(2002, 1, 1))
-                .build();
-        mpa = Mpa.builder().id(1).build();
-        genres = Set.of(new FilmGenre(2, null), new FilmGenre(3, null));
-        director1 = new Director();
-        director1.setName("Adam Smith");
-        director2 = new Director();
-        director2.setName("Adam Brown");
-        director3 = new Director();
-        director3.setName("Daniel Dan");
-        filmAllHatesCris = Film.builder()
-                .name("All hates Cris")
-                .description("Good comedy")
-                .duration(30)
-                .releaseDate(LocalDate.of(1998, 1, 1))
-                .mpa(mpa)
-                .genres(genres)
-                .build();
-        filmDiamondHand = Film.builder()
-                .name("Diamond hand")
-                .description("Good comedy")
-                .duration(90)
-                .releaseDate(LocalDate.of(1978, 1, 1))
-                .mpa(Mpa.builder().id(2).build())
-                .build();
-        filmTomAndJerry = Film.builder()
-                .name("Tom and Jerry")
-                .description("Children cartoon")
-                .duration(10)
-                .releaseDate(LocalDate.of(1998, 1, 1))
-                .mpa(Mpa.builder().id(3).build())
-                .build();
-        filmSearchTestForALL = filmDiamondHand.toBuilder().name("Search test should find ALL").build();
-        review1 = Review.builder()
-                .content("Content")
-                .isPositive(true)
-                .build();
-        review2 = Review.builder()
-                .content("Content2")
-                .isPositive(false)
-                .userId(1L)
-                .filmId(1)
-                .build();
-        review3 = Review.builder()
-                .content("Content3")
-                .isPositive(true)
-                .userId(1L)
-                .filmId(2)
-                .build();
-        review4 = Review.builder()
-                .content("Content3")
-                .isPositive(true)
-                .userId(2L)
-                .filmId(2)
-                .build();
-
-
-    }
-
-    //************************* Тестирование работы сервиса работы с пользователями *************************
-    @Test
-    public void shouldAddUserAndFindUserById() { // создание пользователя и его возврат по id
-
-        User user1 = userStorage.addUser(userAlex1);
-        Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(user1.getId()));
-        assertThat(userOptional)
-                .hasValueSatisfying(user ->
-                        assertThat(user)
-                                .hasFieldOrPropertyWithValue("id", user.getId())
-                                .hasFieldOrPropertyWithValue("email", "Alex@yandex.ru")
-                                .hasFieldOrPropertyWithValue("name", "Alexandr Ivanov")
-                                .hasFieldOrPropertyWithValue("login", "alex")
-                                .hasFieldOrPropertyWithValue("birthday",
-                                        LocalDate.of(2000, 10, 10)));
-    }
-
-
-    @Test
-    public void shouldAddUserWithEmptyNameAndFindUserById() { // создание пользователя с пустым именем
-
-        User user1 = userStorage.addUser(userEgor2);
-        Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(user1.getId()));
-        assertThat(userOptional)
-                .hasValueSatisfying(user ->
-                        assertThat(user)
-                                .hasFieldOrPropertyWithValue("id", user.getId())
-                                .hasFieldOrPropertyWithValue("email", "Egor@yandex.ru")
-                                .hasFieldOrPropertyWithValue("name", "egor")
-                                .hasFieldOrPropertyWithValue("login", "egor")
-                                .hasFieldOrPropertyWithValue("birthday",
-                                        LocalDate.of(2000, 3, 3)));
-    }
-
-    @Test
-    public void shouldUpdateUser() { // обновление пользователя
-
-        User user1 = userStorage.addUser(userAlex1);
-        User userAlex1Updated = User.builder()
-                .id(user1.getId())
-                .email("AlexSmith@google.ru")
-                .login("alex")
-                .name("Alex Smith")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
-        User user1Updated = userStorage.updateUser(userAlex1Updated);
-        Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(user1Updated.getId()));
-        assertThat(userOptional)
-                .hasValueSatisfying(user ->
-                        assertThat(user)
-                                .hasFieldOrPropertyWithValue("id", user.getId())
-                                .hasFieldOrPropertyWithValue("email", "AlexSmith@google.ru")
-                                .hasFieldOrPropertyWithValue("name", "Alex Smith")
-                                .hasFieldOrPropertyWithValue("login", "alex")
-                                .hasFieldOrPropertyWithValue("birthday",
-                                        LocalDate.of(2000, 10, 10)));
-    }
-
-    @Test
-    public void shouldUpdateWithEmptyNameUser() { // обновление пользователя с пустым именем
-
-        User user1 = userStorage.addUser(userAlex1);
-        User userWithEmptyNameUpdated = User.builder()
-                .id(user1.getId())
-                .email("AlexSmith@google.ru")
-                .login("alex")
-                .name("")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
-        User user1Updated = userStorage.updateUser(userWithEmptyNameUpdated);
-        Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(user1Updated.getId()));
-        assertThat(userOptional)
-                .hasValueSatisfying(user ->
-                        assertThat(user)
-                                .hasFieldOrPropertyWithValue("id", user.getId())
-                                .hasFieldOrPropertyWithValue("email", "AlexSmith@google.ru")
-                                .hasFieldOrPropertyWithValue("name", "alex")
-                                .hasFieldOrPropertyWithValue("login", "alex")
-                                .hasFieldOrPropertyWithValue("birthday",
-                                        LocalDate.of(2000, 10, 10)));
-    }
-
-    @Test
-    public void shouldListUsers() { // получение списка пользователей
-
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        User user3 = userStorage.addUser(userAnna3);
-
-        List<User> listUsers = userStorage.listUsers();
-
-        assertThat(listUsers).asList().hasSize(3);
-
-        assertThat(listUsers).asList().contains(userStorage.getUserById(user1.getId()));
-        assertThat(listUsers).asList().contains(userStorage.getUserById(user2.getId()));
-        assertThat(listUsers).asList().contains(userStorage.getUserById(user3.getId()));
-
-        assertThat(Optional.of(listUsers.get(0)))
-                .hasValueSatisfying(user ->
-                        AssertionsForClassTypes.assertThat(user)
-                                .hasFieldOrPropertyWithValue("login", "alex"));
-
-        assertThat(Optional.of(listUsers.get(1)))
-                .hasValueSatisfying(user ->
-                        AssertionsForClassTypes.assertThat(user)
-                                .hasFieldOrPropertyWithValue("login", "egor"));
-
-        assertThat(Optional.of(listUsers.get(2)))
-                .hasValueSatisfying(user ->
-                        AssertionsForClassTypes.assertThat(user)
-                                .hasFieldOrPropertyWithValue("login", "anna"));
-    }
-
-    @Test
-    public void shouldGetEmptyListUsers() { // получение пустого списка пользователей
-
-        List<User> listUsers = userStorage.listUsers();
-
-        assertThat(listUsers).asList().hasSize(0);
-        assertThat(listUsers).asList().isEmpty();
-
-    }
-
-
-    @Test
-    public void shouldAddFriend() { // добавление друга
-
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-
-        userService.addFriend(user1.getId(), user2.getId());
-
-        List<User> listFriends = userService.listUserFriends(user1.getId());
-
-        assertThat(listFriends).asList().hasSize(1);
-        assertThat(listFriends).asList().contains(userStorage.getUserById(user2.getId()));
+	private final UserStorage userStorage;
+	private final UserService userService;
+	private final FilmStorage filmStorage;
+	private final FilmService filmService;
+	private final LikeStorage likeStorage;
+	private final EventService eventService;
+	private final RatingMpaStorage mpaStorage;
+	private final FilmGenreStorage genreStorage;
+	private final ReviewStorage reviewStorage;
+	private final ReviewService reviewService;
+	private final ReviewLikeStorage reviewLikeStorage;
+	private final DirectorStorage directorStorage;
+	private final DirectorService directorService;
+	User userAlex1;
+	User userEgor2;
+	User userAnna3;
+	User userOlga4;
+	Film filmAllHatesCris;
+	Film filmTomAndJerry;
+	Film filmDiamondHand;
+	Film filmSearchTestForALL;
+	Mpa mpa;
+	Set<FilmGenre> genres;
+	Director director1;
+	Director director2;
+	Director director3;
+	Review review1;
+	Review review2;
+	Review review3;
+	Review review4;
+
+	@BeforeEach
+	public void create() {
+
+		userAlex1 = User.builder().email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
+		userEgor2 = User.builder().email("Egor@yandex.ru").login("egor").name(" ").birthday(LocalDate.of(2000, 3, 3))
+				.build();
+		userAnna3 = User.builder().email("Anna@yandex.ru").login("anna").name("Anna Smith")
+				.birthday(LocalDate.of(2000, 12, 12)).build();
+		userOlga4 = User.builder().email("Olga@yandex.ru").login("olga").name("Olga Smith")
+				.birthday(LocalDate.of(2002, 1, 1)).build();
+		mpa = Mpa.builder().id(1).build();
+		genres = Set.of(new FilmGenre(2, null), new FilmGenre(3, null));
+		director1 = new Director();
+		director1.setName("Adam Smith");
+		director2 = new Director();
+		director2.setName("Adam Brown");
+		director3 = new Director();
+		director3.setName("Daniel Dan");
+		filmAllHatesCris = Film.builder().name("All hates Cris").description("Good comedy").duration(30)
+				.releaseDate(LocalDate.of(1998, 1, 1)).mpa(mpa).genres(genres).build();
+		filmDiamondHand = Film.builder().name("Diamond hand").description("Good comedy").duration(90)
+				.releaseDate(LocalDate.of(1978, 1, 1)).mpa(Mpa.builder().id(2).build()).build();
+		filmTomAndJerry = Film.builder().name("Tom and Jerry").description("Children cartoon").duration(10)
+				.releaseDate(LocalDate.of(1998, 1, 1)).mpa(Mpa.builder().id(3).build()).build();
+		filmSearchTestForALL = filmDiamondHand.toBuilder().name("Search test should find ALL").build();
+		review1 = Review.builder().content("Content").isPositive(true).build();
+		review2 = Review.builder().content("Content2").isPositive(false).userId(1L).filmId(1).build();
+		review3 = Review.builder().content("Content3").isPositive(true).userId(1L).filmId(2).build();
+		review4 = Review.builder().content("Content3").isPositive(true).userId(2L).filmId(2).build();
+
+	}
+
+	// ************************* Тестирование работы сервиса работы с пользователями
+	// *************************
+	@Test
+	public void shouldAddUserAndFindUserById() { // создание пользователя и его возврат по id
+
+		User user1 = userStorage.addUser(userAlex1);
+		Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(user1.getId()));
+		assertThat(userOptional).hasValueSatisfying(user -> assertThat(user)
+				.hasFieldOrPropertyWithValue("id", user.getId()).hasFieldOrPropertyWithValue("email", "Alex@yandex.ru")
+				.hasFieldOrPropertyWithValue("name", "Alexandr Ivanov").hasFieldOrPropertyWithValue("login", "alex")
+				.hasFieldOrPropertyWithValue("birthday", LocalDate.of(2000, 10, 10)));
+	}
+
+	@Test
+	public void shouldAddUserWithEmptyNameAndFindUserById() { // создание пользователя с пустым именем
+
+		User user1 = userStorage.addUser(userEgor2);
+		Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(user1.getId()));
+		assertThat(userOptional).hasValueSatisfying(user -> assertThat(user)
+				.hasFieldOrPropertyWithValue("id", user.getId()).hasFieldOrPropertyWithValue("email", "Egor@yandex.ru")
+				.hasFieldOrPropertyWithValue("name", "egor").hasFieldOrPropertyWithValue("login", "egor")
+				.hasFieldOrPropertyWithValue("birthday", LocalDate.of(2000, 3, 3)));
+	}
+
+	@Test
+	public void shouldUpdateUser() { // обновление пользователя
+
+		User user1 = userStorage.addUser(userAlex1);
+		User userAlex1Updated = User.builder().id(user1.getId()).email("AlexSmith@google.ru").login("alex")
+				.name("Alex Smith").birthday(LocalDate.of(2000, 10, 10)).build();
+		User user1Updated = userStorage.updateUser(userAlex1Updated);
+		Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(user1Updated.getId()));
+		assertThat(userOptional)
+				.hasValueSatisfying(user -> assertThat(user).hasFieldOrPropertyWithValue("id", user.getId())
+						.hasFieldOrPropertyWithValue("email", "AlexSmith@google.ru")
+						.hasFieldOrPropertyWithValue("name", "Alex Smith").hasFieldOrPropertyWithValue("login", "alex")
+						.hasFieldOrPropertyWithValue("birthday", LocalDate.of(2000, 10, 10)));
+	}
 
-        assertThat(Optional.of(listFriends.get(0)))
-                .hasValueSatisfying(user ->
-                        AssertionsForClassTypes.assertThat(user)
-                                .hasFieldOrPropertyWithValue("email", "Egor@yandex.ru"));
+	@Test
+	public void shouldUpdateWithEmptyNameUser() { // обновление пользователя с пустым именем
 
+		User user1 = userStorage.addUser(userAlex1);
+		User userWithEmptyNameUpdated = User.builder().id(user1.getId()).email("AlexSmith@google.ru").login("alex")
+				.name("").birthday(LocalDate.of(2000, 10, 10)).build();
+		User user1Updated = userStorage.updateUser(userWithEmptyNameUpdated);
+		Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(user1Updated.getId()));
+		assertThat(userOptional)
+				.hasValueSatisfying(user -> assertThat(user).hasFieldOrPropertyWithValue("id", user.getId())
+						.hasFieldOrPropertyWithValue("email", "AlexSmith@google.ru")
+						.hasFieldOrPropertyWithValue("name", "alex").hasFieldOrPropertyWithValue("login", "alex")
+						.hasFieldOrPropertyWithValue("birthday", LocalDate.of(2000, 10, 10)));
+	}
 
-    }
+	@Test
+	public void shouldListUsers() { // получение списка пользователей
 
-    @Test
-    public void shouldDeleteFriend() { // удаление друга
+		User user1 = userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		User user3 = userStorage.addUser(userAnna3);
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
+		List<User> listUsers = userStorage.listUsers();
 
-        userService.addFriend(user1.getId(), user2.getId());
-        userService.deleteFriend(user1.getId(), user2.getId());
+		assertThat(listUsers).asList().hasSize(3);
 
-        List<User> listFriends = userService.listUserFriends(user1.getId());
+		assertThat(listUsers).asList().contains(userStorage.getUserById(user1.getId()));
+		assertThat(listUsers).asList().contains(userStorage.getUserById(user2.getId()));
+		assertThat(listUsers).asList().contains(userStorage.getUserById(user3.getId()));
 
-        assertThat(listFriends).asList().hasSize(0);
-        assertThat(listFriends).asList().doesNotContain(userAlex1);
+		assertThat(Optional.of(listUsers.get(0))).hasValueSatisfying(
+				user -> AssertionsForClassTypes.assertThat(user).hasFieldOrPropertyWithValue("login", "alex"));
 
-    }
+		assertThat(Optional.of(listUsers.get(1))).hasValueSatisfying(
+				user -> AssertionsForClassTypes.assertThat(user).hasFieldOrPropertyWithValue("login", "egor"));
 
-    @Test
-    public void shouldGetCommonFriends1() { // получение списка общих друзей (один друг)
+		assertThat(Optional.of(listUsers.get(2))).hasValueSatisfying(
+				user -> AssertionsForClassTypes.assertThat(user).hasFieldOrPropertyWithValue("login", "anna"));
+	}
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        User user3 = userStorage.addUser(userAnna3);
+	@Test
+	public void shouldGetEmptyListUsers() { // получение пустого списка пользователей
 
+		List<User> listUsers = userStorage.listUsers();
 
-        userService.addFriend(user1.getId(), user3.getId());
-        userService.addFriend(user2.getId(), user3.getId());
-        List<User> commonFriends = userService.listCommonFriends(user1.getId(), user2.getId());
+		assertThat(listUsers).asList().hasSize(0);
+		assertThat(listUsers).asList().isEmpty();
 
-        assertThat(commonFriends).asList().hasSize(1);
-        assertThat(commonFriends).asList().contains(userStorage.getUserById(user3.getId()));
+	}
 
-        assertThat(Optional.of(commonFriends.get(0)))
-                .hasValueSatisfying(user ->
-                        AssertionsForClassTypes.assertThat(user)
-                                .hasFieldOrPropertyWithValue("email", "Anna@yandex.ru"));
+	@Test
+	public void shouldAddFriend() { // добавление друга
 
+		User user1 = userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
 
-    }
+		userService.addFriend(user1.getId(), user2.getId());
 
-    @Test
-    public void shouldGetCommonFriends2() { // получение списка общих друзей (два друга)
+		List<User> listFriends = userService.listUserFriends(user1.getId());
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        User user3 = userStorage.addUser(userAnna3);
-        User user4 = userStorage.addUser(userOlga4);
+		assertThat(listFriends).asList().hasSize(1);
+		assertThat(listFriends).asList().contains(userStorage.getUserById(user2.getId()));
 
-        userService.addFriend(user1.getId(), user3.getId());
-        userService.addFriend(user2.getId(), user3.getId());
-        userService.addFriend(user1.getId(), user4.getId());
-        userService.addFriend(user2.getId(), user4.getId());
+		assertThat(Optional.of(listFriends.get(0))).hasValueSatisfying(user -> AssertionsForClassTypes.assertThat(user)
+				.hasFieldOrPropertyWithValue("email", "Egor@yandex.ru"));
 
-        List<User> commonFriends = userService.listCommonFriends(user1.getId(), user2.getId());
+	}
 
-        assertThat(commonFriends).asList().hasSize(2);
+	@Test
+	public void shouldDeleteFriend() { // удаление друга
 
-        assertThat(commonFriends).asList().contains(userStorage.getUserById(user3.getId()));
-        assertThat(commonFriends).asList().contains(userStorage.getUserById(user4.getId()));
+		User user1 = userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
 
-        assertThat(Optional.of(commonFriends.get(0)))
-                .hasValueSatisfying(user ->
-                        AssertionsForClassTypes.assertThat(user)
-                                .hasFieldOrPropertyWithValue("email", "Anna@yandex.ru"));
+		userService.addFriend(user1.getId(), user2.getId());
+		userService.deleteFriend(user1.getId(), user2.getId());
 
-        assertThat(Optional.of(commonFriends.get(0)))
-                .hasValueSatisfying(user ->
-                        AssertionsForClassTypes.assertThat(user)
-                                .hasFieldOrPropertyWithValue("email", "Anna@yandex.ru"));
+		List<User> listFriends = userService.listUserFriends(user1.getId());
 
+		assertThat(listFriends).asList().hasSize(0);
+		assertThat(listFriends).asList().doesNotContain(userAlex1);
 
-    }
+	}
 
-    @Test
-    public void shouldGetEmptyCommonFriendList() { // получение пустого списка общих друзей
+	@Test
+	public void shouldGetCommonFriends1() { // получение списка общих друзей (один друг)
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        User user3 = userStorage.addUser(userAnna3);
+		User user1 = userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		User user3 = userStorage.addUser(userAnna3);
 
-        userService.addFriend(user1.getId(), user2.getId());
-        userService.addFriend(user1.getId(), user3.getId());
+		userService.addFriend(user1.getId(), user3.getId());
+		userService.addFriend(user2.getId(), user3.getId());
+		List<User> commonFriends = userService.listCommonFriends(user1.getId(), user2.getId());
 
-        List<User> commonFriends = userService.listCommonFriends(user1.getId(), user3.getId());
+		assertThat(commonFriends).asList().hasSize(1);
+		assertThat(commonFriends).asList().contains(userStorage.getUserById(user3.getId()));
 
-        assertThat(commonFriends).asList().hasSize(0);
-        assertThat(commonFriends).asList().isEmpty();
+		assertThat(Optional.of(commonFriends.get(0))).hasValueSatisfying(user -> AssertionsForClassTypes
+				.assertThat(user).hasFieldOrPropertyWithValue("email", "Anna@yandex.ru"));
 
-    }
+	}
 
-    @Test
-    public void shouldConfirmMutualFriendship() { // подтверждение наличия двусторонней дружбы
+	@Test
+	public void shouldGetCommonFriends2() { // получение списка общих друзей (два друга)
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
+		User user1 = userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		User user3 = userStorage.addUser(userAnna3);
+		User user4 = userStorage.addUser(userOlga4);
 
-        userService.addFriend(user1.getId(), user2.getId());
-        userService.addFriend(user2.getId(), user1.getId());
+		userService.addFriend(user1.getId(), user3.getId());
+		userService.addFriend(user2.getId(), user3.getId());
+		userService.addFriend(user1.getId(), user4.getId());
+		userService.addFriend(user2.getId(), user4.getId());
 
-        Boolean confirmation = userService.isFriendShipConfirmed(user1.getId(), user2.getId());
-        Boolean confirmationReverse = userService.isFriendShipConfirmed(user1.getId(), user2.getId());
+		List<User> commonFriends = userService.listCommonFriends(user1.getId(), user2.getId());
 
-        assertThat(confirmation).isTrue();
-        assertThat(confirmationReverse).isTrue();
+		assertThat(commonFriends).asList().hasSize(2);
 
-    }
+		assertThat(commonFriends).asList().contains(userStorage.getUserById(user3.getId()));
+		assertThat(commonFriends).asList().contains(userStorage.getUserById(user4.getId()));
 
-    @Test
-    public void shouldFailConfirmMutualFriendship() { // подтверждение отсутствия двусторонней дружбы
+		assertThat(Optional.of(commonFriends.get(0))).hasValueSatisfying(user -> AssertionsForClassTypes
+				.assertThat(user).hasFieldOrPropertyWithValue("email", "Anna@yandex.ru"));
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user3 = userStorage.addUser(userEgor2);
+		assertThat(Optional.of(commonFriends.get(0))).hasValueSatisfying(user -> AssertionsForClassTypes
+				.assertThat(user).hasFieldOrPropertyWithValue("email", "Anna@yandex.ru"));
 
-        userService.addFriend(user1.getId(), user3.getId());
+	}
 
-        Boolean confirmation = userService.isFriendShipConfirmed(user1.getId(), user3.getId());
-        Boolean confirmationReverse = userService.isFriendShipConfirmed(user1.getId(), user3.getId());
+	@Test
+	public void shouldGetEmptyCommonFriendList() { // получение пустого списка общих друзей
 
-        assertThat(confirmation).isFalse();
-        assertThat(confirmationReverse).isFalse();
+		User user1 = userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		User user3 = userStorage.addUser(userAnna3);
 
-    }
+		userService.addFriend(user1.getId(), user2.getId());
+		userService.addFriend(user1.getId(), user3.getId());
 
-    //************************* Тестирование работы сервиса работы с отзывами *************************
-    @Test
-    public void shouldAddReviewAndFindReviewById() { // добавление отзыва и его получение по id
+		List<User> commonFriends = userService.listCommonFriends(user1.getId(), user3.getId());
 
-        User user = userStorage.addUser(userAlex1);
-        Film film = filmStorage.addFilm(filmAllHatesCris);
+		assertThat(commonFriends).asList().hasSize(0);
+		assertThat(commonFriends).asList().isEmpty();
 
-        final Long userId = user.getId();
-        final Integer filmId = film.getId();
+	}
 
-        Review review = review1.toBuilder().userId(userId).filmId(filmId).build();
-        Review newReview = reviewStorage.addReview(review);
+	@Test
+	public void shouldConfirmMutualFriendship() { // подтверждение наличия двусторонней дружбы
 
-        final Integer reviewId = newReview.getReviewId();
+		User user1 = userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
 
-        Optional<Review> reviewOptional = Optional.ofNullable(reviewStorage.getReviewById(reviewId));
-        assertThat(reviewOptional)
-                .hasValueSatisfying(r ->
-                        assertThat(r)
-                                .hasFieldOrPropertyWithValue("reviewId", reviewId)
-                                .hasFieldOrPropertyWithValue("content", "Content")
-                                .hasFieldOrPropertyWithValue("isPositive", true)
-                                .hasFieldOrPropertyWithValue("userId", userId)
-                                .hasFieldOrPropertyWithValue("filmId", filmId));
+		userService.addFriend(user1.getId(), user2.getId());
+		userService.addFriend(user2.getId(), user1.getId());
 
-    }
+		Boolean confirmation = userService.isFriendShipConfirmed(user1.getId(), user2.getId());
+		Boolean confirmationReverse = userService.isFriendShipConfirmed(user1.getId(), user2.getId());
 
-    @Test
-    public void shouldUpdateReview() { // обновление информации о фильме
+		assertThat(confirmation).isTrue();
+		assertThat(confirmationReverse).isTrue();
 
-        User user = userStorage.addUser(userAlex1);
-        Film film = filmStorage.addFilm(filmAllHatesCris);
+	}
 
-        final Long userId = user.getId();
-        final Integer filmId = film.getId();
+	@Test
+	public void shouldFailConfirmMutualFriendship() { // подтверждение отсутствия двусторонней дружбы
 
-        Review review = review1.toBuilder().userId(userId).filmId(filmId).build();
-        Review newReview = reviewStorage.addReview(review);
+		User user1 = userStorage.addUser(userAlex1);
+		User user3 = userStorage.addUser(userEgor2);
 
-        final Integer reviewId = newReview.getReviewId();
+		userService.addFriend(user1.getId(), user3.getId());
 
-        Review updatedReview = newReview.toBuilder().content("UPDATED").build();
+		Boolean confirmation = userService.isFriendShipConfirmed(user1.getId(), user3.getId());
+		Boolean confirmationReverse = userService.isFriendShipConfirmed(user1.getId(), user3.getId());
 
-        reviewStorage.updateReview(updatedReview);
+		assertThat(confirmation).isFalse();
+		assertThat(confirmationReverse).isFalse();
 
-        Optional<Review> reviewOptional = Optional.ofNullable(reviewStorage.getReviewById(reviewId));
-        assertThat(reviewOptional)
-                .hasValueSatisfying(r ->
-                        assertThat(r)
-                                .hasFieldOrPropertyWithValue("reviewId", reviewId)
-                                .hasFieldOrPropertyWithValue("content", "UPDATED")
-                                .hasFieldOrPropertyWithValue("isPositive", true)
-                                .hasFieldOrPropertyWithValue("userId", userId)
-                                .hasFieldOrPropertyWithValue("filmId", filmId));
+	}
 
-    }
+	// ************************* Тестирование работы сервиса работы с отзывами
+	// *************************
+	@Test
+	public void shouldAddReviewAndFindReviewById() { // добавление отзыва и его получение по id
 
+		User user = userStorage.addUser(userAlex1);
+		Film film = filmStorage.addFilm(filmAllHatesCris);
 
-    @Test
-    public void shouldListReviews() { // получение списка отзывов
+		final Long userId = user.getId();
+		final Integer filmId = film.getId();
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
-        filmStorage.addFilm(filmDiamondHand);
+		Review review = review1.toBuilder().userId(userId).filmId(filmId).build();
+		Review newReview = reviewStorage.addReview(review);
 
-        final Long user1Id = user1.getId();
-        final Long user2Id = user2.getId();
-        final Integer film1Id = film1.getId();
-        final Integer film2Id = film1.getId();
+		final Integer reviewId = newReview.getReviewId();
 
-        Review review1WithData = review1.toBuilder().userId(user1Id).filmId(film1Id).build();
-        Review review2WithData = review2.toBuilder().userId(user2Id).filmId(film2Id).build();
-        Review review3WithData = review3.toBuilder().userId(user1Id).filmId(film2Id).build();
+		Optional<Review> reviewOptional = Optional.ofNullable(reviewStorage.getReviewById(reviewId));
+		assertThat(reviewOptional).hasValueSatisfying(r -> assertThat(r)
+				.hasFieldOrPropertyWithValue("reviewId", reviewId).hasFieldOrPropertyWithValue("content", "Content")
+				.hasFieldOrPropertyWithValue("isPositive", true).hasFieldOrPropertyWithValue("userId", userId)
+				.hasFieldOrPropertyWithValue("filmId", filmId));
 
-        Review newReview1 = reviewStorage.addReview(review1WithData);
-        Review newReview2 = reviewStorage.addReview(review2WithData);
-        Review newReview3 = reviewStorage.addReview(review3WithData);
+	}
 
-        final Integer review1Id = newReview1.getReviewId();
-        final Integer review2Id = newReview2.getReviewId();
-        final Integer review3Id = newReview3.getReviewId();
+	@Test
+	public void shouldUpdateReview() { // обновление информации о фильме
 
-        List<Review> listReviews = reviewService.listReviews(null, null);
+		User user = userStorage.addUser(userAlex1);
+		Film film = filmStorage.addFilm(filmAllHatesCris);
 
-        assertThat(listReviews).asList().hasSize(3);
+		final Long userId = user.getId();
+		final Integer filmId = film.getId();
 
-        assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review1Id));
-        assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review2Id));
-        assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review3Id));
+		Review review = review1.toBuilder().userId(userId).filmId(filmId).build();
+		Review newReview = reviewStorage.addReview(review);
 
-        assertThat(Optional.of(listReviews.get(0)))
-                .hasValueSatisfying(r ->
-                        AssertionsForClassTypes.assertThat(r)
-                                .hasFieldOrPropertyWithValue("content", "Content"));
+		final Integer reviewId = newReview.getReviewId();
 
-        assertThat(Optional.of(listReviews.get(1)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("content", "Content2"));
+		Review updatedReview = newReview.toBuilder().content("UPDATED").build();
 
-        assertThat(Optional.of(listReviews.get(2)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("content", "Content3"));
+		reviewStorage.updateReview(updatedReview);
 
-    }
+		Optional<Review> reviewOptional = Optional.ofNullable(reviewStorage.getReviewById(reviewId));
+		assertThat(reviewOptional).hasValueSatisfying(r -> assertThat(r)
+				.hasFieldOrPropertyWithValue("reviewId", reviewId).hasFieldOrPropertyWithValue("content", "UPDATED")
+				.hasFieldOrPropertyWithValue("isPositive", true).hasFieldOrPropertyWithValue("userId", userId)
+				.hasFieldOrPropertyWithValue("filmId", filmId));
 
-    @Test
-    public void shouldListReviewsWithLimit() { // получение списка отзывов c ограничением размера по id 1
+	}
 
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
-        Film film2 = filmStorage.addFilm(filmDiamondHand);
+	@Test
+	public void shouldListReviews() { // получение списка отзывов
 
-        final Long user1Id = user1.getId();
-        final Long user2Id = user2.getId();
-        final Integer film1Id = film1.getId();
-        final Integer film2Id = film2.getId();
+		User user1 = userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		Film film1 = filmStorage.addFilm(filmAllHatesCris);
+		filmStorage.addFilm(filmDiamondHand);
 
-        Review review1WithData = review1.toBuilder().userId(user1Id).filmId(film1Id).build();
-        Review review2WithData = review2.toBuilder().userId(user2Id).filmId(film2Id).build();
-        Review review3WithData = review3.toBuilder().userId(user1Id).filmId(film2Id).build();
+		final Long user1Id = user1.getId();
+		final Long user2Id = user2.getId();
+		final Integer film1Id = film1.getId();
+		final Integer film2Id = film1.getId();
 
-        Review newReview1 = reviewStorage.addReview(review3WithData);
-        Review newReview2 = reviewStorage.addReview(review2WithData);
-        Review newReview3 = reviewStorage.addReview(review1WithData);
+		Review review1WithData = review1.toBuilder().userId(user1Id).filmId(film1Id).build();
+		Review review2WithData = review2.toBuilder().userId(user2Id).filmId(film2Id).build();
+		Review review3WithData = review3.toBuilder().userId(user1Id).filmId(film2Id).build();
 
-        final Integer review1Id = newReview1.getReviewId();
-        final Integer review2Id = newReview2.getReviewId();
-        final Integer review3Id = newReview3.getReviewId();
+		Review newReview1 = reviewStorage.addReview(review1WithData);
+		Review newReview2 = reviewStorage.addReview(review2WithData);
+		Review newReview3 = reviewStorage.addReview(review3WithData);
 
-        reviewLikeStorage.addLikeToReview(review3Id, user2Id);
+		final Integer review1Id = newReview1.getReviewId();
+		final Integer review2Id = newReview2.getReviewId();
+		final Integer review3Id = newReview3.getReviewId();
 
-        List<Review> listReviews = reviewStorage.listReviews(2, 1);
+		List<Review> listReviews = reviewService.listReviews(null, null);
 
-        assertThat(listReviews).asList().hasSize(1);
+		assertThat(listReviews).asList().hasSize(3);
 
-        assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review1Id));
-        assertThat(listReviews).asList().doesNotContain(reviewStorage.getReviewById(review2Id));
-        assertThat(listReviews).asList().doesNotContain(reviewStorage.getReviewById(review3Id));
+		assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review1Id));
+		assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review2Id));
+		assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review3Id));
 
-        assertThat(Optional.of(listReviews.get(0)))
-                .hasValueSatisfying(r ->
-                        AssertionsForClassTypes.assertThat(r)
-                                .hasFieldOrPropertyWithValue("content", "Content3"));
+		assertThat(Optional.of(listReviews.get(0))).hasValueSatisfying(
+				r -> AssertionsForClassTypes.assertThat(r).hasFieldOrPropertyWithValue("content", "Content"));
 
-    }
+		assertThat(Optional.of(listReviews.get(1))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("content", "Content2"));
 
+		assertThat(Optional.of(listReviews.get(2))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("content", "Content3"));
 
-    @Test
-    public void shouldListReviewsEmpty() { // получение пустого списка отзывов
+	}
 
-        List<Review> listReviews = reviewService.listReviews(null, null);
+	@Test
+	public void shouldListReviewsWithLimit() { // получение списка отзывов c ограничением размера по id 1
 
-        assertThat(listReviews).asList().hasSize(0);
-        assertThat(listReviews).asList().isEmpty();
+		User user1 = userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		Film film1 = filmStorage.addFilm(filmAllHatesCris);
+		Film film2 = filmStorage.addFilm(filmDiamondHand);
 
-    }
+		final Long user1Id = user1.getId();
+		final Long user2Id = user2.getId();
+		final Integer film1Id = film1.getId();
+		final Integer film2Id = film2.getId();
 
-    @Test
-    public void shouldDeleteReview() { //удаление ревью
+		Review review1WithData = review1.toBuilder().userId(user1Id).filmId(film1Id).build();
+		Review review2WithData = review2.toBuilder().userId(user2Id).filmId(film2Id).build();
+		Review review3WithData = review3.toBuilder().userId(user1Id).filmId(film2Id).build();
 
-        User user = userStorage.addUser(userAlex1);
-        Film film = filmStorage.addFilm(filmAllHatesCris);
+		Review newReview1 = reviewStorage.addReview(review3WithData);
+		Review newReview2 = reviewStorage.addReview(review2WithData);
+		Review newReview3 = reviewStorage.addReview(review1WithData);
 
-        final Long userId = user.getId();
-        final Integer filmId = film.getId();
+		final Integer review1Id = newReview1.getReviewId();
+		final Integer review2Id = newReview2.getReviewId();
+		final Integer review3Id = newReview3.getReviewId();
 
-        Review review = review1.toBuilder().userId(userId).filmId(filmId).build();
+		reviewLikeStorage.addLikeToReview(review3Id, user2Id);
 
-        Review newReview = reviewStorage.addReview(review);
-        final Integer reviewId = newReview.getReviewId();
+		List<Review> listReviews = reviewStorage.listReviews(2, 1);
 
-        reviewStorage.deleteReview(reviewId);
+		assertThat(listReviews).asList().hasSize(1);
 
-        List<Review> listReviews = reviewService.listReviews(null, null);
+		assertThat(listReviews).asList().contains(reviewStorage.getReviewById(review1Id));
+		assertThat(listReviews).asList().doesNotContain(reviewStorage.getReviewById(review2Id));
+		assertThat(listReviews).asList().doesNotContain(reviewStorage.getReviewById(review3Id));
 
-        assertThat(listReviews).asList().hasSize(0);
-        assertThat(listReviews).asList().isEmpty();
+		assertThat(Optional.of(listReviews.get(0))).hasValueSatisfying(
+				r -> AssertionsForClassTypes.assertThat(r).hasFieldOrPropertyWithValue("content", "Content3"));
 
-    }
+	}
 
+	@Test
+	public void shouldListReviewsEmpty() { // получение пустого списка отзывов
 
-    @Test
-    public void shouldAddLikeToReview() { // добавление лайка ревью
+		List<Review> listReviews = reviewService.listReviews(null, null);
 
-        userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        filmStorage.addFilm(filmAllHatesCris);
-        Review review = reviewStorage.addReview(review2);
+		assertThat(listReviews).asList().hasSize(0);
+		assertThat(listReviews).asList().isEmpty();
 
+	}
 
-        final Integer reviewId = review.getReviewId();
-        final Long userId = user2.getId();
+	@Test
+	public void shouldDeleteReview() { // удаление ревью
 
-        reviewLikeStorage.addLikeToReview(reviewId, userId);
-        final Integer useful = reviewService.getReviewById(reviewId).getUseful();
+		User user = userStorage.addUser(userAlex1);
+		Film film = filmStorage.addFilm(filmAllHatesCris);
 
-        assertThat(useful).isEqualTo(1);
+		final Long userId = user.getId();
+		final Integer filmId = film.getId();
 
-    }
+		Review review = review1.toBuilder().userId(userId).filmId(filmId).build();
 
-    @Test
-    public void shouldAddDislikeToReview() { // добавление дизлайка ревью
+		Review newReview = reviewStorage.addReview(review);
+		final Integer reviewId = newReview.getReviewId();
 
-        userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        filmStorage.addFilm(filmAllHatesCris);
-        Review review = reviewStorage.addReview(review2);
+		reviewStorage.deleteReview(reviewId);
 
-        final Integer reviewId = review.getReviewId();
-        final Long userId = user2.getId();
+		List<Review> listReviews = reviewService.listReviews(null, null);
 
-        reviewLikeStorage.addDislikeToReview(reviewId, userId);
+		assertThat(listReviews).asList().hasSize(0);
+		assertThat(listReviews).asList().isEmpty();
 
-        final Integer useful = reviewService.getReviewById(reviewId).getUseful();
-        assertThat(useful).isEqualTo(-1);
+	}
 
-    }
+	@Test
+	public void shouldAddLikeToReview() { // добавление лайка ревью
 
-    @Test
-    public void shouldDeleteLikeFromReview() { // удаление лайков у ревью
+		userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		filmStorage.addFilm(filmAllHatesCris);
+		Review review = reviewStorage.addReview(review2);
 
-        userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        filmStorage.addFilm(filmAllHatesCris);
-        Review review = reviewStorage.addReview(review2);
+		final Integer reviewId = review.getReviewId();
+		final Long userId = user2.getId();
 
-        final Integer reviewId = review.getReviewId();
-        final Long userId = user2.getId();
+		reviewLikeStorage.addLikeToReview(reviewId, userId);
+		final Integer useful = reviewService.getReviewById(reviewId).getUseful();
 
-        reviewLikeStorage.addLikeToReview(reviewId, userId);
-        reviewLikeStorage.deleteLikeFromReview(reviewId, userId);
+		assertThat(useful).isEqualTo(1);
 
-        final Integer useful = reviewService.getReviewById(reviewId).getUseful();
+	}
 
-        assertThat(useful).isEqualTo(0);
+	@Test
+	public void shouldAddDislikeToReview() { // добавление дизлайка ревью
 
-    }
+		userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		filmStorage.addFilm(filmAllHatesCris);
+		Review review = reviewStorage.addReview(review2);
 
-    @Test
-    public void shouldDeleteDislikeFromReview() { // удаление дизлайков у ревью
+		final Integer reviewId = review.getReviewId();
+		final Long userId = user2.getId();
 
-        userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        filmStorage.addFilm(filmAllHatesCris);
-        Review review = reviewStorage.addReview(review2);
+		reviewLikeStorage.addDislikeToReview(reviewId, userId);
 
-        final Integer reviewId = review.getReviewId();
-        final Long userId = user2.getId();
+		final Integer useful = reviewService.getReviewById(reviewId).getUseful();
+		assertThat(useful).isEqualTo(-1);
 
-        reviewLikeStorage.addDislikeToReview(reviewId, userId);
-        reviewLikeStorage.deleteDislikeFromReview(reviewId, userId);
+	}
 
-        final Integer useful = reviewService.getReviewById(reviewId).getUseful();
+	@Test
+	public void shouldDeleteLikeFromReview() { // удаление лайков у ревью
 
-        assertThat(useful).isEqualTo(0);
+		userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		filmStorage.addFilm(filmAllHatesCris);
+		Review review = reviewStorage.addReview(review2);
 
-    }
+		final Integer reviewId = review.getReviewId();
+		final Long userId = user2.getId();
 
+		reviewLikeStorage.addLikeToReview(reviewId, userId);
+		reviewLikeStorage.deleteLikeFromReview(reviewId, userId);
 
-    //************************* Тестирование работы сервиса работы с фильмами *************************
-    @Test
-    public void shouldAddFilmAndFindFilmById() { // добавление фильма и его получение по id
+		final Integer useful = reviewService.getReviewById(reviewId).getUseful();
 
-        directorStorage.addDirector(director1);
-        filmAllHatesCris.toBuilder().directors(Set.of(director1)).build();
-        Film film = filmStorage.addFilm(filmAllHatesCris);
+		assertThat(useful).isEqualTo(0);
 
-        Optional<Film> filmOptional = Optional.ofNullable(filmStorage.getFilmById(film.getId()));
-        assertThat(filmOptional)
-                .hasValueSatisfying(f ->
-                        assertThat(f)
-                                .hasFieldOrPropertyWithValue("id", film.getId())
-                                .hasFieldOrPropertyWithValue("name", "All hates Cris")
-                                .hasFieldOrPropertyWithValue("description", "Good comedy")
-                                .hasFieldOrPropertyWithValue("releaseDate",
-                                        LocalDate.of(1998, 1, 1))
-                                .hasFieldOrPropertyWithValue("duration",
-                                        30)
-                                .hasFieldOrPropertyWithValue("mpa.id", 1));
+	}
 
-    }
+	@Test
+	public void shouldDeleteDislikeFromReview() { // удаление дизлайков у ревью
 
-    @Test
-    public void shouldUpdateFilm() { // обновление информации о фильме
+		userStorage.addUser(userAlex1);
+		User user2 = userStorage.addUser(userEgor2);
+		filmStorage.addFilm(filmAllHatesCris);
+		Review review = reviewStorage.addReview(review2);
 
-        Film film = filmStorage.addFilm(filmAllHatesCris);
-        Film updatedFilm = film.toBuilder().name("UPDATED").build();
-        filmStorage.updateFilm(updatedFilm);
-        Optional<Film> filmOptional = Optional.ofNullable(filmStorage.getFilmById(film.getId()));
-        assertThat(filmOptional)
-                .hasValueSatisfying(f ->
-                        assertThat(f)
-                                .hasFieldOrPropertyWithValue("id", film.getId())
-                                .hasFieldOrPropertyWithValue("name", "UPDATED")
-                                .hasFieldOrPropertyWithValue("description", "Good comedy")
-                                .hasFieldOrPropertyWithValue("releaseDate",
-                                        LocalDate.of(1998, 1, 1))
-                                .hasFieldOrPropertyWithValue("duration",
-                                        30)
-                                .hasFieldOrPropertyWithValue("mpa.id", 1)
-                                .hasFieldOrPropertyWithValue("genres", genres));
-    }
+		final Integer reviewId = review.getReviewId();
+		final Long userId = user2.getId();
 
-    @Test
-    public void shouldUpdate2Film() { // обновление информации о фильме с изменением списка жанров и рейтинга
+		reviewLikeStorage.addDislikeToReview(reviewId, userId);
+		reviewLikeStorage.deleteDislikeFromReview(reviewId, userId);
 
-        Film film = filmStorage.addFilm(filmAllHatesCris);
+		final Integer useful = reviewService.getReviewById(reviewId).getUseful();
 
-        // обновляем жанры и Mpa
-        Set<FilmGenre> genresNew = Set.of(new FilmGenre(2, null));
-        Mpa mpaNew = new Mpa(4, null);
+		assertThat(useful).isEqualTo(0);
 
-        Film updatedFilm = film.toBuilder().name("UPDATED").genres(genresNew).mpa(mpaNew).build();
-        filmStorage.updateFilm(updatedFilm);
+	}
 
-        Optional<Film> filmOptional = Optional.ofNullable(filmStorage.getFilmById(film.getId()));
-        assertThat(filmOptional)
-                .hasValueSatisfying(f ->
-                        assertThat(f)
-                                .hasFieldOrPropertyWithValue("id", film.getId())
-                                .hasFieldOrPropertyWithValue("name", "UPDATED")
-                                .hasFieldOrPropertyWithValue("description", "Good comedy")
-                                .hasFieldOrPropertyWithValue("releaseDate",
-                                        LocalDate.of(1998, 1, 1))
-                                .hasFieldOrPropertyWithValue("duration",
-                                        30)
-                                .hasFieldOrPropertyWithValue("mpa.id", 4)
-                                .hasFieldOrPropertyWithValue("mpa.name", "R")
-                                .hasFieldOrPropertyWithValue("genres", genresNew));
-    }
+	// ************************* Тестирование работы сервиса работы с фильмами
+	// *************************
+	@Test
+	public void shouldAddFilmAndFindFilmById() { // добавление фильма и его получение по id
 
-    @Test
-    public void shouldListFilms() { // получение списка фильмов
+		directorStorage.addDirector(director1);
+		filmAllHatesCris.toBuilder().directors(Set.of(director1)).build();
+		Film film = filmStorage.addFilm(filmAllHatesCris);
 
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
-        Film film2 = filmStorage.addFilm(filmDiamondHand);
-        Film film3 = filmStorage.addFilm(filmTomAndJerry);
+		Optional<Film> filmOptional = Optional.ofNullable(filmStorage.getFilmById(film.getId()));
+		assertThat(filmOptional).hasValueSatisfying(f -> assertThat(f).hasFieldOrPropertyWithValue("id", film.getId())
+				.hasFieldOrPropertyWithValue("name", "All hates Cris")
+				.hasFieldOrPropertyWithValue("description", "Good comedy")
+				.hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1998, 1, 1))
+				.hasFieldOrPropertyWithValue("duration", 30).hasFieldOrPropertyWithValue("mpa.id", 1));
 
+	}
 
-        List<Film> listFilms = filmStorage.listFilms();
+	@Test
+	public void shouldUpdateFilm() { // обновление информации о фильме
 
-        assertThat(listFilms).asList().hasSize(3);
+		Film film = filmStorage.addFilm(filmAllHatesCris);
+		Film updatedFilm = film.toBuilder().name("UPDATED").build();
+		filmStorage.updateFilm(updatedFilm);
+		Optional<Film> filmOptional = Optional.ofNullable(filmStorage.getFilmById(film.getId()));
+		assertThat(filmOptional).hasValueSatisfying(f -> assertThat(f).hasFieldOrPropertyWithValue("id", film.getId())
+				.hasFieldOrPropertyWithValue("name", "UPDATED")
+				.hasFieldOrPropertyWithValue("description", "Good comedy")
+				.hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1998, 1, 1))
+				.hasFieldOrPropertyWithValue("duration", 30).hasFieldOrPropertyWithValue("mpa.id", 1)
+				.hasFieldOrPropertyWithValue("genres", genres));
+	}
 
-        assertThat(listFilms).asList().contains(filmStorage.getFilmById(film1.getId()));
-        assertThat(listFilms).asList().contains(filmStorage.getFilmById(film2.getId()));
-        assertThat(listFilms).asList().contains(filmStorage.getFilmById(film3.getId()));
+	@Test
+	public void shouldUpdate2Film() { // обновление информации о фильме с изменением списка жанров и рейтинга
 
-        assertThat(Optional.of(listFilms.get(0)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "All hates Cris"));
+		Film film = filmStorage.addFilm(filmAllHatesCris);
 
-        assertThat(Optional.of(listFilms.get(1)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Diamond hand"));
+		// обновляем жанры и Mpa
+		Set<FilmGenre> genresNew = Set.of(new FilmGenre(2, null));
+		Mpa mpaNew = new Mpa(4, null);
 
-        assertThat(Optional.of(listFilms.get(2)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Tom and Jerry"));
+		Film updatedFilm = film.toBuilder().name("UPDATED").genres(genresNew).mpa(mpaNew).build();
+		filmStorage.updateFilm(updatedFilm);
 
-    }
+		Optional<Film> filmOptional = Optional.ofNullable(filmStorage.getFilmById(film.getId()));
+		assertThat(filmOptional).hasValueSatisfying(f -> assertThat(f).hasFieldOrPropertyWithValue("id", film.getId())
+				.hasFieldOrPropertyWithValue("name", "UPDATED")
+				.hasFieldOrPropertyWithValue("description", "Good comedy")
+				.hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1998, 1, 1))
+				.hasFieldOrPropertyWithValue("duration", 30).hasFieldOrPropertyWithValue("mpa.id", 4)
+				.hasFieldOrPropertyWithValue("mpa.name", "R").hasFieldOrPropertyWithValue("genres", genresNew));
+	}
 
-    @Test
-    public void shouldListFilmsEmpty() { // получение пустого списка фильмов
+	@Test
+	public void shouldListFilms() { // получение списка фильмов
 
-        List<Film> listFilms = filmStorage.listFilms();
+		Film film1 = filmStorage.addFilm(filmAllHatesCris);
+		Film film2 = filmStorage.addFilm(filmDiamondHand);
+		Film film3 = filmStorage.addFilm(filmTomAndJerry);
 
-        assertThat(listFilms).asList().hasSize(0);
-        assertThat(listFilms).asList().isEmpty();
+		List<Film> listFilms = filmStorage.listFilms();
 
-    }
+		assertThat(listFilms).asList().hasSize(3);
 
+		assertThat(listFilms).asList().contains(filmStorage.getFilmById(film1.getId()));
+		assertThat(listFilms).asList().contains(filmStorage.getFilmById(film2.getId()));
+		assertThat(listFilms).asList().contains(filmStorage.getFilmById(film3.getId()));
 
-    @Test
-    public void shouldAddLike() { // добавление лайка
-        User user1 = userStorage.addUser(userAlex1);
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
+		assertThat(Optional.of(listFilms.get(0))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "All hates Cris"));
 
-        likeStorage.addLike(film1.getId(), user1.getId());
-        Long likes = likeStorage.getFilmLikesTotalCount(film1.getId());
+		assertThat(Optional.of(listFilms.get(1))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "Diamond hand"));
 
-        assertThat(likes).isEqualTo(1);
+		assertThat(Optional.of(listFilms.get(2))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "Tom and Jerry"));
 
-    }
+	}
 
-    @Test
-    public void shouldDeleteLike() { // удаление лайков
-        User user1 = userStorage.addUser(userAlex1);
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
+	@Test
+	public void shouldListFilmsEmpty() { // получение пустого списка фильмов
 
-        likeStorage.addLike(film1.getId(), user1.getId());
-        likeStorage.deleteLike(film1.getId(), user1.getId());
+		List<Film> listFilms = filmStorage.listFilms();
 
-        Long likes = likeStorage.getFilmLikesTotalCount(film1.getId());
+		assertThat(listFilms).asList().hasSize(0);
+		assertThat(listFilms).asList().isEmpty();
 
-        assertThat(likes).isEqualTo(0);
+	}
 
-    }
+	@Test
+	public void shouldAddLike() { // добавление лайка
+		User user1 = userStorage.addUser(userAlex1);
+		Film film1 = filmStorage.addFilm(filmAllHatesCris);
 
-    @Test
-    public void shouldListMostPopularFilmsByGenreId() { // получение списка наиболее популярных фильмов по id жанра
+		likeStorage.addLike(film1.getId(), user1.getId());
+		Long likes = likeStorage.getFilmLikesTotalCount(film1.getId());
 
-        // создаем трех пользователей и три фильма
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        User user3 = userStorage.addUser(userAnna3);
+		assertThat(likes).isEqualTo(1);
 
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
-        Film film2 = filmStorage.addFilm(filmDiamondHand);
-        Film film3 = filmStorage.addFilm(filmTomAndJerry);
+	}
 
-        // ставим лайки фильмам 1 (3 штуки) и 2 (1 штука)
-        likeStorage.addLike(film1.getId(), user1.getId());
-        likeStorage.addLike(film1.getId(), user2.getId());
-        likeStorage.addLike(film1.getId(), user3.getId());
-        likeStorage.addLike(film2.getId(), user1.getId());
+	@Test
+	public void shouldDeleteLike() { // удаление лайков
+		User user1 = userStorage.addUser(userAlex1);
+		Film film1 = filmStorage.addFilm(filmAllHatesCris);
 
-        // получаем список фильмов отсортированных по количеству лайков (ограничение размера - 1 фильм)
-        List<Film> listFilms = filmStorage.listMostPopularFilms(1, 2, null);
+		likeStorage.addLike(film1.getId(), user1.getId());
+		likeStorage.deleteLike(film1.getId(), user1.getId());
 
-        // проверяем корректность полученных данных - 1 фильм,
+		Long likes = likeStorage.getFilmLikesTotalCount(film1.getId());
 
-        assertThat(listFilms).asList().hasSize(1);
+		assertThat(likes).isEqualTo(0);
 
-        // проверяем фильм в списке - с жанром 2 фильм с id 1
+	}
 
-        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
-        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film1.getId()));
+	@Test
+	public void shouldSearchFilmsByTitle() { // поиск фильма по названию
 
-        assertThat(Optional.of(listFilms.get(0)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "All hates Cris"));
+		/*
+		 * создаем четыре фильма - названия двух из них "All hates Cris" и
+		 * "Search test should find ALL" и включают подстроку "all" без учета регистра
+		 */
+		Film film1 = filmStorage.addFilm(filmAllHatesCris);
+		Film film2 = filmStorage.addFilm(filmDiamondHand);
+		Film film3 = filmStorage.addFilm(filmTomAndJerry);
+		Film film4 = filmStorage.addFilm(filmSearchTestForALL);
 
-    }
+		List<String> searchBase = List.of("title", "director");
 
-    @Test
-    public void shouldListMostPopularFilmsByYear() { // получение списка наиболее популярных фильмов по году
+		// получаем список фильмов, содержащих в названии подстроку "all" без учета
+		// регистра
+		List<Film> listFilms = filmStorage.listSearchResults("all", searchBase);
 
-        // создаем трех пользователей и три фильма
-        User user1 = userStorage.addUser(userAlex1);
-        User user2 = userStorage.addUser(userEgor2);
-        User user3 = userStorage.addUser(userAnna3);
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
-        Film film2 = filmStorage.addFilm(filmDiamondHand);
-        Film film3 = filmStorage.addFilm(filmTomAndJerry);
+		// проверяем корректность полученных данных - 2 фильма,
 
-        // ставим лайки фильмам 1 (3 штуки) и 2 (1 штука)
-        likeStorage.addLike(film1.getId(), user1.getId());
-        likeStorage.addLike(film1.getId(), user2.getId());
-        likeStorage.addLike(film1.getId(), user3.getId());
-        likeStorage.addLike(film2.getId(), user1.getId());
+		assertThat(listFilms).asList().hasSize(2);
 
-        // получаем список фильмов c запросом по году
-        List<Film> listFilms = filmStorage.listMostPopularFilms(1, null, 1978);
+		// проверяем порядок фильмов в списке - на первом месте фильм с id 1, на
+		// последнем фильм с id 4
 
-        // проверяем корректность полученных данных - 3 фильма,
+		assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
+		assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film3.getId()));
+		assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film2.getId()));
+		assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film4.getId()));
 
-        assertThat(listFilms).asList().hasSize(1);
+		assertThat(Optional.of(listFilms.get(0))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "All hates Cris"));
 
-        // проверяем фильм в списке - год выпуска совпадает у фильма с id 2
+		assertThat(Optional.of(listFilms.get(1))).hasValueSatisfying(film -> AssertionsForClassTypes.assertThat(film)
+				.hasFieldOrPropertyWithValue("name", "Search test should find ALL"));
 
-        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film2.getId()));
+	}
 
-        assertThat(Optional.of(listFilms.get(0)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "Diamond hand"));
-    }
+	@Test
+	public void shouldSearchFilmsByDirectors() { // поиск фильма по названию
 
-    @Test
-    public void shouldSearchFilmsByTitle() { // поиск фильма по названию
+		// создаем три фильма - имена режиссеров двух из них "Adam" включают подстроку
+		// "dam" без учета регистра
 
-       /* создаем четыре фильма - названия двух из них  "All hates Cris" и "Search test should find ALL"
-       и включают подстроку "all" без учета регистра*/
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
-        Film film2 = filmStorage.addFilm(filmDiamondHand);
-        Film film3 = filmStorage.addFilm(filmTomAndJerry);
-        Film film4 = filmStorage.addFilm(filmSearchTestForALL);
+		Director directorFirst = directorStorage.addDirector(director1);
+		Director directorSecond = directorStorage.addDirector(director2);
+		Director directorThird = directorStorage.addDirector(director3);
+		Film filmAllHatesCrisWithDirector = filmAllHatesCris.toBuilder().directors(Set.of(directorFirst)).build();
+		Film filmTomAndJerryWithDirector = filmTomAndJerry.toBuilder().directors(Set.of(directorThird)).build();
+		Film filmDiamondHandWithDirector = filmDiamondHand.toBuilder().directors(Set.of(directorSecond, directorThird))
+				.build();
+		Film film1 = filmStorage.addFilm(filmAllHatesCrisWithDirector);
+		Film film2 = filmStorage.addFilm(filmDiamondHandWithDirector);
+		Film film3 = filmStorage.addFilm(filmTomAndJerryWithDirector);
 
-        List<String> searchBase = List.of("title", "director");
+		// ставим лайк второму фильму "Diamond Hand" для проверка сортировки
+		User user = userStorage.addUser(userAnna3);
+		likeStorage.addLike(film2.getId(), user.getId());
 
+		List<String> searchBase = List.of("director");
 
-        // получаем список фильмов, содержащих в названии подстроку "all" без учета регистра
-        List<Film> listFilms = filmStorage.listSearchResults("all", searchBase);
+		// получаем список фильмов, содержащих в названии подстроку all без учета
+		// регистра
+		List<Film> listFilms = filmStorage.listSearchResults("daM", searchBase);
 
-        // проверяем корректность полученных данных - 2 фильма,
+		// проверяем корректность полученных данных - 2 фильма,
 
-        assertThat(listFilms).asList().hasSize(2);
+		assertThat(listFilms).asList().hasSize(2);
 
-        // проверяем порядок фильмов в списке - на первом месте фильм с id 1, на последнем фильм с id 4
+		// проверяем порядок фильмов в списке - на первом месте фильм с id 2 - с лайком,
+		// на втором фильм с id 1
 
-        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
-        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film3.getId()));
-        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film2.getId()));
-        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film4.getId()));
+		assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film2.getId()));
+		assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film1.getId()));
 
-        assertThat(Optional.of(listFilms.get(0)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "All hates Cris"));
+		assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film3.getId()));
 
-        assertThat(Optional.of(listFilms.get(1)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Search test should find ALL"));
+		assertThat(Optional.of(listFilms.get(0))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "Diamond hand"));
 
+		assertThat(Optional.of(listFilms.get(1))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "All hates Cris"));
+	}
 
-    }
+	@Test
+	public void shouldSearchFilmsByDirectorsAndTitle() { // поиск фильма по названию
 
-    @Test
-    public void shouldSearchFilmsByDirectors() { // поиск фильма по названию
+		/*
+		 * создаем три фильма имя режиссера одного из них "Daniel Dan" и название фильма
+		 * "Diamond Hand" включают подстроку "an" без учета регистра
+		 */
 
-        // создаем три фильма - имена режиссеров двух из них "Adam" включают подстроку "dam" без учета регистра
+		Director directorFirst = directorStorage.addDirector(director1);
+		Director directorSecond = directorStorage.addDirector(director2);
+		Director directorThird = directorStorage.addDirector(director3);
+		Film filmAllHatesCrisWithDirector = filmAllHatesCris.toBuilder().directors(Set.of(directorFirst)).build();
+		Film filmTomAndJerryWithDirector = filmTomAndJerry.toBuilder().directors(Set.of(directorThird)).build();
+		Film filmDiamondHandWithDirector = filmDiamondHand.toBuilder().directors(Set.of(directorSecond, directorFirst))
+				.build();
+		Film film1 = filmStorage.addFilm(filmAllHatesCrisWithDirector);
+		Film film2 = filmStorage.addFilm(filmDiamondHandWithDirector);
+		Film film3 = filmStorage.addFilm(filmTomAndJerryWithDirector);
 
-        Director directorFirst = directorStorage.addDirector(director1);
-        Director directorSecond = directorStorage.addDirector(director2);
-        Director directorThird = directorStorage.addDirector(director3);
-        Film filmAllHatesCrisWithDirector = filmAllHatesCris.toBuilder()
-                .directors(Set.of(directorFirst)).build();
-        Film filmTomAndJerryWithDirector = filmTomAndJerry.toBuilder()
-                .directors(Set.of(directorThird)).build();
-        Film filmDiamondHandWithDirector = filmDiamondHand.toBuilder()
-                .directors(Set.of(directorSecond, directorThird)).build();
-        Film film1 = filmStorage.addFilm(filmAllHatesCrisWithDirector);
-        Film film2 = filmStorage.addFilm(filmDiamondHandWithDirector);
-        Film film3 = filmStorage.addFilm(filmTomAndJerryWithDirector);
+		// ставим два лайка третьему фильму ("Tom and Jerry") для проверка сортировки
+		User userEgor = userStorage.addUser(userEgor2);
+		User userAnna = userStorage.addUser(userAnna3);
+		likeStorage.addLike(film3.getId(), userEgor.getId());
+		likeStorage.addLike(film3.getId(), userAnna.getId());
 
-        // ставим лайк второму фильму "Diamond Hand" для проверка сортировки
-        User user = userStorage.addUser(userAnna3);
-        likeStorage.addLike(film2.getId(), user.getId());
+		List<String> searchBase = List.of("title", "director");
 
-        List<String> searchBase = List.of("director");
+		// получаем список фильмов, содержащих в названии или имени режиссера подстроку
+		// "an" без учета регистра
+		List<Film> listFilms = filmStorage.listSearchResults("An", searchBase);
 
+		// проверяем корректность полученных данных - 2 фильма,
 
-        // получаем список фильмов, содержащих в названии подстроку all без учета регистра
-        List<Film> listFilms = filmStorage.listSearchResults("daM", searchBase);
+		assertThat(listFilms).asList().hasSize(2);
 
-        // проверяем корректность полученных данных - 2 фильма,
+		// проверяем порядок фильмов в списке - на первом месте фильм с id 3 - с
+		// лайками, на втором фильм с id 2
 
-        assertThat(listFilms).asList().hasSize(2);
+		assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film3.getId()));
+		assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film2.getId()));
 
-        // проверяем порядок фильмов в списке - на первом месте фильм с id 2 - с лайком, на втором фильм с id 1
+		assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film1.getId()));
 
-        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film2.getId()));
-        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film1.getId()));
+		assertThat(Optional.of(listFilms.get(0))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "Tom and Jerry"));
 
-        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film3.getId()));
+		assertThat(Optional.of(listFilms.get(1))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "Diamond hand"));
 
-        assertThat(Optional.of(listFilms.get(0)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Diamond hand"));
+	}
 
-        assertThat(Optional.of(listFilms.get(1)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "All hates Cris"));
-    }
+	@Test
+	public void shouldSearchFilmsByTitleWithoutDirector() { // поиск фильма по названию
 
-    @Test
-    public void shouldSearchFilmsByDirectorsAndTitle() { // поиск фильма по названию
+		// создаем четыре фильма - названия двух из них включают подстроку all без учета
+		// регистра
+		Film film1 = filmStorage.addFilm(filmAllHatesCris);
+		Film film2 = filmStorage.addFilm(filmDiamondHand);
+		Film film3 = filmStorage.addFilm(filmTomAndJerry);
+		Film film4 = filmStorage.addFilm(filmSearchTestForALL);
 
-       /* создаем три фильма
-         имя режиссера одного из них "Daniel Dan"
-         и название фильма "Diamond Hand" включают подстроку "an" без учета регистра*/
+		List<String> searchBase = List.of("title");
 
-        Director directorFirst = directorStorage.addDirector(director1);
-        Director directorSecond = directorStorage.addDirector(director2);
-        Director directorThird = directorStorage.addDirector(director3);
-        Film filmAllHatesCrisWithDirector = filmAllHatesCris.toBuilder()
-                .directors(Set.of(directorFirst)).build();
-        Film filmTomAndJerryWithDirector = filmTomAndJerry.toBuilder()
-                .directors(Set.of(directorThird)).build();
-        Film filmDiamondHandWithDirector = filmDiamondHand.toBuilder()
-                .directors(Set.of(directorSecond, directorFirst)).build();
-        Film film1 = filmStorage.addFilm(filmAllHatesCrisWithDirector);
-        Film film2 = filmStorage.addFilm(filmDiamondHandWithDirector);
-        Film film3 = filmStorage.addFilm(filmTomAndJerryWithDirector);
+		// получаем список фильмов, содержащих в названии подстроку all без учета
+		// регистра
+		List<Film> listFilms = filmStorage.listSearchResults("all", searchBase);
 
-        // ставим два лайка третьему фильму ("Tom and Jerry") для проверка сортировки
-        User userEgor = userStorage.addUser(userEgor2);
-        User userAnna = userStorage.addUser(userAnna3);
-        likeStorage.addLike(film3.getId(), userEgor.getId());
-        likeStorage.addLike(film3.getId(), userAnna.getId());
+		// проверяем корректность полученных данных - 2 фильма,
 
-        List<String> searchBase = List.of("title", "director");
+		assertThat(listFilms).asList().hasSize(2);
 
+		// проверяем порядок фильмов в списке - на первом месте фильм с id 1, на
+		// последнем фильм с id 4
 
-        // получаем список фильмов, содержащих в названии или имени режиссера подстроку "an" без учета регистра
-        List<Film> listFilms = filmStorage.listSearchResults("An", searchBase);
+		assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
+		assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film3.getId()));
+		assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film2.getId()));
+		assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film4.getId()));
 
-        // проверяем корректность полученных данных - 2 фильма,
+		assertThat(Optional.of(listFilms.get(0))).hasValueSatisfying(
+				film -> AssertionsForClassTypes.assertThat(film).hasFieldOrPropertyWithValue("name", "All hates Cris"));
 
-        assertThat(listFilms).asList().hasSize(2);
+		assertThat(Optional.of(listFilms.get(1))).hasValueSatisfying(film -> AssertionsForClassTypes.assertThat(film)
+				.hasFieldOrPropertyWithValue("name", "Search test should find ALL"));
 
-        // проверяем порядок фильмов в списке - на первом месте фильм с id 3 - с лайками, на втором фильм с id 2
+	}
 
-        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film3.getId()));
-        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film2.getId()));
+	// ************************* Тестирование работы сервиса работы с рейтингами MPA
+	// *************************
 
-        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film1.getId()));
+	@Test
+	public void shouldListMpa() { // получение списка всех рейтингов, отсортированных по возрастанию id
 
-        assertThat(Optional.of(listFilms.get(0)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Tom and Jerry"));
+		// получаем список возможных рейтингов
+		List<Mpa> listMpa = mpaStorage.listRatingMpa();
 
-        assertThat(Optional.of(listFilms.get(1)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Diamond hand"));
+		// проверяем корректность полученных данных - 5 вариантов
 
+		assertThat(listMpa).asList().hasSize(5);
 
-    }
+		// проверяем порядок рейтингов в списке - на первом месте фильм с id 1, на
+		// последнем фильм с id 5
 
-    @Test
-    public void shouldSearchFilmsByTitleWithoutDirector() { // поиск фильма по названию
+		final Integer firstId = 1;
+		final Integer lastId = 5;
 
-        // создаем четыре фильма - названия двух из них включают подстроку all без учета регистра
-        Film film1 = filmStorage.addFilm(filmAllHatesCris);
-        Film film2 = filmStorage.addFilm(filmDiamondHand);
-        Film film3 = filmStorage.addFilm(filmTomAndJerry);
-        Film film4 = filmStorage.addFilm(filmSearchTestForALL);
+		assertThat(listMpa).asList().startsWith(mpaStorage.getRatingMpaById(firstId));
+		assertThat(listMpa).asList().endsWith(mpaStorage.getRatingMpaById(lastId));
 
-        List<String> searchBase = List.of("title");
+	}
 
+	@Test
+	public void getMpaById() { // получение информации о рейтинге фильма по id
 
-        // получаем список фильмов, содержащих в названии подстроку all без учета регистра
-        List<Film> listFilms = filmStorage.listSearchResults("all", searchBase);
+		final Integer secondId = 2;
+		final String secondName = "PG";
 
-        // проверяем корректность полученных данных - 2 фильма,
+		assertThat(mpaStorage.getRatingMpaById(secondId)).hasFieldOrPropertyWithValue("id", 2)
+				.hasFieldOrPropertyWithValue("name", secondName);
+	}
 
-        assertThat(listFilms).asList().hasSize(2);
+	// ************************* Тестирование работы сервиса работы с жанрами
+	// фильмов *************************
 
-        // проверяем порядок фильмов в списке - на первом месте фильм с id 1, на последнем фильм с id 4
+	@Test
+	public void shouldListGenres() { // получение списка всех жанров, отсортированных по возрастанию id
 
-        assertThat(listFilms).asList().startsWith(filmStorage.getFilmById(film1.getId()));
-        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film3.getId()));
-        assertThat(listFilms).asList().doesNotContain(filmStorage.getFilmById(film2.getId()));
-        assertThat(listFilms).asList().endsWith(filmStorage.getFilmById(film4.getId()));
+		// получаем список возможных рейтингов
+		List<FilmGenre> listGenres = genreStorage.listFilmGenres();
 
-        assertThat(Optional.of(listFilms.get(0)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "All hates Cris"));
+		// проверяем корректность полученных данных - 6 вариантов
 
-        assertThat(Optional.of(listFilms.get(1)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Search test should find ALL"));
+		assertThat(listGenres).asList().hasSize(6);
 
+		// проверяем порядок рейтингов в списке - на первом месте фильм с id 1, на
+		// последнем фильм с id 6
 
-    }
+		final Integer firstId = 1;
+		final Integer lastId = 6;
 
-    //************************* Тестирование работы сервиса работы с рейтингами MPA *************************
+		assertThat(listGenres).asList().startsWith(genreStorage.getGenreById(firstId));
+		assertThat(listGenres).asList().endsWith(genreStorage.getGenreById(lastId));
 
-    @Test
-    public void shouldListMpa() { // получение списка всех рейтингов, отсортированных по возрастанию id
+	}
 
-        // получаем список возможных рейтингов
-        List<Mpa> listMpa = mpaStorage.listRatingMpa();
+	@Test
+	public void getGenreById() { // получение информации о жанре фильма по id
 
-        // проверяем корректность полученных данных - 5 вариантов
+		final Integer id = 5;
+		final String name5 = "Документальный";
 
-        assertThat(listMpa).asList().hasSize(5);
+		assertThat(genreStorage.getGenreById(id)).hasFieldOrPropertyWithValue("id", id)
+				.hasFieldOrPropertyWithValue("name", name5);
+	}
 
-        // проверяем порядок рейтингов в списке - на первом месте фильм с id 1, на последнем фильм с id 5
+	@Test
+	public void testCommonFilmsBetweenUsersWithLikes() {
 
-        final Integer firstId = 1;
-        final Integer lastId = 5;
+		userService.addUser(userAlex1);
+		userService.addUser(userEgor2);
+		filmService.addFilm(filmTomAndJerry);
+		userService.addFriend(1L, 2L);
+		filmService.addLike(1, 1L);
+		filmService.addLike(1, 2L);
+		filmService.getCommonFilmsBetweenUsers(1L, 2L);
 
-        assertThat(listMpa).asList().startsWith(mpaStorage.getRatingMpaById(firstId));
-        assertThat(listMpa).asList().endsWith(mpaStorage.getRatingMpaById(lastId));
+	}
 
-    }
+	@Test
+	public void testGetUserFeed() {
+		userService.addUser(userAlex1);
+		eventService.addEvent(1L, 2L, "FRIEND", "ADD");
+		eventService.addEvent(1L, 2L, "FRIEND", "REMOVE");
+		eventService.addEvent(1L, 1L, "LIKE", "ADD");
+		eventService.addEvent(1L, 1L, "LIKE", "REMOVE");
+		eventService.addEvent(1L, 1L, "REVIEW", "ADD");
+		eventService.addEvent(1L, 1L, "REVIEW", "UPDATE");
+		eventService.addEvent(1L, 1L, "REVIEW", "REMOVE");
+		List<Event> feed = eventService.listUserEvents(1L);
+		assertThat(feed).asList().hasSize(7);
+		assertThat(feed.get(0)).hasFieldOrPropertyWithValue("entityId", 2L);
+		assertThat(feed.get(0)).hasFieldOrPropertyWithValue("userId", 1L);
+		assertThat(feed.get(0)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
+		assertThat(feed.get(0)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
+		assertThat(feed.get(1)).hasFieldOrPropertyWithValue("entityId", 2L);
+		assertThat(feed.get(1)).hasFieldOrPropertyWithValue("userId", 1L);
+		assertThat(feed.get(1)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
+		assertThat(feed.get(1)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
+		assertThat(feed.get(2)).hasFieldOrPropertyWithValue("entityId", 1L);
+		assertThat(feed.get(2)).hasFieldOrPropertyWithValue("userId", 1L);
+		assertThat(feed.get(2)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
+		assertThat(feed.get(2)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
+		assertThat(feed.get(3)).hasFieldOrPropertyWithValue("entityId", 1L);
+		assertThat(feed.get(3)).hasFieldOrPropertyWithValue("userId", 1L);
+		assertThat(feed.get(3)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
+		assertThat(feed.get(3)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
+		assertThat(feed.get(4)).hasFieldOrPropertyWithValue("entityId", 1L);
+		assertThat(feed.get(4)).hasFieldOrPropertyWithValue("userId", 1L);
+		assertThat(feed.get(4)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
+		assertThat(feed.get(4)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
+		assertThat(feed.get(5)).hasFieldOrPropertyWithValue("entityId", 1L);
+		assertThat(feed.get(5)).hasFieldOrPropertyWithValue("userId", 1L);
+		assertThat(feed.get(5)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
+		assertThat(feed.get(5)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("UPDATE"));
+		assertThat(feed.get(6)).hasFieldOrPropertyWithValue("entityId", 1L);
+		assertThat(feed.get(6)).hasFieldOrPropertyWithValue("userId", 1L);
+		assertThat(feed.get(6)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
+		assertThat(feed.get(6)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
 
-    @Test
-    public void getMpaById() { // получение информации о рейтинге фильма по id
-
-        final Integer secondId = 2;
-        final String secondName = "PG";
-
-        assertThat(mpaStorage.getRatingMpaById(secondId))
-                .hasFieldOrPropertyWithValue("id", 2)
-                .hasFieldOrPropertyWithValue("name", secondName);
-    }
-
-    //************************* Тестирование работы сервиса работы с жанрами фильмов *************************
-
-    @Test
-    public void shouldListGenres() { // получение списка всех жанров, отсортированных по возрастанию id
-
-        // получаем список возможных рейтингов
-        List<FilmGenre> listGenres = genreStorage.listFilmGenres();
-
-        // проверяем корректность полученных данных - 6 вариантов
-
-        assertThat(listGenres).asList().hasSize(6);
-
-        // проверяем порядок рейтингов в списке - на первом месте фильм с id 1, на последнем фильм с id 6
-
-        final Integer firstId = 1;
-        final Integer lastId = 6;
-
-        assertThat(listGenres).asList().startsWith(genreStorage.getGenreById(firstId));
-        assertThat(listGenres).asList().endsWith(genreStorage.getGenreById(lastId));
-
-    }
-
-    @Test
-    public void getGenreById() { // получение информации о жанре фильма по id
-
-        final Integer id = 5;
-        final String name5 = "Документальный";
-
-        assertThat(genreStorage.getGenreById(id))
-                .hasFieldOrPropertyWithValue("id", id)
-                .hasFieldOrPropertyWithValue("name", name5);
-    }
-
-    @Test
-    public void testCommonFilmsBetweenUsersWithLikes() {
-
-        userService.addUser(userAlex1);
-        userService.addUser(userEgor2);
-        filmService.addFilm(filmTomAndJerry);
-        userService.addFriend(1L, 2L);
-        filmService.addLike(1, 1L);
-        filmService.addLike(1, 2L);
-        filmService.getCommonFilmsBetweenUsers(1L, 2L);
-
-    }
-    
-
-@Test
-public void testGetUserFeed() {
-	userService.addUser(userAlex1);
-	eventService.addEvent(1L, 2L, "FRIEND", "ADD");
-	eventService.addEvent(1L, 2L, "FRIEND", "REMOVE");
-    eventService.addEvent(1L, 1L, "LIKE", "ADD");
-    eventService.addEvent(1L, 1L, "LIKE", "REMOVE");
-    eventService.addEvent(1L, 1L, "REVIEW", "ADD");
-    eventService.addEvent(1L, 1L, "REVIEW", "UPDATE");
-    eventService.addEvent(1L, 1L, "REVIEW", "REMOVE");
-    List<Event> feed = eventService.listUserEvents(1L);
-    assertThat(feed).asList().hasSize(7);
-    assertThat(feed.get(0)).hasFieldOrPropertyWithValue("entityId", 2L);
-    assertThat(feed.get(0)).hasFieldOrPropertyWithValue("userId", 1L);
-    assertThat(feed.get(0)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
-    assertThat(feed.get(0)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
-    assertThat(feed.get(1)).hasFieldOrPropertyWithValue("entityId", 2L);
-    assertThat(feed.get(1)).hasFieldOrPropertyWithValue("userId", 1L);
-    assertThat(feed.get(1)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("FRIEND"));
-    assertThat(feed.get(1)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
-    assertThat(feed.get(2)).hasFieldOrPropertyWithValue("entityId", 1L);
-    assertThat(feed.get(2)).hasFieldOrPropertyWithValue("userId", 1L);
-    assertThat(feed.get(2)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
-    assertThat(feed.get(2)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
-    assertThat(feed.get(3)).hasFieldOrPropertyWithValue("entityId", 1L);
-    assertThat(feed.get(3)).hasFieldOrPropertyWithValue("userId", 1L);
-    assertThat(feed.get(3)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("LIKE"));
-    assertThat(feed.get(3)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
-    assertThat(feed.get(4)).hasFieldOrPropertyWithValue("entityId", 1L);
-    assertThat(feed.get(4)).hasFieldOrPropertyWithValue("userId", 1L);
-    assertThat(feed.get(4)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
-    assertThat(feed.get(4)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("ADD"));
-    assertThat(feed.get(5)).hasFieldOrPropertyWithValue("entityId", 1L);
-    assertThat(feed.get(5)).hasFieldOrPropertyWithValue("userId", 1L);
-    assertThat(feed.get(5)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
-    assertThat(feed.get(5)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("UPDATE"));
-    assertThat(feed.get(6)).hasFieldOrPropertyWithValue("entityId", 1L);
-    assertThat(feed.get(6)).hasFieldOrPropertyWithValue("userId", 1L);
-    assertThat(feed.get(6)).hasFieldOrPropertyWithValue("eventType", EventType.fromName("REVIEW"));
-    assertThat(feed.get(6)).hasFieldOrPropertyWithValue("operation", OperationType.fromName("REMOVE"));
+	}
 }
-
-
-}
-
-
-
-
-

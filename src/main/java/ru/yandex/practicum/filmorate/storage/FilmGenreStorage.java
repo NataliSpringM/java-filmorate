@@ -1,28 +1,28 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-
 import java.util.List;
 
-import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
 
 /**
- *  получение информации о жанрах фильмов
+ * получение информации о жанрах фильмов
  */
 
 public interface FilmGenreStorage {
 
 	/**
-	 *  получение списка всех жанров фильмов
+	 * получение списка всех жанров фильмов
+	 *
 	 * @return
 	 */
-    List<FilmGenre> listFilmGenres();
+	List<FilmGenre> listFilmGenres();
 
-    /**
-     *  получение жанра по id
-     * @param id
-     * @return
-     */
-    FilmGenre getGenreById(Integer id);
+	/**
+	 * получение жанра по id
+	 *
+	 * @param id
+	 * @return
+	 */
+	FilmGenre getGenreById(Integer id);
 
 }

@@ -1,109 +1,120 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.model.Film;
-
 import java.util.List;
 
-import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Film;
 
 /**
- *  хранение информации о фильмах
+ * хранение информации о фильмах
  */
 
 public interface FilmStorage {
 
 	/**
 	 * добавление информации о фильме
+	 *
 	 * @param film
 	 * @return
 	 */
-    Film addFilm(Film film);
+	Film addFilm(Film film);
 
-    /**
-     *  обновление информации о фильме
-     * @param film
-     * @return
-     */
-    Film updateFilm(Film film);
+	/**
+	 * обновление информации о фильме
+	 *
+	 * @param film
+	 * @return
+	 */
+	Film updateFilm(Film film);
 
-    /**
-     *  получение списка фильмов
-     * @return
-     */
-    List<Film> listFilms();
+	/**
+	 * получение списка фильмов
+	 *
+	 * @return
+	 */
+	List<Film> listFilms();
 
-    /**
-     *  получение фильма по идентификатору
-     * @param id
-     * @return
-     */
-    Film getFilmById(Integer id);
+	/**
+	 * получение фильма по идентификатору
+	 *
+	 * @param id
+	 * @return
+	 */
+	Film getFilmById(Integer id);
 
-    /**
-     *  сохранение новой или обновленной информации о фильме
-     * @param film
-     */
-    void updateFilmData(Film film);
+	/**
+	 * сохранение новой или обновленной информации о фильме
+	 *
+	 * @param film
+	 */
+	void updateFilmData(Film film);
 
-    /**
-     *  получение списка наиболее популярных фильмов с фильтрацией по жанру и году
-     * @param count
-     * @param genreId
-     * @param year
-     * @return
-     */
-    default List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
-        return null;
-    }
+	/**
+	 * получение списка наиболее популярных фильмов с фильтрацией по жанру и году
+	 *
+	 * @param count
+	 * @param genreId
+	 * @param year
+	 * @return
+	 */
 
-    /**
-     *  получение списка фильмов по режиссеру
-     * @param directorId
-     * @return
-     */
-    default List<Film> listFilmsOfDirector(Integer directorId) {
-        return null;
-    }
+	default List<Film> listMostPopularFilms(Integer count, Integer genreId, Integer year) {
+		return null;
+	}
 
-    /**
-     *  поиск по названию или режиссеру
-     * @param substringQuery
-     * @param searchBaseBy
-     * @return
-     */
-    List<Film> listSearchResults(String substringQuery, List<String> searchBaseBy);
+	/**
+	 * получение списка фильмов по режиссеру
+	 *
+	 * @param directorId
+	 * @return
+	 */
+	default List<Film> listFilmsOfDirector(Integer directorId) {
+		return null;
+	}
 
-    /**
-     *  проверка существования id фильма
-     * @param filmId
-     */
-    void checkFilmId(Integer filmId);
+	/**
+	 * поиск по названию или режиссеру
+	 *
+	 * @param substringQuery
+	 * @param searchBaseBy
+	 * @return
+	 */
+	List<Film> listSearchResults(String substringQuery, List<String> searchBaseBy);
 
-    /**
-     *  удаление фильма по id
-     * @param userId
-     * @return
-     */
-    List<Film> getRecommendation(Long userId);
+	/**
+	 * проверка существования id фильма
+	 *
+	 * @param filmId
+	 */
+	void checkFilmId(Integer filmId);
 
-    /**
-     *  удаление фильма по id
-     * @param id
-     * @return
-     */
+	/**
+	 * удаление фильма по id
+	 *
+	 * @param userId
+	 * @return
+	 */
+	List<Film> getRecommendation(Long userId);
+
+	/**
+	 * удаление фильма по id
+	 *
+	 * @param id
+	 * @return
+	 */
 	boolean delete(Integer id);
 
 	/**
-	 *  удаление всех фильмов
+	 * удаление всех фильмов
 	 */
 	void clearAll();
 
-    /**
-     *  получение списка общих фильмов
-     * @param userId
-     * @param friendId
-     * @return
-     */
-    List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId);
+	/**
+	 * получение списка общих фильмов
+	 *
+	 * @param userId
+	 * @param friendId
+	 * @return
+	 */
+	List<Film> getCommonFilmsBetweenUsers(Long userId, Long friendId);
 
 }

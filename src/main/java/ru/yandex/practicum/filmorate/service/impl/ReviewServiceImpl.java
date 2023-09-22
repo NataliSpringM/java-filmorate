@@ -1,17 +1,18 @@
 package ru.yandex.practicum.filmorate.service.impl;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * реализация сервиса для работы с отзывами
@@ -21,123 +22,121 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
-    private static final Integer REVIEW_LIST_SIZE = 10;
-    private final ReviewStorage reviewStorage;
-    private final ReviewLikeStorage reviewLikeStorage;
-    private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
+	private static final Integer REVIEW_LIST_SIZE = 10;
+	private final ReviewStorage reviewStorage;
+	private final ReviewLikeStorage reviewLikeStorage;
+	private final UserStorage userStorage;
+	private final FilmStorage filmStorage;
 
-    /**
-     * добавление отзыва в ReviewStorage
-     */
-    @Override
-    public Review addReview(Review review) {
+	/**
+	 * добавление отзыва в ReviewStorage
+	 */
+	@Override
+	public Review addReview(Review review) {
 
-        userStorage.checkUserId(review.getUserId());
-        filmStorage.checkFilmId(review.getFilmId());
+		userStorage.checkUserId(review.getUserId());
+		filmStorage.checkFilmId(review.getFilmId());
 
-        return reviewStorage.addReview(review);
-    }
+		return reviewStorage.addReview(review);
+	}
 
-    /**
-     *  обновление отзыва в ReviewStorage
-     */
-    @Override
-    public Review updateReview(Review review) {
+	/**
+	 * обновление отзыва в ReviewStorage
+	 */
+	@Override
+	public Review updateReview(Review review) {
 
-        userStorage.checkUserId(review.getUserId());
-        filmStorage.checkFilmId(review.getFilmId());
+		userStorage.checkUserId(review.getUserId());
+		filmStorage.checkFilmId(review.getFilmId());
 
-        return reviewStorage.updateReview(review);
-    }
+		return reviewStorage.updateReview(review);
+	}
 
-    /**
-     *  получение отзыва по идентификатору из ReviewStorage
-     */
-    @Override
-    public Review getReviewById(Integer reviewId) {
+	/**
+	 * получение отзыва по идентификатору из ReviewStorage
+	 */
+	@Override
+	public Review getReviewById(Integer reviewId) {
 
-        return reviewStorage.getReviewById(reviewId);
-    }
+		return reviewStorage.getReviewById(reviewId);
+	}
 
+	/**
+	 * удаление отзыва из ReviewStorage
+	 */
+	@Override
+	public void deleteReview(Integer reviewId) {
 
-    /**
-     *  удаление отзыва из ReviewStorage
-     */
-    @Override
-    public void deleteReview(Integer reviewId) {
+		reviewStorage.deleteReview(reviewId);
 
-        reviewStorage.deleteReview(reviewId);
+	}
 
-    }
+	/**
+	 * получение списка фильмов из ReviewStorage
+	 */
+	@Override
+	public List<Review> listReviews(Integer reviewId, Integer count) {
 
-    /**
-     *  получение списка фильмов из ReviewStorage
-     */
-    @Override
-    public List<Review> listReviews(Integer reviewId, Integer count) {
+		// получение ограничения размера списка или его установка
+		int limit = Optional.ofNullable(count).orElse(REVIEW_LIST_SIZE);
 
-        // получение ограничения размера списка или его установка
-        int limit = Optional.ofNullable(count).orElse(REVIEW_LIST_SIZE);
+		// возвращение списка отзывов определенного размера
+		List<Review> listReviews = reviewStorage.listReviews(reviewId, limit);
 
-        // возвращение списка отзывов определенного размера
-        List<Review> listReviews = reviewStorage.listReviews(reviewId, limit);
+		log.info("Количество отзывов по запросу: {}", listReviews.size());
 
-        log.info("Количество отзывов по запросу: {}", listReviews.size());
+		return listReviews;
+	}
 
-        return listReviews;
-    }
+	/**
+	 * добавляем лайк фильму в ReviewLikeStorage
+	 */
+	@Override
+	public void addLikeToReview(Integer reviewId, Long userId) {
 
-    /**
-     *  добавляем лайк фильму в ReviewLikeStorage
-     */
-    @Override
-    public void addLikeToReview(Integer reviewId, Long userId) {
+		reviewStorage.checkReviewId(reviewId);
+		userStorage.checkUserId(userId);
 
-        reviewStorage.checkReviewId(reviewId);
-        userStorage.checkUserId(userId);
+		reviewLikeStorage.addLikeToReview(reviewId, userId);
+	}
 
-        reviewLikeStorage.addLikeToReview(reviewId, userId);
-    }
+	/**
+	 * добавляем дизлайк фильму в ReviewLikeStorage
+	 */
+	@Override
+	public void addDislikeToReview(Integer reviewId, Long userId) {
 
-    /**
-     *  добавляем дизлайк фильму в ReviewLikeStorage
-     */
-    @Override
-    public void addDislikeToReview(Integer reviewId, Long userId) {
+		reviewStorage.checkReviewId(reviewId);
+		userStorage.checkUserId(userId);
 
-        reviewStorage.checkReviewId(reviewId);
-        userStorage.checkUserId(userId);
+		reviewLikeStorage.addDislikeToReview(reviewId, userId);
 
-        reviewLikeStorage.addDislikeToReview(reviewId, userId);
+	}
 
-    }
+	/**
+	 * удаляем лайк у фильма в ReviewLikeStorage
+	 */
+	@Override
+	public void deleteLikeFromReview(Integer reviewId, Long userId) {
 
-    /**
-     *  удаляем лайк у фильма в ReviewLikeStorage
-     */
-    @Override
-    public void deleteLikeFromReview(Integer reviewId, Long userId) {
+		reviewStorage.checkReviewId(reviewId);
+		userStorage.checkUserId(userId);
 
-        reviewStorage.checkReviewId(reviewId);
-        userStorage.checkUserId(userId);
+		reviewLikeStorage.deleteLikeFromReview(reviewId, userId);
 
-        reviewLikeStorage.deleteLikeFromReview(reviewId, userId);
+	}
 
+	/**
+	 * удаляем дизлайк у фильма в ReviewLikeStorage
+	 */
+	@Override
+	public void deleteDislikeFromReview(Integer reviewId, Long userId) {
 
-    }
+		reviewStorage.checkReviewId(reviewId);
+		userStorage.checkUserId(userId);
 
-    /**
-     *  удаляем дизлайк у фильма в ReviewLikeStorage
-     */
-    @Override
-    public void deleteDislikeFromReview(Integer reviewId, Long userId) {
+		reviewLikeStorage.deleteDislikeFromReview(reviewId, userId);
 
-        reviewStorage.checkReviewId(reviewId);
-        userStorage.checkUserId(userId);
-
-        reviewLikeStorage.deleteDislikeFromReview(reviewId, userId);
-
-    }
+	}
 
 }

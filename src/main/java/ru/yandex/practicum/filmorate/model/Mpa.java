@@ -5,14 +5,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 /**
- *  информация о рейтинге MPA - id, название
+ * информация о рейтинге MPA - id, название
  */
 @Value
 @Builder(toBuilder = true)
 @RequiredArgsConstructor
 public class Mpa {
 
-    Integer id;
-    String name;
+	Integer id;
+	String name;
 
 }

@@ -1,55 +1,59 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.model.User;
-
 import java.util.List;
 
-import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.User;
 
 /**
- *  хранение информации о пользователях
+ * хранение информации о пользователях
  */
 
 public interface UserStorage {
 
 	/**
-	 *  добавление информации о пользователе
+	 * добавление информации о пользователе
+	 *
 	 * @param user
 	 * @return
 	 */
-    User addUser(User user);
+	User addUser(User user);
 
-    /**
-     *  обновление информации о пользователе
-     * @param user
-     * @return
-     */
-    User updateUser(User user);
+	/**
+	 * обновление информации о пользователе
+	 *
+	 * @param user
+	 * @return
+	 */
+	User updateUser(User user);
 
-    /**
-     *  получение списка пользователей
-     * @return
-     */
-    List<User> listUsers();
+	/**
+	 * получение списка пользователей
+	 *
+	 * @return
+	 */
+	List<User> listUsers();
 
-    /**
-     *  получение пользователя по идентификатору
-     * @param id
-     * @return
-     */
-    User getUserById(Long id);
+	/**
+	 * получение пользователя по идентификатору
+	 *
+	 * @param id
+	 * @return
+	 */
+	User getUserById(Long id);
 
-    /**
-     *  сохранение новой или обновленной информации о пользователе
-     * @param user
-     */
-    void updateUserProperties(User user);
+	/**
+	 * сохранение новой или обновленной информации о пользователе
+	 *
+	 * @param user
+	 */
+	void updateUserProperties(User user);
 
-    /**
-     *  проверка существования id пользователя
-     * @param userId
-     */
-    void checkUserId(Long userId);
+	/**
+	 * проверка существования id пользователя
+	 *
+	 * @param userId
+	 */
+	void checkUserId(Long userId);
 
 	void clearAll(); // удаление всех пользователей
 

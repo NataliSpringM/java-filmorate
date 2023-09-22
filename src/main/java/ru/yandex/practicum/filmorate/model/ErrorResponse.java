@@ -5,13 +5,14 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- *  сообщение об ошибке
+ * сообщение об ошибке
  */
+
 @Slf4j
 @Value
 @RequiredArgsConstructor
-public class ErrorResponse { 
+public class ErrorResponse {
 
-    String error;
+	String error;
 
 }

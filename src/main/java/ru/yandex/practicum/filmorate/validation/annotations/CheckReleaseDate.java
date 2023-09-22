@@ -15,11 +15,11 @@ import java.lang.annotation.*;
 @Documented
 @NotNull
 @Constraint(validatedBy = ReleaseDateConstraintValidator.class)
-public @interface CheckReleaseDate { 
-    String message() default "{value.invalid}";
+public @interface CheckReleaseDate {
+	String message() default "{value.invalid}";
 
-    Class<?>[] groups() default {};
+	Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default {};
+	Class<? extends Payload>[] payload() default {};
 
 }

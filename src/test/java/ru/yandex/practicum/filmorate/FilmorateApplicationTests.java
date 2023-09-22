@@ -9,7 +9,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
-
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,1825 +39,1658 @@ import java.util.stream.Stream;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class FilmorateApplicationTests {
 
-    @Autowired
-    private UserController userController;
-    @Autowired
-    private FilmController filmController;
-    @Autowired
-    private FilmStorage filmStorage;
-    @Autowired
-    private UserStorage userStorage;
-    @Autowired
-    private DirectorStorage directorStorage;
-
-    private Validator validator;
+	@Autowired
+	private UserController userController;
+	@Autowired
+	private FilmController filmController;
+	@Autowired
+	private FilmStorage filmStorage;
+	@Autowired
+	private UserStorage userStorage;
+	@Autowired
+	private DirectorStorage directorStorage;
 
-    private Set<Director> directors;
-
-    @BeforeEach
-    void setUp() {
-
-
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-        directors = new HashSet<>();
-        Director first = new Director();
-        first.setId(1);
-        first.setName("Andrew Konchalovsky");
-        directors.add(first);
-
-        Director second = new Director();
-        second.setId(2);
-        second.setName("Nikita Mihalkov");
-        directors.add(second);
-    }
+	private Validator validator;
 
-
-    //************************* Тестирование работы сервиса добавления в друзья *************************
+	private Set<Director> directors;
 
-    @Test
-    public void shouldGetUserByValidId() { //  получаем информацию о пользователе по существующему id
+	@BeforeEach
+	void setUp() {
 
-        // создаем пользователя
+		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+		validator = factory.getValidator();
+		directors = new HashSet<>();
+		Director first = new Director();
+		first.setId(1);
+		first.setName("Andrew Konchalovsky");
+		directors.add(first);
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .friends(new HashSet<>())
-                .build();
+		Director second = new Director();
+		second.setId(2);
+		second.setName("Nikita Mihalkov");
+		directors.add(second);
+	}
 
-        final Long userId = user.getId();
+	// ************************* Тестирование работы сервиса добавления в друзья
+	// *************************
 
-        userController.addUser(user);
-
-        // получаем информацию о пользователе по id
+	@Test
+	public void shouldGetUserByValidId() { // получаем информацию о пользователе по существующему id
 
-        User userFromStorage = userController.getUserById(userId);
+		// создаем пользователя
 
-        // проверяем корректность информации о пользователе
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).friends(new HashSet<>()).build();
 
-        assertEquals(user.getId(), userFromStorage.getId(),
-                "Получена неверная информация о пользователе, не совпадает id");
-        assertEquals(user.getEmail(), userFromStorage.getEmail(),
-                "Получена неверная информация о пользователе, не совпадает email");
-        assertEquals(user.getLogin(), userFromStorage.getLogin(),
-                "Получена неверная информация о пользователе, не совпадает логин");
-        assertEquals(user.getName(), userFromStorage.getName(),
-                "Получена неверная информация о пользователе, не совпадает имя");
-        assertEquals(user.getBirthday(), userFromStorage.getBirthday(),
-                "Получена неверная информация о пользователе, не совпадает дата рождения");
-        assertEquals(user.getFriends(), userFromStorage.getFriends(),
-                "Получена неверная информация о пользователе, не совпадает список друзей");
+		final Long userId = user.getId();
 
-    }
-
-    @Test
-    public void shouldFailGetUserByInvalidId() { //  получаем информацию о пользователе по несуществующему id
-
-        final Long nonExistentUserId = -1L;
-        // проверяем выброшенное исключение при попытке получить информацию о пользователе с несуществующим id
-
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> userController.getUserById(nonExistentUserId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
-
-    }
+		userController.addUser(user);
 
+		// получаем информацию о пользователе по id
 
-    @Test
-    public void shouldAddFriendWithValidInfo() { //  добавление в друзья пользователя с существующими id
+		User userFromStorage = userController.getUserById(userId);
 
-        // создаем пользователя и двух друзей
+		// проверяем корректность информации о пользователе
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		assertEquals(user.getId(), userFromStorage.getId(),
+				"Получена неверная информация о пользователе, не совпадает id");
+		assertEquals(user.getEmail(), userFromStorage.getEmail(),
+				"Получена неверная информация о пользователе, не совпадает email");
+		assertEquals(user.getLogin(), userFromStorage.getLogin(),
+				"Получена неверная информация о пользователе, не совпадает логин");
+		assertEquals(user.getName(), userFromStorage.getName(),
+				"Получена неверная информация о пользователе, не совпадает имя");
+		assertEquals(user.getBirthday(), userFromStorage.getBirthday(),
+				"Получена неверная информация о пользователе, не совпадает дата рождения");
+		assertEquals(user.getFriends(), userFromStorage.getFriends(),
+				"Получена неверная информация о пользователе, не совпадает список друзей");
 
-        User friend = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+	}
 
-        User friend2 = User.builder()
-                .id(3L)
-                .email("Olga@yandex.ru")
-                .login("olga")
-                .name("OLga")
-                .birthday(LocalDate.of(2005, 10, 12))
-                .build();
+	@Test
+	public void shouldFailGetUserByInvalidId() { // получаем информацию о пользователе по несуществующему id
 
-        final Long userId = user.getId();
-        final Long friendId = friend.getId();
-        final Long friend2Id = friend2.getId();
+		final Long nonExistentUserId = -1L;
+		// проверяем выброшенное исключение при попытке получить информацию о
+		// пользователе с несуществующим id
 
-        userController.addUser(user);
-        userController.addUser(friend);
-        userController.addUser(friend2);
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> userController.getUserById(nonExistentUserId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
-        // добавляем друзей
+	}
 
-        userController.addFriend(userId, friendId);
-        userController.addFriend(userId, friend2Id);
+	@Test
+	public void shouldAddFriendWithValidInfo() { // добавление в друзья пользователя с существующими id
 
-        // получаем списки друзей пользователя и друга, информацию о первом в списке пользователе
+		// создаем пользователя и двух друзей
 
-        List<User> friendsOfUser = userStorage.getUserById(userId).getFriends().stream()
-                .map(userStorage::getUserById).collect(Collectors.toList());
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
+		User friend = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        User friendFromList = friendsOfUser.get(0);
+		User friend2 = User.builder().id(3L).email("Olga@yandex.ru").login("olga").name("OLga")
+				.birthday(LocalDate.of(2005, 10, 12)).build();
 
-        // проверяем корректность сохраненной в списках друзей информации
+		final Long userId = user.getId();
+		final Long friendId = friend.getId();
+		final Long friend2Id = friend2.getId();
 
-        assertEquals(userStorage.getUserById(userId).getFriends().size(), 2,
-                "Пользователи с валидными данными не добавлены в друзья");
-        assertEquals(friend.getId(), friendFromList.getId(),
-                "Пользователь не попал в список друзей после добавления, не совпадает id");
-        assertEquals(friend.getEmail(), friendFromList.getEmail(),
-                "Пользователь не попал в список друзей после добавления, не совпадает email");
-        assertEquals(friend.getLogin(), friendFromList.getLogin(),
-                "Пользователь не попал в список друзей после добавления, не совпадает логин");
-        assertEquals(friend.getName(), friendFromList.getName(),
-                "Пользователь не попал в список друзей после добавления, не совпадает имя");
-        assertEquals(friend.getBirthday(), friendFromList.getBirthday(),
-                "Пользователь не попал в список друзей после добавления, не совпадает дата рождения");
+		userController.addUser(user);
+		userController.addUser(friend);
+		userController.addUser(friend2);
 
-    }
+		// добавляем друзей
 
-    @Test
-    public void shouldFailAddFriendDoubleWithValidInfo() { //
-        // добавление в друзья пользователя с существующими id дважды
-        // создаем пользователей
+		userController.addFriend(userId, friendId);
+		userController.addFriend(userId, friend2Id);
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		// получаем списки друзей пользователя и друга, информацию о первом в списке
+		// пользователе
 
+		List<User> friendsOfUser = userStorage.getUserById(userId).getFriends().stream().map(userStorage::getUserById)
+				.collect(Collectors.toList());
 
-        User friend = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+		User friendFromList = friendsOfUser.get(0);
 
-        final Long userId = user.getId();
-        final Long friendId = friend.getId();
+		// проверяем корректность сохраненной в списках друзей информации
 
-        userController.addUser(user);
-        userController.addUser(friend);
+		assertEquals(userStorage.getUserById(userId).getFriends().size(), 2,
+				"Пользователи с валидными данными не добавлены в друзья");
+		assertEquals(friend.getId(), friendFromList.getId(),
+				"Пользователь не попал в список друзей после добавления, не совпадает id");
+		assertEquals(friend.getEmail(), friendFromList.getEmail(),
+				"Пользователь не попал в список друзей после добавления, не совпадает email");
+		assertEquals(friend.getLogin(), friendFromList.getLogin(),
+				"Пользователь не попал в список друзей после добавления, не совпадает логин");
+		assertEquals(friend.getName(), friendFromList.getName(),
+				"Пользователь не попал в список друзей после добавления, не совпадает имя");
+		assertEquals(friend.getBirthday(), friendFromList.getBirthday(),
+				"Пользователь не попал в список друзей после добавления, не совпадает дата рождения");
 
-        //добавляем друга
+	}
 
-        userController.addUser(friend); // добавляем друга повторно
+	@Test
+	public void shouldFailAddFriendDoubleWithValidInfo() { //
+		// добавление в друзья пользователя с существующими id дважды
+		// создаем пользователей
 
-        userController.addFriend(userId, friendId);
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        // проверяем наличие одного пользователя в списке друзей и отсутствие дубля
+		User friend = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        assertEquals(userStorage.getUserById(userId).getFriends().size(), 1,
-                "Пользователь с валидными данными добавлен в друзья дважды");
+		final Long userId = user.getId();
+		final Long friendId = friend.getId();
 
-    }
+		userController.addUser(user);
+		userController.addUser(friend);
 
+		// добавляем друга
 
-    @Test
-    public void shouldFailAddFriendWithFriendNonExistentId() {
-        //  добавление в друзья пользователя с несуществующим id
+		userController.addUser(friend); // добавляем друга повторно
 
-        // создаем пользователей
+		userController.addFriend(userId, friendId);
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		// проверяем наличие одного пользователя в списке друзей и отсутствие дубля
 
+		assertEquals(userStorage.getUserById(userId).getFriends().size(), 1,
+				"Пользователь с валидными данными добавлен в друзья дважды");
 
-        final Long userId = user.getId();
-        final Long friendNonExistentId = 9999L;
+	}
 
-        userController.addUser(user);
+	@Test
+	public void shouldFailAddFriendWithFriendNonExistentId() {
+		// добавление в друзья пользователя с несуществующим id
 
-        // проверяем выброшенное исключение при попытке добавить друга с несуществующим id
+		// создаем пользователей
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> userController.addFriend(userId, friendNonExistentId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: 9999 не найден", e.getMessage());
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-    }
+		final Long userId = user.getId();
+		final Long friendNonExistentId = 9999L;
 
-    @Test
-    public void shouldFailAddFriendByUserWithNonExistentId() {
-        //  добавление в друзья пользователю с несуществующим id
+		userController.addUser(user);
 
-        // создаем друга
+		// проверяем выброшенное исключение при попытке добавить друга с несуществующим
+		// id
 
-        User friend = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> userController.addFriend(userId, friendNonExistentId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: 9999 не найден", e.getMessage());
 
+	}
 
-        final Long userNonExistentId = 9999L;
-        final Long friendId = friend.getId();
+	@Test
+	public void shouldFailAddFriendByUserWithNonExistentId() {
+		// добавление в друзья пользователю с несуществующим id
 
-        userController.addUser(friend);
+		// создаем друга
 
-        // проверяем выброшенное исключение при попытке создать друга пользователю с несуществующим id
+		User friend = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> userController.addFriend(userNonExistentId, friendId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: 9999 не найден", e.getMessage());
+		final Long userNonExistentId = 9999L;
+		final Long friendId = friend.getId();
 
+		userController.addUser(friend);
 
-    }
+		// проверяем выброшенное исключение при попытке создать друга пользователю с
+		// несуществующим id
 
-    @Test
-    public void shouldDeleteFriendWithValidId() { //  удаление из друзей пользователя с валидными данными
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> userController.addFriend(userNonExistentId, friendId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: 9999 не найден", e.getMessage());
 
-        // создаем пользователей
+	}
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+	@Test
+	public void shouldDeleteFriendWithValidId() { // удаление из друзей пользователя с валидными данными
 
+		// создаем пользователей
 
-        User friend = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        final Long userId = user.getId();
-        final Long friendId = friend.getId();
+		User friend = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        userController.addUser(user);
-        userController.addUser(friend);
+		final Long userId = user.getId();
+		final Long friendId = friend.getId();
 
-        //добавляем друга
-        userController.addFriend(userId, friendId);
+		userController.addUser(user);
+		userController.addUser(friend);
 
-        List<User> friendsOfUser = userStorage.getUserById(userId).getFriends().stream()
-                .map(userStorage::getUserById).collect(Collectors.toList());
+		// добавляем друга
+		userController.addFriend(userId, friendId);
 
-        User friendFromList = friendsOfUser.get(0);
+		List<User> friendsOfUser = userStorage.getUserById(userId).getFriends().stream().map(userStorage::getUserById)
+				.collect(Collectors.toList());
 
+		User friendFromList = friendsOfUser.get(0);
 
-        // проверяем наличие пользователя в списке друзей
+		// проверяем наличие пользователя в списке друзей
 
-        assertEquals(userStorage.getUserById(userId).getFriends().size(), 1,
-                "Пользователь с валидными данными не добавлен в друзья");
-        assertEquals(friend.getId(), friendFromList.getId(),
-                "Пользователь не попал в список друзей после добавления, не совпадает id");
+		assertEquals(userStorage.getUserById(userId).getFriends().size(), 1,
+				"Пользователь с валидными данными не добавлен в друзья");
+		assertEquals(friend.getId(), friendFromList.getId(),
+				"Пользователь не попал в список друзей после добавления, не совпадает id");
 
+		// удаляем друга
 
-        // удаляем друга
+		userController.deleteFriend(userId, friendId);
+		assertEquals(userStorage.getUserById(userId).getFriends().size(), 0,
+				"Пользователь с валидными данными не удален из друзей");
+		assertTrue(userStorage.getUserById(userId).getFriends().isEmpty(), "Cписок друзей не пуст после удаления");
 
-        userController.deleteFriend(userId, friendId);
-        assertEquals(userStorage.getUserById(userId).getFriends().size(), 0,
-                "Пользователь с валидными данными не удален из друзей");
-        assertTrue(userStorage.getUserById(userId).getFriends().isEmpty(),
-                "Cписок друзей не пуст после удаления");
+	}
 
+	@Test
+	public void shouldFailDeleteFriendWithNonExistentId() { // удаление из друзей пользователя с существующими id
 
-    }
+		// создаем пользователей
 
-    @Test
-    public void shouldFailDeleteFriendWithNonExistentId() { //  удаление из друзей пользователя с существующими id
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        // создаем пользователей
+		User friend = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		final Long userId = user.getId();
+		final Long friendId = friend.getId();
+		final Long nonExistentFriendId = -1L;
 
+		userController.addUser(user);
+		userController.addUser(friend);
 
-        User friend = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+		// добавляем друга с существующим id
 
-        final Long userId = user.getId();
-        final Long friendId = friend.getId();
-        final Long nonExistentFriendId = -1L;
+		userController.addFriend(userId, friendId);
 
-        userController.addUser(user);
-        userController.addUser(friend);
+		// удаляем друга с несуществующим id, проверяем выброшенное исключение
 
-        //добавляем друга с существующим id
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> userController.deleteFriend(userId, nonExistentFriendId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
-        userController.addFriend(userId, friendId);
+		// проверяем отсутствие изменений в списке друзей
 
-        // удаляем друга с несуществующим id, проверяем выброшенное исключение
+		assertEquals(userStorage.getUserById(userId).getFriends().size(), 1,
+				"Изменился размер списка друзей после некорректного удаления");
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> userController.deleteFriend(userId, nonExistentFriendId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
+	}
 
-        // проверяем отсутствие изменений в списке друзей
+	@Test
+	public void shouldFailDeleteFriendByUserWithNonExistentId() {
+		// удаление из друзей пользователя с существующими id
 
-        assertEquals(userStorage.getUserById(userId).getFriends().size(), 1,
-                "Изменился размер списка друзей после некорректного удаления");
+		// создаем пользователей
 
-    }
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-    @Test
-    public void shouldFailDeleteFriendByUserWithNonExistentId() {
-        //  удаление из друзей пользователя с существующими id
+		User friend = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        // создаем пользователей
+		final Long userId = user.getId();
+		final Long friendId = friend.getId();
+		final Long nonExistentUserId = -1L;
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		userController.addUser(user);
+		userController.addUser(friend);
 
+		// добавляем друга с существующим id
 
-        User friend = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+		userController.addFriend(userId, friendId);
 
-        final Long userId = user.getId();
-        final Long friendId = friend.getId();
-        final Long nonExistentUserId = -1L;
+		// удаляем друга с несуществующим айди, проверяем выброшенное исключение
 
-        userController.addUser(user);
-        userController.addUser(friend);
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> userController.deleteFriend(nonExistentUserId, friendId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
-        //добавляем друга с существующим id
+	}
 
-        userController.addFriend(userId, friendId);
+	@Test
+	public void shouldGetNotEmptyFriendList() { // получение непустого списка друзей у существующего пользователя
 
-        // удаляем друга с несуществующим айди, проверяем выброшенное исключение
+		// создаем пользователя и двух друзей
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> userController.deleteFriend(nonExistentUserId, friendId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-    }
+		User friend = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-    @Test
-    public void shouldGetNotEmptyFriendList() { // получение непустого списка друзей у существующего пользователя
+		User friend2 = User.builder().id(3L).email("Olga@yandex.ru").login("olga").name("OLga")
+				.birthday(LocalDate.of(2005, 10, 12)).build();
 
-        // создаем пользователя и двух друзей
+		final Long userId = user.getId();
+		final Long friend1Id = friend.getId();
+		final Long friend2Id = friend2.getId();
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		userController.addUser(user);
+		userController.addUser(friend);
+		userController.addUser(friend2);
 
-        User friend = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+		// добавляем друзей
 
-        User friend2 = User.builder()
-                .id(3L)
-                .email("Olga@yandex.ru")
-                .login("olga")
-                .name("OLga")
-                .birthday(LocalDate.of(2005, 10, 12))
-                .build();
+		userController.addFriend(userId, friend1Id);
+		userController.addFriend(userId, friend2Id);
 
-        final Long userId = user.getId();
-        final Long friend1Id = friend.getId();
-        final Long friend2Id = friend2.getId();
+		// получаем список друзей пользователя и друга, информацию о втором в списке
+		// пользователе
 
-        userController.addUser(user);
-        userController.addUser(friend);
-        userController.addUser(friend2);
+		List<User> friendsOfUser = userController.listUserFriends(userId);
 
-        // добавляем друзей
+		User friendFromList = friendsOfUser.get(1);
 
-        userController.addFriend(userId, friend1Id);
-        userController.addFriend(userId, friend2Id);
+		// проверяем корректность полученного списка друзей
 
-        // получаем список друзей пользователя и друга, информацию о втором в списке пользователе
+		assertEquals(friendsOfUser.size(), 2, "Получен cписок друзей неверного размера");
 
-        List<User> friendsOfUser = userController.listUserFriends(userId);
+		assertEquals(friend2.getId(), friendFromList.getId(),
+				"Неверная информация о втором в списке друге, не совпадает id");
+		assertEquals(friend2.getEmail(), friendFromList.getEmail(),
+				"Неверная информация о втором в списке друге, не совпадает email");
+		assertEquals(friend2.getLogin(), friendFromList.getLogin(),
+				"Неверная информация о втором в списке друге, не совпадает логин");
+		assertEquals(friend2.getName(), friendFromList.getName(),
+				"Неверная информация о втором в списке друге, не совпадает имя");
+		assertEquals(friend2.getBirthday(), friendFromList.getBirthday(),
+				"Неверная информация о втором в списке друге, не совпадает дата рождения");
+		assertEquals(userController.listUserFriends(friend2Id).size(), 0,
+				"Неверная информация о втором в списке друге, неверный размер списка друзей");
 
-        User friendFromList = friendsOfUser.get(1);
+	}
 
-        // проверяем корректность полученного списка друзей
+	@Test
+	public void shouldFailGetFriendListByInvalidId() { // получение списка друзей у несуществующего пользователя
 
-        assertEquals(friendsOfUser.size(), 2,
-                "Получен cписок друзей неверного размера");
+		// проверяем выброшенное исключение при попытке создать друга пользователю с
+		// несуществующим id
 
-        assertEquals(friend2.getId(), friendFromList.getId(),
-                "Неверная информация о втором в списке друге, не совпадает id");
-        assertEquals(friend2.getEmail(), friendFromList.getEmail(),
-                "Неверная информация о втором в списке друге, не совпадает email");
-        assertEquals(friend2.getLogin(), friendFromList.getLogin(),
-                "Неверная информация о втором в списке друге, не совпадает логин");
-        assertEquals(friend2.getName(), friendFromList.getName(),
-                "Неверная информация о втором в списке друге, не совпадает имя");
-        assertEquals(friend2.getBirthday(), friendFromList.getBirthday(),
-                "Неверная информация о втором в списке друге, не совпадает дата рождения");
-        assertEquals(userController.listUserFriends(friend2Id).size(), 0,
-                "Неверная информация о втором в списке друге, неверный размер списка друзей");
+		final Long userNonExistentId = -1L;
 
-    }
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> userController.listUserFriends(userNonExistentId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
-    @Test
-    public void shouldFailGetFriendListByInvalidId() { // получение списка друзей у несуществующего пользователя
+	}
 
-        // проверяем выброшенное исключение при попытке создать друга пользователю с несуществующим id
+	@Test
+	public void shouldGetEmptyFriendList() { // получение пустого списка друзей у существующего пользователя
 
-        final Long userNonExistentId = -1L;
+		// создаем пользователя
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> userController.listUserFriends(userNonExistentId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-    }
+		final Long userId = user.getId();
 
-    @Test
-    public void shouldGetEmptyFriendList() { // получение пустого списка друзей у существующего пользователя
+		userController.addUser(user);
 
-        // создаем пользователя
+		// получаем список друзей пользователя
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		List<User> friendsOfUser = userController.listUserFriends(userId);
 
-        final Long userId = user.getId();
+		// проверяем корректность полученного списка друзей
 
-        userController.addUser(user);
+		assertEquals(friendsOfUser.size(), 0, "Получен cписок друзей неверного размера");
+		assertTrue(friendsOfUser.isEmpty());
 
-        // получаем список друзей пользователя
+	}
 
-        List<User> friendsOfUser = userController.listUserFriends(userId);
+	@Test
+	public void shouldGetNotEmptyListMutualFriendsWithValidInfo() { // получение непустого списка общих друзей
 
-        // проверяем корректность полученного списка друзей
+		// создаем пользователя и трех его друзей
 
-        assertEquals(friendsOfUser.size(), 0,
-                "Получен cписок друзей неверного размера");
-        assertTrue(friendsOfUser.isEmpty());
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-    }
+		User friend = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-    @Test
-    public void shouldGetNotEmptyListMutualFriendsWithValidInfo() { //  получение непустого списка общих друзей
+		User friend2 = User.builder().id(3L).email("Olga@yandex.ru").login("olga").name("OLga")
+				.birthday(LocalDate.of(2005, 10, 12)).build();
 
-        // создаем пользователя и трех его друзей
+		User friend3 = User.builder().id(4L).email("Ivan@yandex.ru").login("ivan").name("Ivan")
+				.birthday(LocalDate.of(1998, 5, 2)).build();
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		final Long userId = user.getId();
+		final Long friend1Id = friend.getId();
+		final Long friend2Id = friend2.getId();
+		final Long friend3Id = friend3.getId();
 
-        User friend = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+		userController.addUser(user);
+		userController.addUser(friend);
+		userController.addUser(friend2);
+		userController.addUser(friend3);
 
-        User friend2 = User.builder()
-                .id(3L)
-                .email("Olga@yandex.ru")
-                .login("olga")
-                .name("OLga")
-                .birthday(LocalDate.of(2005, 10, 12))
-                .build();
+		// добавляем друзей с id 2,3,4 пользователю
 
-        User friend3 = User.builder()
-                .id(4L)
-                .email("Ivan@yandex.ru")
-                .login("ivan")
-                .name("Ivan")
-                .birthday(LocalDate.of(1998, 5, 2))
-                .build();
+		userController.addFriend(userId, friend1Id);
+		userController.addFriend(userId, friend2Id);
+		userController.addFriend(userId, friend3Id);
 
+		// добавляем друзей c id 3,4 другу с id 2
 
-        final Long userId = user.getId();
-        final Long friend1Id = friend.getId();
-        final Long friend2Id = friend2.getId();
-        final Long friend3Id = friend3.getId();
+		userController.addFriend(friend1Id, friend2Id);
+		userController.addFriend(friend1Id, friend3Id);
 
-        userController.addUser(user);
-        userController.addUser(friend);
-        userController.addUser(friend2);
-        userController.addUser(friend3);
+		// получаем список общих друзей у пользователя и друга с id 2
 
-        // добавляем друзей с id 2,3,4 пользователю
+		List<User> mutualFriends = userController.listCommonFriends(userId, friend1Id);
+		List<User> mutualFriends2 = userController.listCommonFriends(friend1Id, userId);
 
-        userController.addFriend(userId, friend1Id);
-        userController.addFriend(userId, friend2Id);
-        userController.addFriend(userId, friend3Id);
+		// получаем список общих друзей у друга с id 4 и друга с id 2
 
-        // добавляем друзей c id 3,4 другу с id 2
+		List<User> mutualFriends3 = userController.listCommonFriends(friend3Id, friend1Id);
 
-        userController.addFriend(friend1Id, friend2Id);
-        userController.addFriend(friend1Id, friend3Id);
+		// проверяем корректность списков общих друзей
 
-        // получаем список общих друзей у пользователя и друга с id 2
+		assertEquals(mutualFriends.size(), 2, "Неверный размер списка общих друзей у пользователя");
+		assertEquals(mutualFriends2.size(), 2, "Неверный размер списка общих друзей у друга пользователя");
+		assertEquals(mutualFriends3.size(), 0, "Неверный размер списка общих друзей у друзей пользователя");
 
-        List<User> mutualFriends = userController.listCommonFriends(userId, friend1Id);
-        List<User> mutualFriends2 = userController.listCommonFriends(friend1Id, userId);
+	}
 
-        // получаем список общих друзей у друга с id 4 и друга с id 2
+	@Test
+	public void shouldGetEmptyMutualFriendWithValidInfo() { // получение пустого списка общих друзей
 
-        List<User> mutualFriends3 = userController.listCommonFriends(friend3Id, friend1Id);
+		// создаем двух пользователей
 
-        // проверяем корректность списков общих друзей
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        assertEquals(mutualFriends.size(), 2,
-                "Неверный размер списка общих друзей у пользователя");
-        assertEquals(mutualFriends2.size(), 2,
-                "Неверный размер списка общих друзей у друга пользователя");
-        assertEquals(mutualFriends3.size(), 0,
-                "Неверный размер списка общих друзей у друзей пользователя");
+		User user2 = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-    }
+		final Long userId = user.getId();
+		final Long user2Id = user2.getId();
 
-    @Test
-    public void shouldGetEmptyMutualFriendWithValidInfo() { //  получение пустого списка общих друзей
+		userController.addUser(user);
+		userController.addUser(user2);
 
-        // создаем двух пользователей
+		// получаем список общих друзей пользователей
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		List<User> mutualFriends = userController.listCommonFriends(userId, user2Id);
 
-        User user2 = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+		// проверяем корректность списков общих друзей
 
-        final Long userId = user.getId();
-        final Long user2Id = user2.getId();
+		assertEquals(mutualFriends.size(), 0, "Неверный размер списка общих друзей");
+		assertTrue(mutualFriends.isEmpty());
+	}
 
-        userController.addUser(user);
-        userController.addUser(user2);
+	@Test
+	public void shouldFailGetMutualFriendListByInvalidId() {
+		// получение списка общих друзей у несуществующего пользователя
 
-        // получаем список общих друзей пользователей
+		User user2 = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        List<User> mutualFriends = userController.listCommonFriends(userId, user2Id);
+		// проверяем выброшенное исключение при попытке получить список общих друзей
 
-        // проверяем корректность списков общих друзей
+		final Long userNonExistentId = -1L;
+		final Long user2Id = user2.getId();
 
-        assertEquals(mutualFriends.size(), 0,
-                "Неверный размер списка общих друзей");
-        assertTrue(mutualFriends.isEmpty());
-    }
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> userController.listCommonFriends(userNonExistentId, user2Id),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
-    @Test
-    public void shouldFailGetMutualFriendListByInvalidId() {
-        // получение списка общих друзей у несуществующего пользователя
+	}
 
-        User user2 = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+	@Test
+	public void shouldFailGetMutualFriendListByInvalidIdOfOtherUser() {
+		// получение списка общих друзей с несуществующим пользователем
 
-        // проверяем выброшенное исключение при попытке получить список общих друзей
+		User user = User.builder().id(1L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        final Long userNonExistentId = -1L;
-        final Long user2Id = user2.getId();
+		userController.addUser(user);
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> userController.listCommonFriends(userNonExistentId, user2Id),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
+		// проверяем выброшенное исключение при попытке получить список общих друзей
 
-    }
+		final Long userNonExistentId = -1L;
+		final Long userId = user.getId();
 
-    @Test
-    public void shouldFailGetMutualFriendListByInvalidIdOfOtherUser() {
-        // получение списка общих друзей с несуществующим пользователем
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> userController.listCommonFriends(userId, userNonExistentId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+	}
 
-        userController.addUser(user);
+	// ************************* Тестирование работы сервиса по определению рейтинга
+	// фильмов ***************
 
-        // проверяем выброшенное исключение при попытке получить список общих друзей
+	@Test
+	public void shouldGetFilmByValidId() { // получаем информацию о фильме по существующему id
 
-        final Long userNonExistentId = -1L;
-        final Long userId = user.getId();
+		// создаем фильм
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> userController.listCommonFriends(userId, userNonExistentId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
+		Film film = Film.builder().id(1).name("All hate Cris").description("Good comedy")
+				.releaseDate(LocalDate.of(2000, 10, 10)).duration(90).likes(100L).mpa(new Mpa(4, null)).build();
 
-    }
+		final Integer filmId = film.getId();
 
-    //************************* Тестирование работы сервиса по определению рейтинга фильмов ***************
+		filmController.addFilm(film);
 
+		filmController.getFilmById(filmId);
 
-    @Test
-    public void shouldGetFilmByValidId() { //  получаем информацию о фильме по существующему id
+		// получаем информацию о фильме по id
 
-        // создаем фильм
+		Film filmFromStorage = filmController.getFilmById(filmId);
 
-        Film film = Film.builder()
-                .id(1)
-                .name("All hate Cris")
-                .description("Good comedy")
-                .releaseDate(LocalDate.of(2000, 10, 10))
-                .duration(90)
-                .likes(100L)
-                .mpa(new Mpa(4, null))
-                .build();
+		// проверяем корректность информации о фильме
 
-        final Integer filmId = film.getId();
+		assertEquals(film.getId(), filmFromStorage.getId(), "Получена неверная информация о фильме, не совпадает id");
+		assertEquals(film.getName(), filmFromStorage.getName(),
+				"Получена неверная информация о фильме,, не совпадает название фильма");
+		assertEquals(film.getDescription(), filmFromStorage.getDescription(),
+				"Получена неверная информация о фильме, не совпадает описание фильма");
+		assertEquals(film.getReleaseDate(), filmFromStorage.getReleaseDate(),
+				"Получена неверная информация о фильме, не совпадает дата выхода фильма");
+		assertEquals(film.getDuration(), filmFromStorage.getDuration(),
+				"Получена неверная информация о фильме, не совпадает продолжительность фильма");
 
-        filmController.addFilm(film);
+	}
 
-        filmController.getFilmById(filmId);
+	@Test
+	public void shouldFailGetFilmByInvalidId() { // получаем информацию о фильме по несуществующему id
 
-        // получаем информацию о фильме по id
+		// проверяем выброшенное исключение при попытке получить информацию о фильме с
+		// несуществующим id
 
-        Film filmFromStorage = filmController.getFilmById(filmId);
+		final Integer nonExistentFilmId = -1;
 
-        // проверяем корректность информации о фильме
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> filmController.getFilmById(nonExistentFilmId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Фильм с id: -1 не найден", e.getMessage());
 
-        assertEquals(film.getId(), filmFromStorage.getId(),
-                "Получена неверная информация о фильме, не совпадает id");
-        assertEquals(film.getName(), filmFromStorage.getName(),
-                "Получена неверная информация о фильме,, не совпадает название фильма");
-        assertEquals(film.getDescription(), filmFromStorage.getDescription(),
-                "Получена неверная информация о фильме, не совпадает описание фильма");
-        assertEquals(film.getReleaseDate(), filmFromStorage.getReleaseDate(),
-                "Получена неверная информация о фильме, не совпадает дата выхода фильма");
-        assertEquals(film.getDuration(), filmFromStorage.getDuration(),
-                "Получена неверная информация о фильме, не совпадает продолжительность фильма");
+	}
 
-    }
+	@Test
+	@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+	public void shouldAddLikeWithValidId() { // существующие пользователи ставит лайк фильму с существующим id
+		// создаем двух пользователей и фильм
 
-    @Test
-    public void shouldFailGetFilmByInvalidId() { //  получаем информацию о фильме по несуществующему id
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        // проверяем выброшенное исключение при попытке получить информацию о фильме с несуществующим id
+		User user2 = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        final Integer nonExistentFilmId = -1;
+		Film film = Film.builder().id(1).name("All hate Cris").description("Good comedy")
+				.releaseDate(LocalDate.of(2000, 10, 10)).duration(90).likes(0L).mpa(new Mpa(3, null)).build();
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> filmController.getFilmById(nonExistentFilmId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Фильм с id: -1 не найден", e.getMessage());
+		final Long userId = user.getId();
+		final Long user2Id = user2.getId();
+		final Integer filmId = film.getId();
 
-    }
+		userController.addUser(user);
+		userController.addUser(user2);
+		filmController.addFilm(film);
 
-    @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    public void shouldAddLikeWithValidId() { //  существующие пользователи ставит лайк фильму с существующим id
-        // создаем двух пользователей и фильм
+		// ставим лайки
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		filmController.addLike(filmId, userId);
+		filmController.addLike(filmId, user2Id);
 
-        User user2 = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+		// проверяем количество лайков
 
+		assertEquals(filmStorage.getFilmById(filmId).getLikes(), 2, "Количество лайков не увеличилось");
 
-        Film film = Film.builder()
-                .id(1)
-                .name("All hate Cris")
-                .description("Good comedy")
-                .releaseDate(LocalDate.of(2000, 10, 10))
-                .duration(90)
-                .likes(0L)
-                .mpa(new Mpa(3, null))
-                .build();
+	}
 
-        final Long userId = user.getId();
-        final Long user2Id = user2.getId();
-        final Integer filmId = film.getId();
+	@Test
+	public void shouldFailAddLikeWithSameUserId() { // пользователь повторно ставит лайк фильму
 
-        userController.addUser(user);
-        userController.addUser(user2);
-        filmController.addFilm(film);
+		// создаем пользователя и фильм
 
-        // ставим лайки
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        filmController.addLike(filmId, userId);
-        filmController.addLike(filmId, user2Id);
+		Film film = Film.builder().id(1).name("All hate Cris").description("Good comedy")
+				.releaseDate(LocalDate.of(2000, 10, 10)).duration(90).mpa(new Mpa(1, null)).build();
 
-        // проверяем количество лайков
+		final Long userId = user.getId();
+		final Integer filmId = film.getId();
 
-        assertEquals(filmStorage.getFilmById(filmId).getLikes(), 2,
-                "Количество лайков не увеличилось");
+		userController.addUser(user);
+		filmController.addFilm(film);
 
-    }
+		// ставим лайк
+		filmController.addLike(filmId, userId);
+		// повторно ставим лайк
+		filmController.addLike(filmId, userId);
 
-    @Test
-    public void shouldFailAddLikeWithSameUserId() { //  пользователь повторно ставит лайк фильму
+		final Long likes = 1L;
 
-        // создаем пользователя и фильм
+		assertEquals(filmStorage.getFilmById(filmId).getLikes(), likes, "Количество лайков увеличилось");
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+	}
 
-        Film film = Film.builder()
-                .id(1)
-                .name("All hate Cris")
-                .description("Good comedy")
-                .releaseDate(LocalDate.of(2000, 10, 10))
-                .duration(90)
-                .mpa(new Mpa(1, null))
-                .build();
+	@Test
+	public void shouldFailAddLikeByUserWithInvalidId() { // ставим лайк фильму от пользователя с несуществующим id
 
-        final Long userId = user.getId();
-        final Integer filmId = film.getId();
+		// создаем фильм
 
-        userController.addUser(user);
-        filmController.addFilm(film);
+		Film film = Film.builder().id(1).name("All hate Cris").description("Good comedy")
+				.releaseDate(LocalDate.of(2000, 10, 10)).duration(90).mpa(new Mpa(1, null)).build();
 
-        // ставим лайк
-        filmController.addLike(filmId, userId);
-        // повторно ставим лайк
-        filmController.addLike(filmId, userId);
+		final Integer filmId = film.getId();
+		final Long nonExistentUserId = -1L;
 
-        final Long likes = 1L;
+		filmController.addFilm(film);
 
-        assertEquals(filmStorage.getFilmById(filmId).getLikes(), likes,
-                "Количество лайков увеличилось");
+		// проверяем выброшенное исключение при попытке поставить лайк от пользователя с
+		// несуществующим id
 
-    }
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> filmController.addLike(filmId, nonExistentUserId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
-    @Test
-    public void shouldFailAddLikeByUserWithInvalidId() { // ставим лайк фильму от пользователя с несуществующим id
+	}
 
-        // создаем фильм
+	@Test
+	public void shouldFailAddLikeFilmWithInvalidId() { // ставим лайк фильму с несуществующим id
 
-        Film film = Film.builder()
-                .id(1)
-                .name("All hate Cris")
-                .description("Good comedy")
-                .releaseDate(LocalDate.of(2000, 10, 10))
-                .duration(90)
-                .mpa(new Mpa(1, null))
-                .build();
+		// создаем пользователя
 
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        final Integer filmId = film.getId();
-        final Long nonExistentUserId = -1L;
+		final Integer nonExistentFilmId = -1;
+		final Long userId = user.getId();
 
-        filmController.addFilm(film);
+		userController.addUser(user);
 
-        // проверяем выброшенное исключение при попытке поставить лайк от пользователя с несуществующим id
+		// проверяем выброшенное исключение при попытке поставить лайк фильму с
+		// несуществующим id
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> filmController.addLike(filmId, nonExistentUserId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> filmController.addLike(nonExistentFilmId, userId),
+				"Не выброшено исключение FilmDoesNotExistException.");
+		assertEquals("Фильм с id: -1 не найден", e.getMessage());
 
-    }
+	}
 
-    @Test
-    public void shouldFailAddLikeFilmWithInvalidId() { // ставим лайк фильму с несуществующим id
+	@Test
+	public void shouldDeleteLikeWithValidId() { // существующие пользователи удаляют лайки у фильма с существующим id
+		// создаем двух пользователей и фильм
 
-        // создаем пользователя
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		User user2 = User.builder().id(2L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
+		Film film = Film.builder().id(1).name("All hate Cris").description("Good comedy")
+				.releaseDate(LocalDate.of(2000, 10, 10)).duration(90).mpa(new Mpa(1, null)).build();
 
-        final Integer nonExistentFilmId = -1;
-        final Long userId = user.getId();
+		final Long userId = user.getId();
+		final Long user2Id = user2.getId();
+		final Integer filmId = film.getId();
 
-        userController.addUser(user);
+		userController.addUser(user);
+		userController.addUser(user2);
+		filmController.addFilm(film);
 
-        // проверяем выброшенное исключение при попытке поставить лайк фильму с несуществующим id
+		// ставим лайки
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> filmController.addLike(nonExistentFilmId, userId),
-                "Не выброшено исключение FilmDoesNotExistException.");
-        assertEquals("Фильм с id: -1 не найден", e.getMessage());
+		filmController.addLike(filmId, userId);
+		filmController.addLike(filmId, user2Id);
 
-    }
+		// проверяем количество лайков
 
-    @Test
-    public void shouldDeleteLikeWithValidId() { //существующие пользователи удаляют лайки у фильма с существующим id
-        // создаем двух пользователей и фильм
+		assertEquals(filmStorage.getFilmById(filmId).getLikes(), 2, "Количество лайков не увеличилось");
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		// удаляем лайк
 
-        User user2 = User.builder()
-                .id(2L)
-                .email("Alla@yandex.ru")
-                .login("alla")
-                .name("Alla")
-                .birthday(LocalDate.of(2000, 10, 11))
-                .build();
+		filmController.deleteLike(filmId, userId);
 
+		// проверяем количество лайков
 
-        Film film = Film.builder()
-                .id(1)
-                .name("All hate Cris")
-                .description("Good comedy")
-                .releaseDate(LocalDate.of(2000, 10, 10))
-                .duration(90)
-                .mpa(new Mpa(1, null))
-                .build();
+		assertEquals(filmStorage.getFilmById(filmId).getLikes(), 1, "Количество лайков не уменьшилось");
 
-        final Long userId = user.getId();
-        final Long user2Id = user2.getId();
-        final Integer filmId = film.getId();
+		// удаляем последний лайк
 
-        userController.addUser(user);
-        userController.addUser(user2);
-        filmController.addFilm(film);
+		filmController.deleteLike(filmId, user2Id);
 
-        // ставим лайки
+		// проверяем количество лайков
 
-        filmController.addLike(filmId, userId);
-        filmController.addLike(filmId, user2Id);
+		assertEquals(filmStorage.getFilmById(filmId).getLikes(), 0, "Удалены не все лайки");
 
-        // проверяем количество лайков
+	}
 
-        assertEquals(filmStorage.getFilmById(filmId).getLikes(), 2,
-                "Количество лайков не увеличилось");
+	@Test
+	public void shouldFailDeleteLikeByUserWithInvalidId() { // удаляем лайк от пользователя с несуществующим id
 
-        // удаляем лайк
+		// создаем фильм
 
-        filmController.deleteLike(filmId, userId);
+		Film film = Film.builder().id(1).name("All hate Cris").description("Good comedy")
+				.releaseDate(LocalDate.of(2000, 10, 10)).duration(90).likes(0L).mpa(new Mpa(2, null)).build();
 
-        // проверяем количество лайков
+		final Integer filmId = film.getId();
+		final Long nonExistentUserId = -1L;
 
-        assertEquals(filmStorage.getFilmById(filmId).getLikes(), 1,
-                "Количество лайков не уменьшилось");
+		filmController.addFilm(film);
 
-        // удаляем последний лайк
+		// проверяем выброшенное исключение при попытке удалить лайк от пользователя с
+		// несуществующим id
 
-        filmController.deleteLike(filmId, user2Id);
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> filmController.addLike(filmId, nonExistentUserId),
+				"Не выброшено исключение ObjectNotFoundException.");
+		assertEquals("Пользователь с id: -1 не найден", e.getMessage());
 
-        // проверяем количество лайков
+	}
 
-        assertEquals(filmStorage.getFilmById(filmId).getLikes(), 0,
-                "Удалены не все лайки");
+	@Test
+	@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+	public void shouldFailDeleteLikeFilmWithInvalidId() { // удаляем лайк у фильма с несуществующим id
 
-    }
+		// создаем пользователя
 
-    @Test
-    public void shouldFailDeleteLikeByUserWithInvalidId() { // удаляем лайк от пользователя с несуществующим id
+		User user = User.builder().id(1L).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+				.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        // создаем фильм
+		final Integer nonExistentFilmId = -1;
+		final Long userId = user.getId();
 
-        Film film = Film.builder()
-                .id(1)
-                .name("All hate Cris")
-                .description("Good comedy")
-                .releaseDate(LocalDate.of(2000, 10, 10))
-                .duration(90)
-                .likes(0L)
-                .mpa(new Mpa(2, null))
-                .build();
+		userController.addUser(user);
 
+		// проверяем выброшенное исключение при попытке удалить лайк у фильма с
+		// несуществующим id
 
-        final Integer filmId = film.getId();
-        final Long nonExistentUserId = -1L;
+		ObjectNotFoundException e = assertThrows(ObjectNotFoundException.class,
+				() -> filmController.addLike(nonExistentFilmId, userId),
+				"Не выброшено исключение FilmDoesNotExistException.");
+		assertEquals("Фильм с id: -1 не найден", e.getMessage());
 
-        filmController.addFilm(film);
+	}
 
-        // проверяем выброшенное исключение при попытке удалить лайк от пользователя с несуществующим id
+	@Test
+	public void shouldGetMostPopularFilms() {
+		// получение списка наиболее популярных фильмов со значением параметра count по
+		// умолчанию
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> filmController.addLike(filmId, nonExistentUserId),
-                "Не выброшено исключение ObjectNotFoundException.");
-        assertEquals("Пользователь с id: -1 не найден", e.getMessage());
+		// создаем 7 пользователей
+		User user;
+		for (long i = 1L; i <= 7L; i++) {
+			user = User.builder().id(i).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+					.birthday(LocalDate.of(2000, 10, 10)).build();
 
-    }
+			userController.addUser(user);
+		}
 
-    @Test
-    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    public void shouldFailDeleteLikeFilmWithInvalidId() { // удаляем лайк у фильма с несуществующим id
+		// создаем 14 фильмов
+		Film film;
+		for (int i = 1; i <= 14; i++) {
+			film = Film.builder().id(i).name("All hate Cris " + i).description("Good comedy")
+					.releaseDate(LocalDate.of(2000, 10, 10)).duration(90).likes(0L).mpa(new Mpa(1, null)).build();
+			filmController.addFilm(film);
+		}
 
-        // создаем пользователя
+		// ставим лайки от каждого пользователя каждому фильму
 
-        User user = User.builder()
-                .id(1L)
-                .email("Alex@yandex.ru")
-                .login("alex")
-                .name("Alexandr Ivanov")
-                .birthday(LocalDate.of(2000, 10, 10))
-                .build();
+		for (Long i = 1L; i <= 7L; i++) {
+			for (int j = 1; j <= 14; j++) {
+				filmController.addLike(j, i);
+			}
+		}
 
+		// создаем новый фильм, добавляем лайк
 
-        final Integer nonExistentFilmId = -1;
-        final Long userId = user.getId();
+		User additionalUser = User.builder().id(8L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        userController.addUser(user);
+		userController.addUser(additionalUser);
+		filmController.addLike(14, additionalUser.getId());
 
-        // проверяем выброшенное исключение при попытке удалить лайк у фильма с несуществующим id
+		filmController.deleteLike(7, 1L);
+		filmController.deleteLike(7, 2L);
 
-        ObjectNotFoundException e = assertThrows(
-                ObjectNotFoundException.class,
-                () -> filmController.addLike(nonExistentFilmId, userId),
-                "Не выброшено исключение FilmDoesNotExistException.");
-        assertEquals("Фильм с id: -1 не найден", e.getMessage());
+		// получаем список наиболее популярных фильмов
 
-    }
+		List<Film> mostPopularFilms = filmController.listMostPopularFilms(null, null, null);
 
-    //************************* Тестирование работы с информацией о пользователях *************************
+		// проверяем корректность списка самых популярных фильмов
 
-    @Test
-    public void shouldAddUserWithValidInfo() {
+		assertEquals(mostPopularFilms.size(), 10, "Неверное количество фильмов в списке");
+		assertEquals(mostPopularFilms.get(0).getId(), 14, "Неверный id у самого популярного фильма");
+		assertEquals(mostPopularFilms.get(0).getLikes(), 8, "Неверное количество лайков у самого популярного фильма");
+		assertEquals(mostPopularFilms.get(9).getLikes(), 7, "Неверное количество лайков у самого непопулярного фильма");
 
-        //добавляем пользователя с валидными данными
+	}
 
-        User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
-        final Long id = user.getId();
-        userController.addUser(user);
+	@Test
+	public void shouldGetMostPopularFilmsCountParam10() { // получение списка 10 наиболее популярных фильмов
 
-        // проверяем наличие пользователя в сохраненных данных
+		// создаем 7 пользователей
+		User user;
+		for (long i = 1L; i <= 7L; i++) {
+			user = User.builder().id(i).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+					.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        assertEquals(userStorage.getUserById(id), user, "Валидные данные пользователя не сохранились");
+			userController.addUser(user);
+		}
 
-    }
+		// создаем 14 фильмов
+		Film film;
+		for (int i = 1; i <= 14; i++) {
+			film = Film.builder().id(i).name("All hate Cris " + i).description("Good comedy")
+					.releaseDate(LocalDate.of(2000, 10, 10)).duration(90).mpa(new Mpa(4, null)).build();
+			filmController.addFilm(film);
+		}
 
-    @Test
-    public void shouldAddUserWithEmptyName() {
+		// ставим лайки от каждого пользователя каждому фильму
 
-        //добавляем пользователя с пустым именем
+		for (Long i = 1L; i <= 7L; i++) {
+			for (int j = 1; j <= 14; j++) {
+				filmController.addLike(j, i);
+			}
+		}
 
-        User user = new User(1L, "Alex@yandex.ru", null, "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
-        final Long id = user.getId();
-        userController.addUser(user);
+		// создаем новый фильм, добавляем лайк
 
-        // проверяем наличие пользователя в сохраненных данных и обновление имени значением логина
+		User additionalUser = User.builder().id(8L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-        assertEquals(userStorage.getUserById(id).getName(), userStorage.getUserById(id).getLogin(),
-                "Имя не обновлено значением логина");
+		userController.addUser(additionalUser);
+		filmController.addLike(14, additionalUser.getId());
 
-    }
+		// получаем список наиболее популярных фильмов
 
-    @ParameterizedTest
-    @ArgumentsSource(UsersArgumentsProvider.class) // набор пользователей с невалидными данными
-    public void shouldNotAddUser(User user) {
+		List<Film> mostPopularFilms = filmController.listMostPopularFilms(10, null, null);
 
-        //проверка выброшенного исключения при попытке сохранить пользователя с невалидными данными
+		// проверяем корректность списка самых популярных фильмов
 
-        assertThrows(
-                ConstraintViolationException.class,
-                () -> userController.addUser(user),
-                "Сохранены данные пользователя с невалидными данными.");
+		assertEquals(mostPopularFilms.size(), 10, "Неверное количество фильмов в списке");
+		assertEquals(mostPopularFilms.get(0).getId(), 14, "Неверный id у самого популярного фильма");
+		assertEquals(mostPopularFilms.get(0).getLikes(), 8, "Неверное количество лайков у самого популярного фильма");
+		assertEquals(mostPopularFilms.get(9).getLikes(), 7, "Неверное количество лайков у самого непопулярного фильма");
 
-    }
+	}
 
-    @Test
-    public void shouldPutUserWithValidInfo() {
+	@Test
+	public void shouldGetMostPopularFilmsWithNullLikes() { // получение списка 10 наиболее популярных фильмов
 
-        //сохраняем пользователя
+		// создаем 7 пользователей
+		User user;
+		for (long i = 1; i <= 7; i++) {
+			user = User.builder().id(i).email("Alex@yandex.ru").login("alex").name("Alexandr Ivanov")
+					.birthday(LocalDate.of(2000, 10, 10)).build();
 
-        User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
-        final Long id = user.getId();
-        userController.addUser(user);
+			userController.addUser(user);
+		}
 
-        //обновляем данные пользователя
+		// создаем 14 фильмов
+		Film film;
+		for (int i = 1; i <= 14; i++) {
+			film = Film.builder().id(i).name("All hate Cris " + i).description("Good comedy")
+					.releaseDate(LocalDate.of(2000, 10, 10)).duration(90).mpa(new Mpa(2, null)).build();
+			filmController.addFilm(film);
+		}
 
-        User userUpdated = new User(1L, "Egor@yandex.ru", "Egor Egorov", "egor",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
-        userController.updateUser(userUpdated);
+		// ставим лайки от каждого пользователя пяти фильмам, рейтинг остальных -
+		// нулевой
 
-        //проверяем корректность обновления данных
+		for (Long i = 1L; i <= 7L; i++) {
+			for (int j = 1; j <= 5; j++) {
+				filmController.addLike(j, i);
+			}
+		}
 
-        assertEquals(userStorage.getUserById(id), userUpdated, "Данные пользователя не обновились");
+		// создаем новый фильм, добавляем лайк одному из фильмов
 
-    }
+		User additionalUser = User.builder().id(8L).email("Alla@yandex.ru").login("alla").name("Alla")
+				.birthday(LocalDate.of(2000, 10, 11)).build();
 
-    @Test
-    public void shouldPutUserWithEmptyName() {
+		userController.addUser(additionalUser);
+		filmController.addLike(5, additionalUser.getId());
 
-        //сохраняем пользователя с пустым именем
+		// получаем список наиболее популярных фильмов
 
-        User user = new User(1L, "Alex@yandex.ru", null, "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
-        final Long id = user.getId();
-        userController.addUser(user);
+		List<Film> mostPopularFilms = filmController.listMostPopularFilms(10, null, null);
 
-        //обновляем данные пользователя
+		// проверяем корректность списка самых популярных фильмов
 
-        User userUpdated = new User(1L, "Egor@yandex.ru", null, "egor",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
-        userController.updateUser(userUpdated);
+		assertEquals(mostPopularFilms.size(), 10, "Неверное количество фильмов в списке");
+		assertEquals(mostPopularFilms.get(0).getId(), 5, "Неверный id у самого популярного фильма");
+		assertEquals(mostPopularFilms.get(0).getLikes(), 8, "Неверное количество лайков у самого популярного фильма");
+		assertEquals(mostPopularFilms.get(9).getLikes(), 0, "Неверное количество лайков у фильма без лайков");
 
-        //проверяем корректность обновления данных и присвоения логина в качестве имени
+	}
 
-        assertEquals(userStorage.getUserById(id).getName(), userStorage.getUserById(id).getLogin(),
-                "Имя пользователя не обновлено значением логина");
+	// ************************* Тестирование работы с информацией о пользователях
+	// *************************
 
-    }
+	@Test
+	public void shouldAddUserWithValidInfo() {
 
-    @Test
-    public void shouldFailPutUserWithInvalidLogin() {
+		// добавляем пользователя с валидными данными
 
-        // обновляем данные пользователя с несуществующим логином, проверяем выброшенное исключение
+		User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "alex", LocalDate.of(1990, 10, 10),
+				new HashSet<>());
+		final Long id = user.getId();
+		userController.addUser(user);
 
-        User user = new User(10000L, "Egor@yandex.ru", "Egor Egorov", "egor",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+		// проверяем наличие пользователя в сохраненных данных
 
-        assertThrows(
-                ObjectNotFoundException.class,
-                () -> userController.updateUser(user),
-                "Такого пользователя нет в списке.");
+		assertEquals(userStorage.getUserById(id), user, "Валидные данные пользователя не сохранились");
 
-    }
+	}
 
-    @Test
-    public void shouldGetUsersList() {
+	@Test
+	public void shouldAddUserWithEmptyName() {
 
-        // добавляем пользователей в список
+		// добавляем пользователя с пустым именем
 
-        User user1 = new User(1L, "Alex@yandex.ru", null, "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
-        userController.addUser(user1);
+		User user = new User(1L, "Alex@yandex.ru", null, "alex", LocalDate.of(1990, 10, 10), new HashSet<>());
+		final Long id = user.getId();
+		userController.addUser(user);
 
-        User user2 = new User(1L, "Egor@yandex.ru", null, "egor",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
-        userController.addUser(user2);
+		// проверяем наличие пользователя в сохраненных данных и обновление имени
+		// значением логина
 
-        //получаем пользователей из списка
+		assertEquals(userStorage.getUserById(id).getName(), userStorage.getUserById(id).getLogin(),
+				"Имя не обновлено значением логина");
 
-        List<User> usersList = userController.listUsers();
-        assertEquals(usersList.size(), 2, "Список пользователей неверного размера");
+	}
 
-    }
+	@ParameterizedTest
+	@ArgumentsSource(UsersArgumentsProvider.class) // набор пользователей с невалидными данными
+	public void shouldNotAddUser(User user) {
 
-    //************************* Тестирование работы с информацией о Фильмах *************************
-    @Test
-    public void shouldAddFilmWithValidInfo() {
+		// проверка выброшенного исключения при попытке сохранить пользователя с
+		// невалидными данными
 
-        Mpa mpa = new Mpa(1, "G");
+		assertThrows(ConstraintViolationException.class, () -> userController.addUser(user),
+				"Сохранены данные пользователя с невалидными данными.");
 
-        //добавляем фильм с валидными данными
+	}
 
-        Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                new HashSet<>());
-        Film returnedFilm = filmController.addFilm(film);
+	@Test
+	public void shouldPutUserWithValidInfo() {
 
-        // проверяем наличие пользователя в сохраненных данных
+		// сохраняем пользователя
 
-        assertEquals(returnedFilm, film, "Валидные данные фильма не сохранились");
+		User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "alex", LocalDate.of(1990, 10, 10),
+				new HashSet<>());
+		final Long id = user.getId();
+		userController.addUser(user);
 
-    }
+		// обновляем данные пользователя
 
+		User userUpdated = new User(1L, "Egor@yandex.ru", "Egor Egorov", "egor", LocalDate.of(1990, 10, 10),
+				new HashSet<>());
+		userController.updateUser(userUpdated);
 
-    @ParameterizedTest
-    @ArgumentsSource(FilmsArgumentsProvider.class) // набор фильмов с невалидными данными
-    public void shouldNotAddFilmWithInvalidData(Film film) {
+		// проверяем корректность обновления данных
 
-        //проверка выброшенного исключения при попытке сохранить пользователя с невалидными данными
+		assertEquals(userStorage.getUserById(id), userUpdated, "Данные пользователя не обновились");
 
-        assertThrows(
-                ConstraintViolationException.class,
-                () -> filmController.addFilm(film),
-                "Сохранены данные фильма с невалидными данными.");
+	}
 
-    }
+	@Test
+	public void shouldPutUserWithEmptyName() {
 
-    @Test
-    public void shouldPutFilmWithValidInfo() {
+		// сохраняем пользователя с пустым именем
 
-        Mpa mpa = new Mpa(1, "G");
+		User user = new User(1L, "Alex@yandex.ru", null, "alex", LocalDate.of(1990, 10, 10), new HashSet<>());
+		final Long id = user.getId();
+		userController.addUser(user);
 
-        //сохраняем данные о фильме
+		// обновляем данные пользователя
 
-        Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                null);
-        final Integer id = film.getId();
-        filmController.addFilm(film);
+		User userUpdated = new User(1L, "Egor@yandex.ru", null, "egor", LocalDate.of(1990, 10, 10), new HashSet<>());
+		userController.updateUser(userUpdated);
 
-        //обновляем данные фильма
+		// проверяем корректность обновления данных и присвоения логина в качестве имени
 
-        Film filmUpdated = new Film(1, "All like Tests", " Real comedy",
-                LocalDate.of(2023, 7, 19), 12000, 0L,
-                mpa, new HashSet<>(),
-                new HashSet<>());
-        filmController.updateFilm(filmUpdated);
+		assertEquals(userStorage.getUserById(id).getName(), userStorage.getUserById(id).getLogin(),
+				"Имя пользователя не обновлено значением логина");
 
-        //проверяем корректность обновления данных
+	}
 
-        assertEquals(filmStorage.getFilmById(id), filmUpdated, "Данные фильма не обновились");
+	@Test
+	public void shouldFailPutUserWithInvalidLogin() {
 
-    }
+		// обновляем данные пользователя с несуществующим логином, проверяем выброшенное
+		// исключение
 
-    @Test
-    public void shouldFailPutFilmWithInvalidLogin() {
+		User user = new User(10000L, "Egor@yandex.ru", "Egor Egorov", "egor", LocalDate.of(1990, 10, 10),
+				new HashSet<>());
 
-        Mpa mpa = new Mpa(1, "G");
+		assertThrows(ObjectNotFoundException.class, () -> userController.updateUser(user),
+				"Такого пользователя нет в списке.");
 
-        // обновляем данные фильма с несуществующим логином, проверяем выброшенное исключение
+	}
 
-        Film film = new Film(10000, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                directors);
+	@Test
+	public void shouldGetUsersList() {
 
-        assertThrows(
-                ObjectNotFoundException.class,
-                () -> filmController.updateFilm(film),
-                "Такого фильма нет в списке.");
+		// добавляем пользователей в список
 
-    }
+		User user1 = new User(1L, "Alex@yandex.ru", null, "alex", LocalDate.of(1990, 10, 10), new HashSet<>());
+		userController.addUser(user1);
 
-    @Test
-    public void shouldGetFilmsList() {
+		User user2 = new User(1L, "Egor@yandex.ru", null, "egor", LocalDate.of(1990, 10, 10), new HashSet<>());
+		userController.addUser(user2);
 
-        // добавляем фильмы в список
+		// получаем пользователей из списка
 
-        Mpa mpa = new Mpa(1, "G");
-        Film film1 = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                null);
-        filmController.addFilm(film1);
+		List<User> usersList = userController.listUsers();
+		assertEquals(usersList.size(), 2, "Список пользователей неверного размера");
 
-        Film film2 = new Film(1, "All like Tests", " Real comedy",
-                LocalDate.of(2023, 7, 19), 12000, 0L,
-                mpa, new HashSet<>(),
-                null);
-        filmController.addFilm(film2);
+	}
 
-        //получаем фильмы из списка
+	// ************************* Тестирование работы с информацией о Фильмах
+	// *************************
+	@Test
+	public void shouldAddFilmWithValidInfo() {
 
-        List<Film> filmsList = filmController.listFilms();
-        assertEquals(filmsList.size(), 2, "Список фильмов неверного размера");
+		Mpa mpa = new Mpa(1, "G");
 
-    }
+		// добавляем фильм с валидными данными
 
-    //************************* Тесты на валидацию данных для фильмов *************************
-    @Test
-    public void shouldPassValidationFilmWithValidData() { //filmData is valid = should pass
-        Mpa mpa = new Mpa(1, "G");
+		Film film = new Film(1, "All hate Cris", " Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa,
+				new HashSet<>(), new HashSet<>());
+		Film returnedFilm = filmController.addFilm(film);
 
-        Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                directors);
+		// проверяем наличие пользователя в сохраненных данных
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+		assertEquals(returnedFilm, film, "Валидные данные фильма не сохранились");
 
-        assertTrue(violations.isEmpty(), "Валидные данные фильма не прошли проверку");
+	}
 
-    }
+	@ParameterizedTest
+	@ArgumentsSource(FilmsArgumentsProvider.class) // набор фильмов с невалидными данными
+	public void shouldNotAddFilmWithInvalidData(Film film) {
 
-    @Test
-    public void shouldFailValidationFilmWithEmptyName() { // filmName is empty
+		// проверка выброшенного исключения при попытке сохранить пользователя с
+		// невалидными данными
 
-        Mpa mpa = new Mpa(1, "G");
+		assertThrows(ConstraintViolationException.class, () -> filmController.addFilm(film),
+				"Сохранены данные фильма с невалидными данными.");
 
-        Film film = new Film(1, "", " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                directors);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+	}
 
-        assertFalse(violations.isEmpty(),
-                "Поле название фильма, содержащее только пробелы, прошло валидацию");
-        assertEquals(violations.size(), 2,
-                "Неверное количество ошибок при проверке пустого поля с названием фильма");
+	@Test
+	public void shouldPutFilmWithValidInfo() {
 
-        for (ConstraintViolation<Film> violation : violations) {
+		Mpa mpa = new Mpa(1, "G");
 
-            assertEquals(violation.getInvalidValue(), film.getName(),
-                    "Неверно определено невалидное значение: поле с названием фильма");
-        }
-    }
+		// сохраняем данные о фильме
 
-    @Test
-    public void shouldFailValidationFilmWithBlankName() { // fillName is blank
+		Film film = new Film(1, "All hate Cris", " Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa,
+				new HashSet<>(), null);
+		final Integer id = film.getId();
+		filmController.addFilm(film);
 
-        Mpa mpa = new Mpa(1, "G");
+		// обновляем данные фильма
 
-        Film film = new Film(1, " ", "Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                directors);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+		Film filmUpdated = new Film(1, "All like Tests", " Real comedy", LocalDate.of(2023, 7, 19), 12000, 0L, mpa,
+				new HashSet<>(), new HashSet<>());
+		filmController.updateFilm(filmUpdated);
 
-        assertFalse(violations.isEmpty(), "Пустое поле с названием фильма прошло валидацию");
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке пустого поля с названием фильма");
+		// проверяем корректность обновления данных
 
-        for (ConstraintViolation<Film> violation : violations) {
+		assertEquals(filmStorage.getFilmById(id), filmUpdated, "Данные фильма не обновились");
 
-            assertEquals(violation.getInvalidValue(), film.getName(),
-                    "Неверно определено невалидное значение: поле с названием фильма");
-        }
-    }
+	}
 
+	@Test
+	public void shouldFailPutFilmWithInvalidLogin() {
 
-    @Test
-    public void shouldFailValidationFilmWithNullName() { // filmName is null
+		Mpa mpa = new Mpa(1, "G");
 
-        Mpa mpa = new Mpa(1, "G");
+		// обновляем данные фильма с несуществующим логином, проверяем выброшенное
+		// исключение
 
-        Film film = new Film(1, null, " Good comedy",
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                directors);
+		Film film = new Film(10000, "All hate Cris", " Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa,
+				new HashSet<>(), directors);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+		assertThrows(ObjectNotFoundException.class, () -> filmController.updateFilm(film),
+				"Такого фильма нет в списке.");
 
-        assertFalse(violations.isEmpty(), "Поле с названием фильма со значением null прошло валидацию");
+	}
 
-        assertEquals(violations.size(), 3,
-                "Неверное количество ошибок при проверке поля с названием фильма cо значением null");
+	@Test
+	public void shouldGetFilmsList() {
 
+		// добавляем фильмы в список
 
-        for (ConstraintViolation<Film> violation : violations) {
+		Mpa mpa = new Mpa(1, "G");
+		Film film1 = new Film(1, "All hate Cris", " Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa,
+				new HashSet<>(), null);
+		filmController.addFilm(film1);
 
-            assertEquals(violation.getInvalidValue(), film.getName(),
-                    "Неверное определено невалидное значение: поле с названием фильма");
+		Film film2 = new Film(1, "All like Tests", " Real comedy", LocalDate.of(2023, 7, 19), 12000, 0L, mpa,
+				new HashSet<>(), null);
+		filmController.addFilm(film2);
 
-        }
-    }
+		// получаем фильмы из списка
 
-    @Test
-    public void shouldFailValidationFilmWithTooLongDescription() { // description is too long
+		List<Film> filmsList = filmController.listFilms();
+		assertEquals(filmsList.size(), 2, "Список фильмов неверного размера");
 
-        Mpa mpa = new Mpa(1, "G");
+	}
 
-        Film film = new Film(1, "All hate Cris",
-                " Good comedy, but it's too long description. it's too long description"
-                        + "it's too long description. it's too long description. it's too long description. "
-                        + "it's too long description. it's too long description. it's too long description. "
-                        + "it's too long description. it's too long description.",
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                directors);
+	// ************************* Тесты на валидацию данных для фильмов
+	// *************************
+	@Test
+	public void shouldPassValidationFilmWithValidData() { // filmData is valid = should pass
+		Mpa mpa = new Mpa(1, "G");
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+		Film film = new Film(1, "All hate Cris", " Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa,
+				new HashSet<>(), directors);
 
-        assertFalse(violations.isEmpty(), "Поле с описанием фильма, содержащее более 200 символов,"
-                + " прошло валидацию");
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке пустого поля с названием фильма");
+		assertTrue(violations.isEmpty(), "Валидные данные фильма не прошли проверку");
 
-        for (ConstraintViolation<Film> violation : violations) {
+	}
 
-            assertEquals(violation.getInvalidValue(), film.getDescription(),
-                    "Неверно определено невалидное значение: поле с описанием фильма");
-        }
-    }
+	@Test
+	public void shouldFailValidationFilmWithEmptyName() { // filmName is empty
 
-    @Test
-    public void shouldFailValidationFilmWithNullDescription() { // description is null
-        Mpa mpa = new Mpa(1, "G");
-        Film film = new Film(1, "All hate Cris", null,
-                LocalDate.of(2002, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                directors);
+		Mpa mpa = new Mpa(1, "G");
 
+		Film film = new Film(1, "", " Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa, new HashSet<>(), directors);
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+		assertFalse(violations.isEmpty(), "Поле название фильма, содержащее только пробелы, прошло валидацию");
+		assertEquals(violations.size(), 2, "Неверное количество ошибок при проверке пустого поля с названием фильма");
 
-        assertFalse(violations.isEmpty(), "Поле с описанием фильма со значением null"
-                + " не прошло валидацию");
+		for (ConstraintViolation<Film> violation : violations) {
 
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке поля с описанием фильма cо значением null");
+			assertEquals(violation.getInvalidValue(), film.getName(),
+					"Неверно определено невалидное значение: поле с названием фильма");
+		}
+	}
 
-    }
+	@Test
+	public void shouldFailValidationFilmWithBlankName() { // fillName is blank
 
-    @Test
-    public void shouldFailValidationFilmWithInvalidReleaseDate() { //releaseDate is not valid
-        Mpa mpa = new Mpa(1, "G");
+		Mpa mpa = new Mpa(1, "G");
 
-        Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(1700, 2, 10), 40, 0L,
-                mpa, new HashSet<>(),
-                directors);
+		Film film = new Film(1, " ", "Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa, new HashSet<>(), directors);
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+		assertFalse(violations.isEmpty(), "Пустое поле с названием фильма прошло валидацию");
+		assertEquals(violations.size(), 1, "Неверное количество ошибок при проверке пустого поля с названием фильма");
 
-        assertFalse(violations.isEmpty(), "Пустое поле с невалидной датой выхода фильма прошло валидацию");
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке поля с невалидной датой выхода фильма");
+		for (ConstraintViolation<Film> violation : violations) {
 
-        for (ConstraintViolation<Film> violation : violations) {
+			assertEquals(violation.getInvalidValue(), film.getName(),
+					"Неверно определено невалидное значение: поле с названием фильма");
+		}
+	}
 
-            assertEquals(violation.getMessage(), "не должно быть ранее 28-12-1895",
-                    "Не содержит сообщения об ошибке 'не должно быть ранее 28-12-1895'");
+	@Test
+	public void shouldFailValidationFilmWithNullName() { // filmName is null
 
-            assertEquals(violation.getInvalidValue(), film.getReleaseDate(),
-                    "Неверно определено невалидное значение: поле с датой выхода фильма");
-        }
-    }
+		Mpa mpa = new Mpa(1, "G");
 
-    @Test
-    public void shouldFailValidationFilmWithNullReleaseDate() { //releaseDate is null
+		Film film = new Film(1, null, " Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa, new HashSet<>(),
+				directors);
 
-        Mpa mpa = new Mpa(1, "G");
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        Film film = new Film(1, "All hate Cris", "Good comedy",
-                null, 40, 0L,
-                mpa, new HashSet<>(),
-                directors);
+		assertFalse(violations.isEmpty(), "Поле с названием фильма со значением null прошло валидацию");
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+		assertEquals(violations.size(), 3,
+				"Неверное количество ошибок при проверке поля с названием фильма cо значением null");
 
-        assertFalse(violations.isEmpty(), "Поле с датой выхода фильма со значением null"
-                + " не прошло валидацию");
+		for (ConstraintViolation<Film> violation : violations) {
 
-        assertEquals(violations.size(), 2,
-                "Неверное количество ошибок при проверке поля с датой выхода фильма cо значением null");
+			assertEquals(violation.getInvalidValue(), film.getName(),
+					"Неверное определено невалидное значение: поле с названием фильма");
 
-        for (ConstraintViolation<Film> violation : violations) {
+		}
+	}
 
-            assertEquals(violation.getInvalidValue(), film.getReleaseDate(),
-                    "Неверное определено невалидное значение: поле с датой выхода фильма");
+	@Test
+	public void shouldFailValidationFilmWithTooLongDescription() { // description is too long
 
-        }
-    }
+		Mpa mpa = new Mpa(1, "G");
 
-    @Test
-    public void shouldFailValidationFilmWithNegativeDurationValue() { // duration is negative
+		Film film = new Film(1, "All hate Cris",
+				" Good comedy, but it's too long description. it's too long description"
+						+ "it's too long description. it's too long description. it's too long description. "
+						+ "it's too long description. it's too long description. it's too long description. "
+						+ "it's too long description. it's too long description.",
+				LocalDate.of(2002, 2, 10), 40, 0L, mpa, new HashSet<>(), directors);
 
-        Mpa mpa = new Mpa(1, "G");
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), (-900), 0L,
-                mpa, new HashSet<>(),
-                directors);
+		assertFalse(violations.isEmpty(),
+				"Поле с описанием фильма, содержащее более 200 символов," + " прошло валидацию");
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+		assertEquals(violations.size(), 1, "Неверное количество ошибок при проверке пустого поля с названием фильма");
 
-        assertFalse(violations.isEmpty(),
-                "Поле с отрицательным значением продолжительности фильма прошло валидацию");
+		for (ConstraintViolation<Film> violation : violations) {
 
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке поля "
-                        + "с отрицательным значением продолжительности фильма");
+			assertEquals(violation.getInvalidValue(), film.getDescription(),
+					"Неверно определено невалидное значение: поле с описанием фильма");
+		}
+	}
 
-        for (ConstraintViolation<Film> violation : violations) {
+	@Test
+	public void shouldFailValidationFilmWithNullDescription() { // description is null
+		Mpa mpa = new Mpa(1, "G");
+		Film film = new Film(1, "All hate Cris", null, LocalDate.of(2002, 2, 10), 40, 0L, mpa, new HashSet<>(),
+				directors);
 
-            assertEquals(violation.getInvalidValue(), film.getDuration(),
-                    "Неверно определено невалидное значение: поле с продолжительностью фильма");
-        }
-    }
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-    @Test
-    public void shouldFailValidationFilmWithNotPositiveDuration() { // duration is not positive
-        Mpa mpa = new Mpa(1, "G");
+		assertFalse(violations.isEmpty(), "Поле с описанием фильма со значением null" + " не прошло валидацию");
 
-        Film film = new Film(1, "All hate Cris", " Good comedy",
-                LocalDate.of(2002, 2, 10), 0, 0L,
-                mpa, new HashSet<>(),
-                directors);
+		assertEquals(violations.size(), 1,
+				"Неверное количество ошибок при проверке поля с описанием фильма cо значением null");
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+	}
 
-        assertFalse(violations.isEmpty(),
-                "Поле с нулевым значением продолжительности фильма прошло валидацию");
+	@Test
+	public void shouldFailValidationFilmWithInvalidReleaseDate() { // releaseDate is not valid
+		Mpa mpa = new Mpa(1, "G");
 
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке поля "
-                        + "с нулевым значением продолжительности фильма");
+		Film film = new Film(1, "All hate Cris", " Good comedy", LocalDate.of(1700, 2, 10), 40, 0L, mpa,
+				new HashSet<>(), directors);
 
-        for (ConstraintViolation<Film> violation : violations) {
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-            assertEquals(violation.getInvalidValue(), film.getDuration(),
-                    "Неверно определено невалидное значение: поле с продолжительностью фильма");
-        }
+		assertFalse(violations.isEmpty(), "Пустое поле с невалидной датой выхода фильма прошло валидацию");
+		assertEquals(violations.size(), 1,
+				"Неверное количество ошибок при проверке поля с невалидной датой выхода фильма");
 
-    }
+		for (ConstraintViolation<Film> violation : violations) {
 
-    @Test
-    public void shouldFailValidationFilmWithNullDuration() { // duration is null
+			assertEquals(violation.getMessage(), "не должно быть ранее 28-12-1895",
+					"Не содержит сообщения об ошибке 'не должно быть ранее 28-12-1895'");
 
-        Mpa mpa = new Mpa(1, "G");
+			assertEquals(violation.getInvalidValue(), film.getReleaseDate(),
+					"Неверно определено невалидное значение: поле с датой выхода фильма");
+		}
+	}
 
-        Film film = new Film(1, "All hate Cris", null,
-                LocalDate.of(2002, 2, 10), null, 0L,
-                mpa, new HashSet<>(),
-                directors);
+	@Test
+	public void shouldFailValidationFilmWithNullReleaseDate() { // releaseDate is null
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+		Mpa mpa = new Mpa(1, "G");
 
-        assertFalse(violations.isEmpty(),
-                "Поле с продолжительностью фильма со значением null прошло валидацию");
+		Film film = new Film(1, "All hate Cris", "Good comedy", null, 40, 0L, mpa, new HashSet<>(), directors);
 
-        assertEquals(violations.size(), 2,
-                "Неверное количество ошибок при проверке поля "
-                        + "с продолжительностью фильма cо значением null");
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        for (ConstraintViolation<Film> violation : violations) {
+		assertFalse(violations.isEmpty(), "Поле с датой выхода фильма со значением null" + " не прошло валидацию");
 
-            assertEquals(violation.getInvalidValue(), film.getDuration(),
-                    "Неверное определено невалидное значение: поле с продолжительностью фильма");
+		assertEquals(violations.size(), 2,
+				"Неверное количество ошибок при проверке поля с датой выхода фильма cо значением null");
 
-        }
+		for (ConstraintViolation<Film> violation : violations) {
 
-    }
+			assertEquals(violation.getInvalidValue(), film.getReleaseDate(),
+					"Неверное определено невалидное значение: поле с датой выхода фильма");
 
-    //************************* Тесты на валидацию данных пользователя *************************
-    @Test
-    public void shouldPassValidationUserWithValidData() { // login is valid = should pass
+		}
+	}
 
-        User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+	@Test
+	public void shouldFailValidationFilmWithNegativeDurationValue() { // duration is negative
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		Mpa mpa = new Mpa(1, "G");
 
-        assertTrue(violations.isEmpty(), "Валидные данные пользователя не прошли проверку");
+		Film film = new Film(1, "All hate Cris", " Good comedy", LocalDate.of(2002, 2, 10), (-900), 0L, mpa,
+				new HashSet<>(), directors);
 
-    }
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-    @Test
-    public void shouldFailValidationUserWithEmptyLogin() { // login is empty
+		assertFalse(violations.isEmpty(), "Поле с отрицательным значением продолжительности фильма прошло валидацию");
 
-        User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+		assertEquals(violations.size(), 1,
+				"Неверное количество ошибок при проверке поля " + "с отрицательным значением продолжительности фильма");
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		for (ConstraintViolation<Film> violation : violations) {
 
-        assertFalse(violations.isEmpty(), "Пустое поле логин пользователя прошло валидацию");
-        assertEquals(violations.size(), 3,
-                "Неверное количество ошибок при проверке пустого поля логин пользователя");
+			assertEquals(violation.getInvalidValue(), film.getDuration(),
+					"Неверно определено невалидное значение: поле с продолжительностью фильма");
+		}
+	}
 
-        for (ConstraintViolation<User> violation : violations) {
+	@Test
+	public void shouldFailValidationFilmWithNotPositiveDuration() { // duration is not positive
+		Mpa mpa = new Mpa(1, "G");
 
-            assertEquals(violation.getInvalidValue(), user.getLogin(),
-                    "Неверно определено невалидное значение: поле логин пользователя");
-        }
-    }
+		Film film = new Film(1, "All hate Cris", " Good comedy", LocalDate.of(2002, 2, 10), 0, 0L, mpa, new HashSet<>(),
+				directors);
 
-    @Test
-    public void shouldFailValidationUserWithBlankLogin() { // login is blank
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", " ",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+		assertFalse(violations.isEmpty(), "Поле с нулевым значением продолжительности фильма прошло валидацию");
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		assertEquals(violations.size(), 1,
+				"Неверное количество ошибок при проверке поля " + "с нулевым значением продолжительности фильма");
 
-        assertFalse(violations.isEmpty(),
-                "Поле логин пользователя, содержащее только пробелы, прошло валидацию");
-        assertEquals(violations.size(), 2,
-                "Неверное количество ошибок при проверке пустого поля логин пользователя");
+		for (ConstraintViolation<Film> violation : violations) {
 
-        for (ConstraintViolation<User> violation : violations) {
+			assertEquals(violation.getInvalidValue(), film.getDuration(),
+					"Неверно определено невалидное значение: поле с продолжительностью фильма");
+		}
 
-            assertEquals(violation.getInvalidValue(), user.getLogin(),
-                    "Неверно определено невалидное значение: поле логин пользователя");
-        }
-    }
+	}
 
-    @Test
-    public void shouldFailValidationUserWithNullLogin() { // login is null
+	@Test
+	public void shouldFailValidationFilmWithNullDuration() { // duration is null
 
-        User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", null,
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+		Mpa mpa = new Mpa(1, "G");
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		Film film = new Film(1, "All hate Cris", null, LocalDate.of(2002, 2, 10), null, 0L, mpa, new HashSet<>(),
+				directors);
 
-        assertFalse(violations.isEmpty(), "Поле логин пользователя со значением null прошло валидацию");
-        assertEquals(violations.size(), 3,
-                "Неверное количество ошибок при проверке поля логин пользователя со значением null");
+		Set<ConstraintViolation<Film>> violations = validator.validate(film);
 
-        for (ConstraintViolation<User> violation : violations) {
+		assertFalse(violations.isEmpty(), "Поле с продолжительностью фильма со значением null прошло валидацию");
 
-            assertEquals(violation.getInvalidValue(), user.getLogin(),
-                    "Неверно определено невалидное значение: поле логин пользователя");
-        }
-    }
+		assertEquals(violations.size(), 2,
+				"Неверное количество ошибок при проверке поля " + "с продолжительностью фильма cо значением null");
 
-    @Test
-    public void shouldFailValidationUserWithLoginContainsSpace() { // login contains space
+		for (ConstraintViolation<Film> violation : violations) {
 
-        User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "Alex Alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+			assertEquals(violation.getInvalidValue(), film.getDuration(),
+					"Неверное определено невалидное значение: поле с продолжительностью фильма");
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		}
 
-        assertFalse(violations.isEmpty(), "Поле логин пользователя со значением null прошло валидацию");
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке поля логин пользователя со значением null");
+	}
 
-        for (ConstraintViolation<User> violation : violations) {
+	// ************************* Тесты на валидацию данных пользователя
+	// *************************
+	@Test
+	public void shouldPassValidationUserWithValidData() { // login is valid = should pass
 
-            assertEquals(violation.getInvalidValue(), user.getLogin(),
-                    "Неверно определено невалидное значение: поле логин пользователя");
-        }
-    }
+		User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "alex", LocalDate.of(1990, 10, 10),
+				new HashSet<>());
 
-    @Test
-    public void shouldPassValidationUserWithEmptyName() { // userName is Empty = should pass
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        User user = new User(1L, "Alex@yandex.ru", "", "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+		assertTrue(violations.isEmpty(), "Валидные данные пользователя не прошли проверку");
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+	}
 
-        assertTrue(violations.isEmpty(), "Пустое поля имя пользователя не прошло проверку");
+	@Test
+	public void shouldFailValidationUserWithEmptyLogin() { // login is empty
 
-    }
+		User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "", LocalDate.of(1990, 10, 10), new HashSet<>());
 
-    @Test
-    public void shouldPassValidationUserWithBlankName() { // userName is Blank = should pass
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        User user = new User(1L, "Alex@yandex.ru", " ", "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+		assertFalse(violations.isEmpty(), "Пустое поле логин пользователя прошло валидацию");
+		assertEquals(violations.size(), 3, "Неверное количество ошибок при проверке пустого поля логин пользователя");
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		for (ConstraintViolation<User> violation : violations) {
 
-        assertTrue(violations.isEmpty(), "Имя пользователя, содержащее только пробелы, не прошло проверку");
+			assertEquals(violation.getInvalidValue(), user.getLogin(),
+					"Неверно определено невалидное значение: поле логин пользователя");
+		}
+	}
 
-    }
+	@Test
+	public void shouldFailValidationUserWithBlankLogin() { // login is blank
 
-    @Test
-    public void shouldPassValidationUserWithNullName() { // userName is null = should pass
+		User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", " ", LocalDate.of(1990, 10, 10), new HashSet<>());
 
-        User user = new User(1L, "Alex@yandex.ru", null, "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		assertFalse(violations.isEmpty(), "Поле логин пользователя, содержащее только пробелы, прошло валидацию");
+		assertEquals(violations.size(), 2, "Неверное количество ошибок при проверке пустого поля логин пользователя");
 
-        assertTrue(violations.isEmpty(),
-                "Имя пользователя, содержащее значение null, не прошло проверку");
+		for (ConstraintViolation<User> violation : violations) {
 
-    }
+			assertEquals(violation.getInvalidValue(), user.getLogin(),
+					"Неверно определено невалидное значение: поле логин пользователя");
+		}
+	}
 
-    @Test
-    public void shouldFailValidationUserWithInvalidEmail() { // invalid email
+	@Test
+	public void shouldFailValidationUserWithNullLogin() { // login is null
 
-        User user = new User(1L, "Alex НДЕКС_? @ yandex.ru", "Alex Ivanov", "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+		User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", null, LocalDate.of(1990, 10, 10),
+				new HashSet<>());
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        assertFalse(violations.isEmpty(), "Поле с невалидным значением email прошло валидацию");
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке поля email с некорректным форматом");
+		assertFalse(violations.isEmpty(), "Поле логин пользователя со значением null прошло валидацию");
+		assertEquals(violations.size(), 3,
+				"Неверное количество ошибок при проверке поля логин пользователя со значением null");
 
-        for (ConstraintViolation<User> violation : violations) {
+		for (ConstraintViolation<User> violation : violations) {
 
-            assertEquals(violation.getInvalidValue(), user.getEmail(),
-                    "Неверно определено невалидное значение: поле email");
-        }
+			assertEquals(violation.getInvalidValue(), user.getLogin(),
+					"Неверно определено невалидное значение: поле логин пользователя");
+		}
+	}
 
-    }
+	@Test
+	public void shouldFailValidationUserWithLoginContainsSpace() { // login contains space
 
-    @Test
-    public void shouldFailValidationUserWithNullEmail() { //email is null
+		User user = new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "Alex Alex", LocalDate.of(1990, 10, 10),
+				new HashSet<>());
 
-        User user = new User(1L, null, "Alex Ivanov", "alex",
-                LocalDate.of(1990, 10, 10), new HashSet<>());
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		assertFalse(violations.isEmpty(), "Поле логин пользователя со значением null прошло валидацию");
+		assertEquals(violations.size(), 1,
+				"Неверное количество ошибок при проверке поля логин пользователя со значением null");
 
-        assertFalse(violations.isEmpty(), "Поле email со значением null прошло валидацию");
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке поля email со значением null");
+		for (ConstraintViolation<User> violation : violations) {
 
-        for (ConstraintViolation<User> violation : violations) {
+			assertEquals(violation.getInvalidValue(), user.getLogin(),
+					"Неверно определено невалидное значение: поле логин пользователя");
+		}
+	}
 
-            assertEquals(violation.getInvalidValue(), user.getEmail(),
-                    "Неверно определено невалидное значение: поле email");
-        }
-    }
+	@Test
+	public void shouldPassValidationUserWithEmptyName() { // userName is Empty = should pass
 
-    @Test
-    public void shouldFailValidationUserWithFutureBirthday() { //birthday is in future
+		User user = new User(1L, "Alex@yandex.ru", "", "alex", LocalDate.of(1990, 10, 10), new HashSet<>());
 
-        User user = new User(1L, "Alex@yandex.ru", "Alex Ivanov", "alex",
-                LocalDate.of(2990, 10, 10), new HashSet<>());
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+		assertTrue(violations.isEmpty(), "Пустое поля имя пользователя не прошло проверку");
 
-        assertFalse(violations.isEmpty(), "Поле дата рождения с датой в будущем времени прошло валидацию");
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке поля дата рождения с датой в будущем времени");
+	}
 
-        for (ConstraintViolation<User> violation : violations) {
+	@Test
+	public void shouldPassValidationUserWithBlankName() { // userName is Blank = should pass
 
-            assertEquals(violation.getInvalidValue(), user.getBirthday(),
-                    "Неверно определено невалидное значение: поле дата рождения");
-        }
-    }
+		User user = new User(1L, "Alex@yandex.ru", " ", "alex", LocalDate.of(1990, 10, 10), new HashSet<>());
 
-    @Test
-    public void shouldFailValidationUserWithNullBirthday() { // birthday is null
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-        User user = new User(1L, "Alex@yandex.ru", "Alex Ivanov", "alex",
-                null, new HashSet<>());
+		assertTrue(violations.isEmpty(), "Имя пользователя, содержащее только пробелы, не прошло проверку");
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+	}
 
-        assertFalse(violations.isEmpty(), "Поле дата рождения со значением null прошло валидацию");
-        assertEquals(violations.size(), 1,
-                "Неверное количество ошибок при проверке поля дата рождения со значением null");
+	@Test
+	public void shouldPassValidationUserWithNullName() { // userName is null = should pass
 
-        for (ConstraintViolation<User> violation : violations) {
+		User user = new User(1L, "Alex@yandex.ru", null, "alex", LocalDate.of(1990, 10, 10), new HashSet<>());
 
-            assertEquals(violation.getInvalidValue(), user.getBirthday(),
-                    "Неверно определено невалидное значение: поле дата рождения");
-        }
-    }
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-    @Test
-    void contextLoads() {
-    }
+		assertTrue(violations.isEmpty(), "Имя пользователя, содержащее значение null, не прошло проверку");
 
-    //************************* Набор невалидных данных пользователей *************************
-    static class UsersArgumentsProvider implements ArgumentsProvider {
-        @Override
-        public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-            return Stream.of(
+	}
 
-                    //пустой логин
+	@Test
+	public void shouldFailValidationUserWithInvalidEmail() { // invalid email
 
-                    Arguments.of(new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "",
-                            LocalDate.of(1990, 10, 10), new HashSet<>())),
-                    Arguments.of(new User(2L, "Alex@yandex.ru", "Alexandr Ivanov", null,
-                            LocalDate.of(1990, 10, 10), new HashSet<>())),
-                    Arguments.of(new User(3L, "Alex@yandex.ru", "Alexandr Ivanov", " ",
-                            LocalDate.of(1990, 10, 10), new HashSet<>())),
+		User user = new User(1L, "Alex НДЕКС_? @ yandex.ru", "Alex Ivanov", "alex", LocalDate.of(1990, 10, 10),
+				new HashSet<>());
 
-                    //пустой или невалидный формат email
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-                    Arguments.of(new User(4L, null, "Alexandr Ivanov", "alex",
-                            LocalDate.of(1990, 10, 10), new HashSet<>())),
-                    Arguments.of(new User(5L, "invalid## @ mail.ru",
-                            "Alexandr Ivanov", "alex",
-                            LocalDate.of(1990, 10, 10), new HashSet<>())),
+		assertFalse(violations.isEmpty(), "Поле с невалидным значением email прошло валидацию");
+		assertEquals(violations.size(), 1,
+				"Неверное количество ошибок при проверке поля email с некорректным форматом");
 
-                    //пустая или невалидная дата рождения
+		for (ConstraintViolation<User> violation : violations) {
 
-                    Arguments.of(new User(6L, "Alex@yandex.ru", "Alexandr Ivanov", "alex",
-                            null, new HashSet<>())),
-                    Arguments.of(new User(7L, "Alex@yandex.ru", "Alexandr Ivanov", "alex",
-                            LocalDate.of(2100, 10, 10), new HashSet<>())));
-        }
-    }
+			assertEquals(violation.getInvalidValue(), user.getEmail(),
+					"Неверно определено невалидное значение: поле email");
+		}
 
-    //************************* Набор невалидных данных фильмов *************************
-    static class FilmsArgumentsProvider implements ArgumentsProvider {
-        @Override
-        public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
-            Mpa mpa = new Mpa(1, "G");
-            return Stream.of(
+	}
 
-                    // пустое название фильма
+	@Test
+	public void shouldFailValidationUserWithNullEmail() { // email is null
 
-                    Arguments.of(new Film(1, "", " Good comedy",
-                            LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>(), null)),
-                    Arguments.of(new Film(1, " ", "Good comedy",
-                            LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>(), null)),
-                    Arguments.of(new Film(1, null, " Good comedy",
-                            LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>(), null)),
+		User user = new User(1L, null, "Alex Ivanov", "alex", LocalDate.of(1990, 10, 10), new HashSet<>());
 
-                    // пустое или слишком длинное описание фильма
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
 
-                    Arguments.of(new Film(1, "All hate Cris",
-                            " Good comedy, but it's too long description. it's too long description"
-                                    + "it's too long description. it's too long description."
-                                    + " it's too long description. it's too long description. "
-                                    + "it's too long description. it's too long description. "
-                                    + "it's too long description. it's too long description.",
-                            LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>(), null), null),
-                    Arguments.of(new Film(1, "All hate Cris", null,
-                            LocalDate.of(2002, 2, 10), 40, 0L,
-                            mpa, new HashSet<>(), null)),
+		assertFalse(violations.isEmpty(), "Поле email со значением null прошло валидацию");
+		assertEquals(violations.size(), 1, "Неверное количество ошибок при проверке поля email со значением null");
 
-                    // пустая или невалидная дата выхода фильма
+		for (ConstraintViolation<User> violation : violations) {
 
-                    Arguments.of(new Film(1, "All hate Cris", " Good comedy",
-                            LocalDate.of(1700, 2, 10), 40, 0L,
-                            mpa, new HashSet<>(), null)),
-                    Arguments.of(new Film(1, "All hate Cris", " Good comedy",
-                            null, 40, 0L,
-                            mpa, new HashSet<>(), null)),
+			assertEquals(violation.getInvalidValue(), user.getEmail(),
+					"Неверно определено невалидное значение: поле email");
+		}
+	}
 
-                    // негативное или нулевое значение продолжительности фильма
+	@Test
+	public void shouldFailValidationUserWithFutureBirthday() { // birthday is in future
 
-                    Arguments.of(new Film(1, "All hate Cris", " Good comedy",
-                            LocalDate.of(2002, 2, 10), 0, 0L,
-                            mpa, new HashSet<>(), null)),
-                    Arguments.of(new Film(1, "All hate Cris", " Good comedy",
-                            LocalDate.of(2002, 2, 10), -900, 0L,
-                            mpa, new HashSet<>(), null)));
-        }
-    }
+		User user = new User(1L, "Alex@yandex.ru", "Alex Ivanov", "alex", LocalDate.of(2990, 10, 10), new HashSet<>());
+
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+		assertFalse(violations.isEmpty(), "Поле дата рождения с датой в будущем времени прошло валидацию");
+		assertEquals(violations.size(), 1,
+				"Неверное количество ошибок при проверке поля дата рождения с датой в будущем времени");
+
+		for (ConstraintViolation<User> violation : violations) {
+
+			assertEquals(violation.getInvalidValue(), user.getBirthday(),
+					"Неверно определено невалидное значение: поле дата рождения");
+		}
+	}
+
+	@Test
+	public void shouldFailValidationUserWithNullBirthday() { // birthday is null
+
+		User user = new User(1L, "Alex@yandex.ru", "Alex Ivanov", "alex", null, new HashSet<>());
+
+		Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+		assertFalse(violations.isEmpty(), "Поле дата рождения со значением null прошло валидацию");
+		assertEquals(violations.size(), 1,
+				"Неверное количество ошибок при проверке поля дата рождения со значением null");
+
+		for (ConstraintViolation<User> violation : violations) {
+
+			assertEquals(violation.getInvalidValue(), user.getBirthday(),
+					"Неверно определено невалидное значение: поле дата рождения");
+		}
+	}
+
+	@Test
+	void contextLoads() {
+	}
+
+	// ************************* Набор невалидных данных пользователей
+	// *************************
+	static class UsersArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+			return Stream.of(
+
+					// пустой логин
+
+					Arguments.of(new User(1L, "Alex@yandex.ru", "Alexandr Ivanov", "", LocalDate.of(1990, 10, 10),
+							new HashSet<>())),
+					Arguments.of(new User(2L, "Alex@yandex.ru", "Alexandr Ivanov", null, LocalDate.of(1990, 10, 10),
+							new HashSet<>())),
+					Arguments.of(new User(3L, "Alex@yandex.ru", "Alexandr Ivanov", " ", LocalDate.of(1990, 10, 10),
+							new HashSet<>())),
+
+					// пустой или невалидный формат email
+
+					Arguments.of(
+							new User(4L, null, "Alexandr Ivanov", "alex", LocalDate.of(1990, 10, 10), new HashSet<>())),
+					Arguments.of(new User(5L, "invalid## @ mail.ru", "Alexandr Ivanov", "alex",
+							LocalDate.of(1990, 10, 10), new HashSet<>())),
+
+					// пустая или невалидная дата рождения
+
+					Arguments.of(new User(6L, "Alex@yandex.ru", "Alexandr Ivanov", "alex", null, new HashSet<>())),
+					Arguments.of(new User(7L, "Alex@yandex.ru", "Alexandr Ivanov", "alex", LocalDate.of(2100, 10, 10),
+							new HashSet<>())));
+		}
+	}
+
+	// ************************* Набор невалидных данных фильмов
+	// *************************
+	static class FilmsArgumentsProvider implements ArgumentsProvider {
+		@Override
+		public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+			Mpa mpa = new Mpa(1, "G");
+			return Stream.of(
+
+					// пустое название фильма
+
+					Arguments.of(new Film(1, "", " Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa,
+							new HashSet<>(), null)),
+					Arguments.of(new Film(1, " ", "Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa,
+							new HashSet<>(), null)),
+					Arguments.of(new Film(1, null, " Good comedy", LocalDate.of(2002, 2, 10), 40, 0L, mpa,
+							new HashSet<>(), null)),
+
+					// пустое или слишком длинное описание фильма
+
+					Arguments.of(new Film(1, "All hate Cris",
+							" Good comedy, but it's too long description. it's too long description"
+									+ "it's too long description. it's too long description."
+									+ " it's too long description. it's too long description. "
+									+ "it's too long description. it's too long description. "
+									+ "it's too long description. it's too long description.",
+							LocalDate.of(2002, 2, 10), 40, 0L, mpa, new HashSet<>(), null), null),
+					Arguments.of(new Film(1, "All hate Cris", null, LocalDate.of(2002, 2, 10), 40, 0L, mpa,
+							new HashSet<>(), null)),
+
+					// пустая или невалидная дата выхода фильма
+
+					Arguments.of(new Film(1, "All hate Cris", " Good comedy", LocalDate.of(1700, 2, 10), 40, 0L, mpa,
+							new HashSet<>(), null)),
+					Arguments
+							.of(new Film(1, "All hate Cris", " Good comedy", null, 40, 0L, mpa, new HashSet<>(), null)),
+
+					// негативное или нулевое значение продолжительности фильма
+
+					Arguments.of(new Film(1, "All hate Cris", " Good comedy", LocalDate.of(2002, 2, 10), 0, 0L, mpa,
+							new HashSet<>(), null)),
+					Arguments.of(new Film(1, "All hate Cris", " Good comedy", LocalDate.of(2002, 2, 10), -900, 0L, mpa,
+							new HashSet<>(), null)));
+		}
+	}
 
 }

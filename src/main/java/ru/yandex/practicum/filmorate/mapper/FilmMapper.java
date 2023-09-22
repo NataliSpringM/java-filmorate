@@ -19,32 +19,24 @@ import java.util.Set;
 @Component
 @AllArgsConstructor
 public class FilmMapper implements RowMapper<Film> {
-    private final RatingMpaDbStorage ratingMpaDbStorage;
-    private final FilmGenreDbStorage filmStorage;
+	private final RatingMpaDbStorage ratingMpaDbStorage;
+	private final FilmGenreDbStorage filmStorage;
 
-    @Override
-    public Film mapRow(ResultSet resultSet, int i) throws SQLException {
-        Integer id = resultSet.getInt("film_id");
-        String name = resultSet.getString("film_name");
-        String description = resultSet.getString("description");
-        LocalDate releaseDate = resultSet.getDate("release_date").toLocalDate();
-        Integer duration = resultSet.getInt("duration");
-        //Long likes = resultSet.getLong("total_likes");
-        Mpa mpa = ratingMpaDbStorage.getRatingMpaById(resultSet.getInt("rating_mpa_id"));
-        Set<FilmGenre> genres = filmStorage.getGenres(resultSet.getInt("film_id"));
-        Set<Director> directors = new HashSet<>();
-        directors.add(new Director());
+	@Override
+	public Film mapRow(ResultSet resultSet, int i) throws SQLException {
+		Integer id = resultSet.getInt("film_id");
+		String name = resultSet.getString("film_name");
+		String description = resultSet.getString("description");
+		LocalDate releaseDate = resultSet.getDate("release_date").toLocalDate();
+		Integer duration = resultSet.getInt("duration");
+		// Long likes = resultSet.getLong("total_likes");
+		Mpa mpa = ratingMpaDbStorage.getRatingMpaById(resultSet.getInt("rating_mpa_id"));
+		Set<FilmGenre> genres = filmStorage.getGenres(resultSet.getInt("film_id"));
+		Set<Director> directors = new HashSet<>();
+		directors.add(new Director());
 
-        return Film.builder()
-                .id(id)
-                .name(name)
-                .description(description)
-                .releaseDate(releaseDate)
-                .duration(duration)
-                //.likes(likes)
-                .mpa(mpa)
-                .genres(genres)
-                .directors(directors)
-                .build();
-    }
+		return Film.builder().id(id).name(name).description(description).releaseDate(releaseDate).duration(duration)
+				// .likes(likes)
+				.mpa(mpa).genres(genres).directors(directors).build();
+	}
 }

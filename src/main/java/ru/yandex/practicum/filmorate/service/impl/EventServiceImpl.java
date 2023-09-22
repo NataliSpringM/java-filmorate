@@ -20,7 +20,7 @@ public class EventServiceImpl implements EventService {
 	private final EventStorage eventStorage;
 	private final UserService userService;
 
-	/** 
+	/**
 	 * получение всех событий пользователя
 	 */
 	@Override

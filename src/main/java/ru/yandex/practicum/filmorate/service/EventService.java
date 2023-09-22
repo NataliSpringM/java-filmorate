@@ -7,29 +7,28 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Event;
 
 /**
- *  сервис для добавления событий в ленту
+ * сервис для добавления событий в ленту
  */
 
 @Service
 public interface EventService {
 
 	/**
-	 *  получить ленту событий пользователя id
+	 * получить ленту событий пользователя id
+	 *
 	 * @param id
 	 * @return
 	 */
 	List<Event> listUserEvents(Long id);
 
 	/**
-	 *  добавить событие пользователя id
+	 * добавить событие пользователя id
+	 *
 	 * @param userId
 	 * @param entityId
 	 * @param eventType
 	 * @param operationType
 	 * @return
 	 */
-	Event addEvent(Long userId,
-			Long entityId,
-			String eventType,
-			String operationType);
+	Event addEvent(Long userId, Long entityId, String eventType, String operationType);
 }

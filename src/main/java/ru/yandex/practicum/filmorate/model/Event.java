@@ -17,7 +17,8 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * Инофрмация о событие, совершенном пользователем: тип события, операции и объекта
+ * Инофрмация о событие, совершенном пользователем: тип события, операции и
+ * объекта
  */
 @Validated
 @Data
@@ -26,158 +27,146 @@ public class Event implements Comparable<Event> {
 
 	Long eventId; // id события
 
-    @NotNull
-    @NotBlank
-    @NotEmpty
-    Long userId; // id пользователя инициатора
+	@NotNull
+	@NotBlank
+	@NotEmpty
+	Long userId; // id пользователя инициатора
 
-    @NotNull
-    @NotBlank
-    @NotEmpty
-    Long entityId; // id объекта события
+	@NotNull
+	@NotBlank
+	@NotEmpty
+	Long entityId; // id объекта события
 
-    @NotNull
-    EventType eventType; // тип события
+	@NotNull
+	EventType eventType; // тип события
 
-    @NotNull
-    OperationType operation; // тип операции
+	@NotNull
+	OperationType operation; // тип операции
 
-    @PastOrPresent
-    Long timestamp; // дата и время события
-
+	@PastOrPresent
+	Long timestamp; // дата и время события
 
 	/**
 	 * Маппер объектов типа Event в строку
 	 */
-    public Map<String, Object> toMap() {
+	public Map<String, Object> toMap() {
 
-        Map<String, Object> eventProperties = new HashMap<>();
+		Map<String, Object> eventProperties = new HashMap<>();
 
-        eventProperties.put("event_id", eventId);
-        eventProperties.put("user_id", userId);
-        eventProperties.put("entity_id", entityId);
-        eventProperties.put("event_type", eventType.getName());
-        eventProperties.put("operation_type", operation.getName());
-        eventProperties.put("time_stamp", timestamp);
+		eventProperties.put("event_id", eventId);
+		eventProperties.put("user_id", userId);
+		eventProperties.put("entity_id", entityId);
+		eventProperties.put("event_type", eventType.getName());
+		eventProperties.put("operation_type", operation.getName());
+		eventProperties.put("time_stamp", timestamp);
 
-        return eventProperties;
-    }
-
+		return eventProperties;
+	}
 
 	/**
 	 * Перегрузка метода сравнения объектов типа Event
 	 */
-    @Override
+	@Override
 	public int compareTo(Event otherEvent) {
-		return this.getTimestamp()
-				.compareTo(otherEvent.getTimestamp());
+		return this.getTimestamp().compareTo(otherEvent.getTimestamp());
 	}
 
 	/**
 	 * Перечисление типов событий
 	 */
-    public enum EventType {
-    	FRIEND("FRIEND"),
-    	LIKE("LIKE"),
-    	REVIEW("REVIEW");
-    	
-    	private String name;
+	public enum EventType {
+		FRIEND("FRIEND"), LIKE("LIKE"), REVIEW("REVIEW");
 
-    	EventType(String name) {
-    		this.name = name;
-    	}
+		private String name;
 
-    	/**
-    	 * Получение строкового значения из типа события
-    	 */
-    	@JsonValue
-        public String getName() {
-            return name;
-        }
+		EventType(String name) {
+			this.name = name;
+		}
 
-    	/**
-    	 * Получение типа события из строкового значения
-    	 */
-        @JsonCreator
-        public static EventType fromName(String name) {
+		/**
+		 * Получение строкового значения из типа события
+		 */
+		@JsonValue
+		public String getName() {
+			return name;
+		}
 
-        	if (name == null) {
-                return null;
-            }
+		/**
+		 * Получение типа события из строкового значения
+		 */
+		@JsonCreator
+		public static EventType fromName(String name) {
 
-            switch (name) {
-                case "FRIEND": {
-                    return FRIEND;
-                }
+			if (name == null) {
+				return null;
+			}
 
-                case "LIKE": {
-                    return LIKE;
-                }
+			switch (name) {
+			case "FRIEND": {
+				return FRIEND;
+			}
 
-                case "REVIEW": {
-                    return REVIEW;
-                }
+			case "LIKE": {
+				return LIKE;
+			}
 
-                default: {
-                    throw new UnsupportedOperationException(
-                            String.format("Неизвестный тип события: '%s'", name)
-                    );
-                }
-            }
-        }
-    }
+			case "REVIEW": {
+				return REVIEW;
+			}
 
-    /**
+			default: {
+				throw new UnsupportedOperationException(String.format("Неизвестный тип события: '%s'", name));
+			}
+			}
+		}
+	}
+
+	/**
 	 * Перечисление типов операций
 	 */
-    public enum OperationType {
-    	ADD("ADD"),
-    	UPDATE("UPDATE"),
-    	REMOVE("REMOVE");
+	public enum OperationType {
+		ADD("ADD"), UPDATE("UPDATE"), REMOVE("REMOVE");
 
-    	private String name;
+		private String name;
 
-    	OperationType(String name) {
-    		this.name = name;
-    	}
+		OperationType(String name) {
+			this.name = name;
+		}
 
-    	/**
-    	 * Получение строкового значения из типа операции
-    	 */
-    	@JsonValue
-        public String getName() {
-            return name;
-        }
+		/**
+		 * Получение строкового значения из типа операции
+		 */
+		@JsonValue
+		public String getName() {
+			return name;
+		}
 
-    	/**
-    	 * Получение типа события из строкового значения
-    	 */
-        @JsonCreator
-        public static OperationType fromName(String name) {
+		/**
+		 * Получение типа события из строкового значения
+		 */
+		@JsonCreator
+		public static OperationType fromName(String name) {
 
-        	if (name == null) {
-                return null;
-            }
+			if (name == null) {
+				return null;
+			}
 
-            switch (name) {
-                case "ADD": {
-                    return ADD;
-                }
+			switch (name) {
+			case "ADD": {
+				return ADD;
+			}
 
-                case "UPDATE": {
-                    return UPDATE;
-                }
+			case "UPDATE": {
+				return UPDATE;
+			}
 
-                case "REMOVE": {
-                    return REMOVE;
-                }
-
-                default: {
-                    throw new UnsupportedOperationException(
-                            String.format("Неизвестная операция: '%s'", name)
-                    );
-                }
-            }
-        }
-    }
+			case "REMOVE": {
+				return REMOVE;
+			}
+			default: {
+				throw new UnsupportedOperationException(String.format("Неизвестная операция: '%s'", name));
+			}
+			}
+		}
+	}
 }
